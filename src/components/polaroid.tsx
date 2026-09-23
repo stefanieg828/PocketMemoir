@@ -5,6 +5,7 @@ import { useMemoir } from "@/lib/memoir/store";
 import type { MemoirEntry } from "@/lib/memoir/types";
 import { cn, hashSeed, tiltFor } from "@/lib/utils";
 import { KindMark } from "@/components/kind-mark";
+import { StatusMover } from "@/components/status-mover";
 
 type PolaroidProps = {
   entry: MemoirEntry;
@@ -76,6 +77,9 @@ export function Polaroid({ entry, className }: PolaroidProps) {
         {meta.label}
         {when ? ` · ${when}` : ""}
       </p>
+      <div className="mt-3" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        <StatusMover entryId={entry.id} status={entry.status ?? "fresh"} size="card" />
+      </div>
     </Link>
   );
 }

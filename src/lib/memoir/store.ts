@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import type { JacketId, MemoirDraft, MemoirEntry } from "./types";
-import { normalizeJacket, normalizeKind } from "./types";
+import type { EntryStatus, JacketId, MemoirDraft, MemoirEntry } from "./types";
+import { bucketForKind, normalizeJacket, normalizeKind, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 
@@ -19,6 +19,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-win",
     kind: "win",
+    status: "keepsake",
     title: "Finished the drawer",
     how: "It closes. That is the whole win.",
     facts: "",
@@ -29,6 +30,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-dentist",
     kind: "health",
+    status: "fresh",
     title: "The dentist who gives stickers",
     how: "Morning. Bring the old card.",
     facts: "",
@@ -40,6 +42,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-bday",
     kind: "event",
+    status: "fresh",
     title: "Sam’s birthday",
     how: "The restaurant with the green awning.",
     facts: "",
@@ -51,6 +54,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-lamp",
     kind: "thing",
+    status: "soft",
     title: "The green lamp",
     how: "Kitchen shelf.",
     facts: "would buy again",
@@ -62,6 +66,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-sam",
     kind: "person",
+    status: "keepsake",
     title: "Sam",
     how: "Coworker.",
     facts: "allergic to almonds",
@@ -72,6 +77,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-snow",
     kind: "moment",
+    status: "soft",
     title: "First snow on Oak",
     how: "The lights went and it kept falling.",
     facts: "",
@@ -83,6 +89,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-wifi",
     kind: "note",
+    status: "fresh",
     title: "Wifi is oaknest",
     how: "Third floor. The plant knows.",
     facts: "",
@@ -102,6 +109,7 @@ type MemoirState = {
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
+  setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
 };
 
@@ -160,6 +168,11 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
   return {
     id: base?.id ?? createId(),
     kind,
+    status: draft.status
+      ? normalizeStatus(draft.status)
+      : base
+        ? normalizeStatus(base.status)
+        : "fresh",
     title: draft.title.trim(),
     how: draft.how.trim(),
     facts: draft.facts.trim(),
@@ -172,14 +185,25 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
   };
 }
 
+const SEED_STATUS = Object.fromEntries(SEEDS.map((s) => [s.id, s.status])) as Record<
+  string,
+  EntryStatus
+>;
+
 function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
   if (!raw || typeof raw !== "object") return null;
   const entry = raw as Partial<MemoirEntry>;
   if (typeof entry.id !== "string" || typeof entry.title !== "string") return null;
   const kind = normalizeKind(entry.kind);
+  // First migrate: missing status → seed’s demo shelf if known, else fresh
+  const status =
+    "status" in entry
+      ? normalizeStatus(entry.status)
+      : normalizeStatus(SEED_STATUS[entry.id] ?? "fresh");
   return {
     id: entry.id,
     kind,
+    status,
     title: entry.title,
     how: typeof entry.how === "string" ? entry.how : "",
     facts: typeof entry.facts === "string" ? entry.facts : "",
@@ -214,6 +238,16 @@ export const useMemoir = create<MemoirState>()(
           ),
         });
       },
+      setEntryStatus: (id, status) => {
+        const next = normalizeStatus(status);
+        set({
+          entries: get().entries.map((entry) =>
+            entry.id === id
+              ? { ...entry, status: next, updatedAt: Date.now() }
+              : entry,
+          ),
+        });
+      },
       removeEntry: (id) =>
         set({ entries: get().entries.filter((entry) => entry.id !== id) }),
     }),
@@ -245,7 +279,16 @@ export const useMemoir = create<MemoirState>()(
 export function matchesQuery(entry: MemoirEntry, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const hay = [entry.title, entry.how, entry.facts, entry.note, entry.kind, entry.happenedOn]
+  const hay = [
+    entry.title,
+    entry.how,
+    entry.facts,
+    entry.note,
+    entry.kind,
+    bucketForKind(entry.kind),
+    entry.status,
+    entry.happenedOn,
+  ]
     .join(" ")
     .toLowerCase();
   return hay.includes(q);

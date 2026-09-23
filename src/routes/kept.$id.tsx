@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { KeepForm } from "@/components/keep-form";
+import { StatusMover } from "@/components/status-mover";
 import { KindMark } from "@/components/kind-mark";
 import {
   AlertDialog,
@@ -103,6 +104,12 @@ function KeptPage() {
         )}
         <p className="font-display text-3xl leading-snug font-semibold">{entry.title}</p>
         <p className="mt-1 font-display text-sm text-muted">{meta.label}</p>
+        <StatusMover
+          entryId={entry.id}
+          status={entry.status ?? "fresh"}
+          size="detail"
+          className="mt-4"
+        />
       </article>
 
       <div className="min-w-0">

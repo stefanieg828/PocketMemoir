@@ -410,6 +410,197 @@ html[data-jacket="corkboard"] {
     flex: none;
   }
 
+
+  .kind-chip-soft {
+    min-height: 2.35rem;
+    font-size: 0.86rem;
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+
+  .keep-kind-row {
+    padding: 0.55rem 0.65rem;
+    border: 2.5px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
+    border-radius: 1rem;
+    background: color-mix(in oklab, var(--color-paper) 70%, white);
+  }
+
+  html[data-jacket="corkboard"] .keep-kind-row {
+    background: rgb(255 247 232 / 0.72);
+  }
+
+  /* Status shelf plaques (washi / wood) */
+  .shelf-bays {
+    width: 100%;
+  }
+
+  .shelf-zone + .shelf-zone {
+    margin-top: 0.15rem;
+  }
+
+  .shelf-plaque,
+  .shelf-fold {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.65rem;
+    padding: 0.35rem 0.85rem 0.4rem;
+    border: 2.75px solid var(--color-ink);
+    border-radius: 0.55rem 1.1rem 0.55rem 0.95rem;
+    background:
+      repeating-linear-gradient(
+        -12deg,
+        #ffd6e2 0 10px,
+        #ff8aa4 10px 20px
+      );
+    box-shadow: 3px 3px 0 var(--color-ink);
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    max-width: 100%;
+  }
+
+  .shelf-plaque-wood,
+  .shelf-fold-wood {
+    border-radius: 0.4rem;
+    background:
+      linear-gradient(#c47a3a, #c47a3a) 0 0 / 100% 100%,
+      repeating-linear-gradient(
+        90deg,
+        rgb(90 52 24 / 0.12) 0 2px,
+        transparent 2px 7px
+      );
+    background-blend-mode: multiply;
+    background-color: #d9924a;
+  }
+
+  .shelf-zone-keepsake .shelf-plaque {
+    background:
+      repeating-linear-gradient(
+        -12deg,
+        #ffe7a8 0 10px,
+        #f0c34a 10px 20px
+      );
+  }
+
+  .shelf-zone-soft .shelf-plaque {
+    background:
+      repeating-linear-gradient(
+        -12deg,
+        #d9ecff 0 10px,
+        #8eb8e0 10px 20px
+      );
+  }
+
+  .shelf-plaque-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .shelf-plaque-count,
+  .shelf-fold-meta {
+    font-size: 0.82rem;
+    opacity: 0.78;
+  }
+
+  .shelf-fold {
+    width: 100%;
+    justify-content: space-between;
+    cursor: pointer;
+    background:
+      repeating-linear-gradient(
+        -12deg,
+        #e8e0d4 0 10px,
+        #cbbba6 10px 20px
+      );
+  }
+
+  .shelf-fold.is-open {
+    border-radius: 0.55rem 1.1rem 0.35rem 0.35rem;
+  }
+
+  .shelf-zone .shelf-grid {
+    margin-top: 0.35rem;
+  }
+
+  .shelf-zone .album-scraps {
+    padding-top: 0.15rem;
+  }
+
+  /* Status mover (cute, not settings-y) */
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: 0.15rem 0.7rem;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 999px;
+    background: #fff;
+    font-family: var(--font-display);
+    font-size: 0.84rem;
+    box-shadow: 2px 2px 0 var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .status-chip-card {
+    min-height: 1.7rem;
+    font-size: 0.75rem;
+    padding: 0.05rem 0.55rem;
+    box-shadow: 1.5px 1.5px 0 var(--color-ink);
+  }
+
+  .status-chip-keepsake {
+    background: #ffe7a8;
+  }
+
+  .status-chip-soft {
+    background: #d9ecff;
+  }
+
+  .status-chip-tucked {
+    background: #e8e0d4;
+  }
+
+  .status-menu {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    min-width: 11.5rem;
+    padding: 0.45rem;
+    border: 2.75px solid var(--color-ink);
+    border-radius: 0.85rem;
+    background: #fffaf0;
+    box-shadow: 4px 4px 0 var(--color-ink);
+  }
+
+  .status-menu-caption {
+    margin: 0 0.35rem 0.35rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    color: var(--color-muted, #6b5a4a);
+  }
+
+  .status-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.45rem 0.55rem;
+    border-radius: 0.55rem;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--color-ink);
+  }
+
+  .status-menu-item:hover,
+  .status-menu-item.is-on {
+    background: color-mix(in oklab, var(--color-gold) 70%, white);
+  }
+
+  .status-mover-card .status-menu {
+    left: auto;
+    right: 0;
+  }
+
   .kind-chip {
     display: inline-flex;
     align-items: center;
