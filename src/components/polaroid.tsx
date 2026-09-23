@@ -30,10 +30,14 @@ export function Polaroid({ entry, className }: PolaroidProps) {
   const look = useMemoir((s) => s.jacket);
   const meta = KIND_META[entry.kind];
   const tilt = tiltFor(entry.id);
+  const seed = hashSeed(entry.id);
   const tapeOptions = ["washi", "washi washi-b", "washi washi-c"] as const;
   const pinOptions = ["pin", "pin pin-b", "pin pin-c", "pin pin-d"] as const;
-  const tape = tapeOptions[hashSeed(entry.id) % tapeOptions.length];
-  const pin = pinOptions[hashSeed(entry.id) % pinOptions.length];
+  const cornerOptions = ["washi-corner", "washi-corner washi-corner-b", "washi-corner washi-corner-c"] as const;
+  const tape = tapeOptions[seed % tapeOptions.length];
+  const pin = pinOptions[seed % pinOptions.length];
+  const corner = cornerOptions[seed % cornerOptions.length];
+  const showSeal = look === "scrapbook" && seed % 3 === 0;
   const when = formatHappenedOn(entry.happenedOn);
   const caption = entry.how || entry.note || entry.facts;
   const size = scrapSizeClass(entry);
@@ -42,10 +46,23 @@ export function Polaroid({ entry, className }: PolaroidProps) {
     <Link
       to="/kept/$id"
       params={{ id: entry.id }}
-      className={cn("scrap-card scrap-tilt is-link group block p-4 text-ink no-underline", size, className)}
+      className={cn(
+        "scrap-card scrap-tilt is-link group block p-4 text-ink no-underline",
+        look === "scrapbook" && "scrap-on-page",
+        size,
+        className,
+      )}
       style={{ ["--scrap-tilt" as string]: `${tilt}deg` }}
     >
-      <span className={look === "corkboard" ? pin : tape} aria-hidden="true" />
+      {look === "corkboard" ? (
+        <span className={pin} aria-hidden="true" />
+      ) : (
+        <>
+          <span className={tape} aria-hidden="true" />
+          <span className={corner} aria-hidden="true" />
+          {showSeal ? <span className="wax-on-scrap" aria-hidden="true" /> : null}
+        </>
+      )}
       {entry.photo ? (
         <span className="drawn-frame mb-3 block overflow-hidden">
           <img src={entry.photo} alt="" className="aspect-[4/3] w-full object-cover" />

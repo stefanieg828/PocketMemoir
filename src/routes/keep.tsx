@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { AlbumPage } from "@/components/album-page";
 import { KeepForm } from "@/components/keep-form";
 import { hasDayDate } from "@/lib/memoir/dates";
 import { LOOK_META } from "@/lib/memoir/jackets";
@@ -31,22 +32,46 @@ function KeepPage() {
       </Link>
       <h1 className="mt-3 font-display text-title font-semibold">{look.addHeading}</h1>
       <p className="mt-1 text-sm text-muted">Write first. The kind is just a sticker.</p>
-      <div className="scrap-card relative mt-6 px-4 py-6 sm:px-6">
-        <span className={look.id === "corkboard" ? "pin" : "washi"} aria-hidden="true" />
-        <KeepForm
-          key={`${kind ?? "note"}-${date ?? ""}`}
-          initial={{ kind: kind ?? "note", happenedOn: date }}
-          onKeep={(draft) => {
-            const entry = addEntry(draft);
-            if (useMemoir.getState().storageFull || storageFull) {
-              toast("Stuck in memory, but this browser is too full for the photo.");
-            } else {
-              toast(look.keptToast(entry.title));
-            }
-            void navigate({ to: "/kept/$id", params: { id: entry.id } });
-          }}
-        />
-      </div>
+      {look.id === "scrapbook" ? (
+        <div className="mt-6">
+          <AlbumPage>
+            <div className="scrap-card scrap-on-page relative px-4 py-6 sm:px-6">
+              <span className="washi" aria-hidden="true" />
+              <span className="washi-corner" aria-hidden="true" />
+              <KeepForm
+                key={`${kind ?? "note"}-${date ?? ""}`}
+                initial={{ kind: kind ?? "note", happenedOn: date }}
+                onKeep={(draft) => {
+                  const entry = addEntry(draft);
+                  if (useMemoir.getState().storageFull || storageFull) {
+                    toast("Stuck in memory, but this browser is too full for the photo.");
+                  } else {
+                    toast(look.keptToast(entry.title));
+                  }
+                  void navigate({ to: "/kept/$id", params: { id: entry.id } });
+                }}
+              />
+            </div>
+          </AlbumPage>
+        </div>
+      ) : (
+        <div className="scrap-card relative mt-6 px-4 py-6 sm:px-6">
+          <span className="pin" aria-hidden="true" />
+          <KeepForm
+            key={`${kind ?? "note"}-${date ?? ""}`}
+            initial={{ kind: kind ?? "note", happenedOn: date }}
+            onKeep={(draft) => {
+              const entry = addEntry(draft);
+              if (useMemoir.getState().storageFull || storageFull) {
+                toast("Stuck in memory, but this browser is too full for the photo.");
+              } else {
+                toast(look.keptToast(entry.title));
+              }
+              void navigate({ to: "/kept/$id", params: { id: entry.id } });
+            }}
+          />
+        </div>
+      )}
     </section>
   );
 }

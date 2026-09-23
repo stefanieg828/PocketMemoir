@@ -63,23 +63,20 @@ html[data-jacket="corkboard"] {
 
   body {
     margin: 0;
-    background-color: var(--color-paper);
+    background-color: #f0c9a0;
     background-image:
-      linear-gradient(#9b2d4a, #9b2d4a),
-      radial-gradient(circle at 18% 8%, rgb(255 211 106 / 0.5), transparent 30%),
-      radial-gradient(circle at 88% 78%, rgb(126 208 176 / 0.38), transparent 28%),
-      radial-gradient(circle at 72% 18%, rgb(255 138 164 / 0.22), transparent 22%);
-    background-size:
-      18px 100%,
-      auto,
-      auto,
-      auto;
-    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
-    background-position: left top, center, center, center;
+      radial-gradient(circle at 16% 10%, rgb(255 211 106 / 0.45), transparent 32%),
+      radial-gradient(circle at 88% 78%, rgb(255 138 164 / 0.28), transparent 30%),
+      radial-gradient(circle at 70% 20%, rgb(126 208 176 / 0.22), transparent 26%);
+    background-repeat: no-repeat;
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-weight: 700;
     overflow-x: hidden;
+  }
+
+  html[data-jacket="scrapbook"] body {
+    background-color: #efc49a;
   }
 
   html[data-jacket="corkboard"] body {
@@ -156,6 +153,94 @@ html[data-jacket="corkboard"] {
 
   .scrap-card.scrap-lg {
     padding: 1.35rem 1.25rem;
+  }
+
+  html[data-jacket="scrapbook"] .scrap-card.scrap-on-page {
+    border-radius: 0.55rem 1rem 0.7rem 0.85rem;
+    background:
+      repeating-linear-gradient(
+        transparent,
+        transparent 22px,
+        rgb(58 36 48 / 0.04) 22px,
+        rgb(58 36 48 / 0.04) 23px
+      ),
+      #fffdf6;
+    box-shadow:
+      3px 4px 0 var(--color-ink),
+      0 10px 0 -6px rgb(58 36 48 / 0.12);
+  }
+
+  .washi-corner {
+    pointer-events: none;
+    position: absolute;
+    top: -0.35rem;
+    right: -0.45rem;
+    z-index: 3;
+    width: 2.4rem;
+    height: 1.05rem;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 0.15rem;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-gold) 0 7px,
+      var(--color-washi) 7px 14px,
+      var(--color-sky) 14px 20px
+    );
+    transform: rotate(38deg);
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+
+  .washi-corner.washi-corner-b {
+    top: auto;
+    bottom: -0.3rem;
+    right: auto;
+    left: -0.4rem;
+    transform: rotate(-42deg);
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-mint) 0 8px,
+      #fff 8px 12px,
+      var(--color-washi) 12px 18px
+    );
+  }
+
+  .washi-corner.washi-corner-c {
+    top: 40%;
+    right: -0.55rem;
+    left: auto;
+    bottom: auto;
+    width: 1.1rem;
+    height: 2.2rem;
+    transform: rotate(12deg);
+    background: repeating-linear-gradient(
+      180deg,
+      var(--color-sky) 0 6px,
+      var(--color-gold) 6px 12px
+    );
+  }
+
+  .wax-on-scrap {
+    pointer-events: none;
+    position: absolute;
+    bottom: -0.45rem;
+    right: 0.85rem;
+    z-index: 3;
+    width: 1.55rem;
+    height: 1.55rem;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 32%, #fff6e8 0 18%, #c44766 19% 72%, #7a1f38 73%);
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+
+  .wax-on-scrap::after {
+    content: "";
+    position: absolute;
+    inset: 28% 30% 42% 30%;
+    border: 2px solid #3a2430;
+    border-top: 0;
+    border-radius: 0 0 999px 999px;
   }
 
   .washi {
@@ -397,27 +482,8 @@ html[data-jacket="corkboard"] {
     outline-offset: 1px;
   }
 
-  /* Empty shelf scenes */
-  .empty-page {
-    position: relative;
-    width: min(100%, 22rem);
-    margin-inline: auto;
-    border: 3.5px solid var(--color-ink);
-    border-radius: 1.2rem;
-    background:
-      linear-gradient(#9b2d4a, #9b2d4a) 0 0 / 16px 100% no-repeat,
-      repeating-linear-gradient(
-        transparent,
-        transparent 27px,
-        rgb(58 36 48 / 0.08) 27px,
-        rgb(58 36 48 / 0.08) 28px
-      ),
-      #fffaf1;
-    box-shadow: 5px 5px 0 var(--color-ink);
-    min-height: 14rem;
-    padding: 2.25rem 1.5rem 1.75rem;
-  }
 
+  /* Empty shelf scenes (corkboard) */
   .empty-cork {
     position: relative;
     width: min(100%, 22rem);
@@ -497,6 +563,224 @@ html[data-jacket="corkboard"] {
     width: 1.05rem;
     height: 1.05rem;
     background: var(--color-sky);
+  }
+
+  /* —— Scrapbook album chrome —— */
+  .album-stack {
+    position: relative;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .album-stack-empty {
+    margin-top: 0.25rem;
+  }
+
+  .album-page-back {
+    position: absolute;
+    inset: 0.55rem -0.55rem -0.55rem 1.1rem;
+    z-index: 0;
+    border: 3.5px solid var(--color-ink);
+    border-radius: 0.35rem 1.35rem 1.35rem 0.35rem;
+    background: #f3dfc0;
+    box-shadow: 4px 4px 0 var(--color-ink);
+  }
+
+  .album-page-back-b {
+    inset: 1rem -0.95rem -0.95rem 1.55rem;
+    background: #e8d0a8;
+    box-shadow: 3px 3px 0 var(--color-ink);
+  }
+
+  .album-page {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.65rem minmax(0, 1fr);
+    min-height: 18rem;
+    border: 3.5px solid var(--color-ink);
+    border-radius: 0.35rem 1.4rem 1.4rem 0.35rem;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgb(255 255 255 / 0.55), transparent 45%),
+      radial-gradient(ellipse at 80% 90%, rgb(255 200 150 / 0.25), transparent 40%),
+      repeating-linear-gradient(
+        transparent,
+        transparent 28px,
+        rgb(58 36 48 / 0.055) 28px,
+        rgb(58 36 48 / 0.055) 29px
+      ),
+      #fff8ea;
+    box-shadow:
+      6px 6px 0 var(--color-ink),
+      inset 0 0 0 1px rgb(255 255 255 / 0.35);
+    overflow: visible;
+  }
+
+  .album-page-empty {
+    min-height: 22rem;
+  }
+
+  .album-spine {
+    position: relative;
+    border-right: 3px solid var(--color-ink);
+    background:
+      linear-gradient(90deg, #6e1f35 0%, #9b2d4a 45%, #b33a58 100%);
+    border-radius: 0.2rem 0 0 0.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 1.25rem 0;
+    gap: 0.5rem;
+  }
+
+  .album-spine-ring {
+    width: 0.72rem;
+    height: 0.72rem;
+    border: 2.5px solid #3a2430;
+    border-radius: 999px;
+    background: radial-gradient(circle at 35% 35%, #ffd36a 0 40%, #c9892a 41%);
+    box-shadow: 1px 1px 0 #3a2430;
+    flex: none;
+  }
+
+  .album-curl {
+    pointer-events: none;
+    position: absolute;
+    right: -0.05rem;
+    bottom: -0.05rem;
+    width: 3.4rem;
+    height: 3.4rem;
+    z-index: 2;
+    background:
+      linear-gradient(225deg, transparent 48%, #ffe9c8 49%, #f0d2a0 78%, #3a2430 79%, #3a2430 82%, transparent 83%);
+    border-radius: 0 0 1.3rem 0;
+  }
+
+  .album-inner {
+    position: relative;
+    padding: 1.15rem 1.15rem 1.45rem 1rem;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .album-page {
+      grid-template-columns: 2rem minmax(0, 1fr);
+    }
+
+    .album-inner {
+      padding: 1.35rem 1.5rem 1.7rem 1.15rem;
+    }
+  }
+
+  .album-empty-scene {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 16rem;
+    padding: 1.5rem 0.75rem 2rem;
+  }
+
+  .album-empty-scene .album-loose-tape {
+    position: absolute;
+    top: 0.85rem;
+    right: 1.5rem;
+    left: auto;
+  }
+
+  .album-empty-scene .wax-accent {
+    position: absolute;
+    left: 1.1rem;
+    bottom: 1.1rem;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 2.75px solid var(--color-ink);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 32%, #fff6e8 0 18%, #c44766 19% 72%, #7a1f38 73%);
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+
+  .album-empty-scene .wax-accent::after {
+    content: "";
+    position: absolute;
+    left: 28%;
+    right: 28%;
+    top: 36%;
+    bottom: 40%;
+    border: 2px solid #3a2430;
+    border-top: 0;
+    border-radius: 0 0 999px 999px;
+  }
+
+  /* Scraps stuck onto the album page — overlap + scatter */
+  .album-scraps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem 0.15rem 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .album-scraps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem 0.85rem;
+      align-items: start;
+      padding: 0.5rem 0.25rem 1rem;
+    }
+
+    .album-scraps > .album-scrap {
+      position: relative;
+    }
+
+    .album-scraps > .album-scrap-1 {
+      margin-top: 0.15rem;
+      margin-right: -0.55rem;
+      z-index: 2;
+    }
+
+    .album-scraps > .album-scrap-2 {
+      margin-top: 1.35rem;
+      margin-left: -0.45rem;
+      z-index: 3;
+    }
+
+    .album-scraps > .album-scrap-3 {
+      margin-top: -0.55rem;
+      margin-right: -0.35rem;
+      z-index: 4;
+    }
+
+    .album-scraps > .album-scrap-4 {
+      margin-top: 0.85rem;
+      margin-left: -0.65rem;
+      z-index: 2;
+    }
+
+    .album-scraps > .album-scrap-5 {
+      margin-top: -0.25rem;
+      margin-right: -0.75rem;
+      z-index: 5;
+    }
+
+    .album-scraps > .album-scrap-6 {
+      margin-top: 1.1rem;
+      margin-left: -0.25rem;
+      z-index: 3;
+    }
+
+    .album-scraps > .album-scrap:nth-child(odd) .scrap-card {
+      max-width: 100%;
+    }
+  }
+
+  html[data-jacket="scrapbook"] .keep-album-frame {
+    /* optional keep-form framing hook */
   }
 }
 

@@ -16,6 +16,6 @@ export function hashSeed(input: string): number {
 
 export function tiltFor(id: string): number {
   const n = hashSeed(id);
-  // Roughly -4.5° .. 4.5° — readable sticker-book scatter.
-  return ((n % 91) - 45) / 10;
+  // Roughly -5.5° .. 5.5° — album-page scatter.
+  return ((n % 111) - 55) / 10;
 }

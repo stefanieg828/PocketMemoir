@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { AlbumPage } from "@/components/album-page";
 import { EmptyShelf } from "@/components/empty-shelf";
 import { FilterTabs } from "@/components/filter-tabs";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const entries = useMemoir((s) => s.entries);
+  const jacket = useMemoir((s) => s.jacket);
   const [filter, setFilter] = useState<"all" | EntryKind>("all");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -27,8 +29,8 @@ function Home() {
     return <EmptyShelf />;
   }
 
-  return (
-    <section>
+  const tools = (
+    <>
       {isStarterShelf(entries) ? (
         <p className="mb-4 text-sm text-muted">
           Starter scraps, so the page isn’t shy. Let them go when you want it to yourself.
@@ -45,18 +47,43 @@ function Home() {
           onOpenChange={setSearchOpen}
         />
       </div>
+    </>
+  );
 
-      {visible.length === 0 ? (
-        <p className="py-12 text-center font-display text-xl">Nothing matches.</p>
-      ) : (
-        <ul className="shelf-grid">
-          {visible.map((entry) => (
-            <li key={entry.id} className={cn(scrapIsWide(entry) && "sm:col-span-2")}>
-              <Polaroid entry={entry} />
-            </li>
-          ))}
-        </ul>
-      )}
+  const scraps =
+    visible.length === 0 ? (
+      <p className="py-12 text-center font-display text-xl">Nothing matches.</p>
+    ) : (
+      <ul className={jacket === "scrapbook" ? "album-scraps" : "shelf-grid"}>
+        {visible.map((entry, index) => (
+          <li
+            key={entry.id}
+            className={cn(
+              scrapIsWide(entry) && jacket !== "scrapbook" && "sm:col-span-2",
+              jacket === "scrapbook" && `album-scrap album-scrap-${(index % 6) + 1}`,
+            )}
+          >
+            <Polaroid entry={entry} />
+          </li>
+        ))}
+      </ul>
+    );
+
+  if (jacket === "scrapbook") {
+    return (
+      <section className="mx-auto max-w-3xl">
+        <div className="mb-4">{tools}</div>
+        <AlbumPage>
+          {scraps}
+        </AlbumPage>
+      </section>
+    );
+  }
+
+  return (
+    <section>
+      {tools}
+      {scraps}
     </section>
   );
 }
