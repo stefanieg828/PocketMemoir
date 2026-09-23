@@ -6,6 +6,13 @@ import { NotFound } from "@/components/not-found";
 import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
 import appCss from "../styles.css?url";
 
+/** Prefix public assets with Vite base (Pages project path). */
+function assetUrl(path: string): string {
+  const base = import.meta.env.BASE_URL || "/";
+  const cleaned = path.replace(/^\//, "");
+  return `${base}${cleaned}`;
+}
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -14,9 +21,13 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: TAGLINE },
       { name: "theme-color", content: "#fff3df" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: APP_NAME },
     ],
     links: [
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/svg+xml", href: assetUrl("favicon.svg") },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
@@ -24,8 +35,8 @@ export const Route = createRootRoute({
         crossOrigin: "anonymous",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "manifest", href: assetUrl("manifest.webmanifest") },
+      { rel: "apple-touch-icon", href: assetUrl("icons/apple-touch-icon.png") },
     ],
   }),
   notFoundComponent: NotFound,
