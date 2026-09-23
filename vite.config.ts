@@ -12,14 +12,14 @@ import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
 import { appEnvPlugin } from "./scripts/app-env-plugin.mjs";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
 
-/** GitHub Pages project-site base (mirror repo name). Local/dev keeps `/`. */
+/** GitHub Pages project-site base (repo name). Local/dev keeps `/`. */
 function pagesBase(): string {
   const fromEnv = process.env.VITE_BASE?.trim();
   if (fromEnv) {
     return fromEnv.endsWith("/") ? fromEnv : `${fromEnv}/`;
   }
   if (process.env.GITHUB_PAGES === "true") {
-    return "/pocketmemoir-preview/";
+    return "/PocketMemoir/";
   }
   return "/";
 }

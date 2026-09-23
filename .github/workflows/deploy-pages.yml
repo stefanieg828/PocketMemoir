@@ -1,7 +1,5 @@
-name: Deploy GitHub Pages preview
+name: Deploy GitHub Pages
 
-# Private PocketMemoir cannot host Pages on Free plan — build here, publish
-# static dist to the public mirror stefanieg828/pocketmemoir-preview.
 on:
   push:
     branches: [main, feature/visual-polish]
@@ -9,13 +7,15 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: pages-preview
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,20 +30,24 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build static Pages SPA
+      - name: Build
         env:
           GITHUB_PAGES: "true"
-          VITE_BASE: /pocketmemoir-preview/
+          VITE_BASE: /PocketMemoir/
         run: npm run build:pages
 
-      - name: Publish to public preview repo
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          personal_token: ${{ secrets.PREVIEW_DEPLOY_TOKEN }}
-          external_repository: stefanieg828/pocketmemoir-preview
-          publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: true
-          enable_jekyll: false
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

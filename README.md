@@ -10,12 +10,12 @@ Private scrapbook / corkboard for notes, people, tickets, lists, wins — not a 
 
 Live app shell (scraps stay in your browser’s localStorage):
 
-**https://stefanieg828.github.io/pocketmemoir-preview/**
+**https://stefanieg828.github.io/PocketMemoir/**
 
 - **iPhone (Safari):** open the link → Share → **Add to Home Screen**
 - **Android (Chrome):** open the link → menu ⋮ → **Install app** / **Add to Home screen**
 
-Pushes to `main` or `feature/visual-polish` on the private `PocketMemoir` repo rebuild and publish that URL (GitHub Actions → public mirror `pocketmemoir-preview`, dist only — source stays private).
+Pushes to `main` or `feature/visual-polish` rebuild and publish that URL (GitHub Actions → Pages).
 
 ## Looks
 
@@ -37,7 +37,7 @@ npm install
 npm run dev
 ```
 
-Pages-style static build (base `/pocketmemoir-preview/`):
+Pages-style static build (base `/PocketMemoir/`):
 
 ```bash
 npm run build:pages
@@ -47,4 +47,3 @@ npm run build:pages
 
 - Product direction and locked decisions: `docs/HANDOFF.md`
 - Large Grok screenshots / generated artifacts were left out of this first push to keep the repo lean.
-- Private repo cannot use GitHub Pages on Free plan; preview is the public static mirror above.
