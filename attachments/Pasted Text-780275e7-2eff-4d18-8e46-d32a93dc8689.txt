@@ -1,0 +1,46 @@
+Project: PocketMemoir
+Domain: pocketmemoir.fun
+Type: Quiet personal web app — a life shoebox, not a journal
+One-liner
+Keep the small facts of a life so you can find them later. People, places, things, and notes. Not a diary. Not a streak.
+What it is
+A memoir of objects and relationships. Short records you add when something is worth not losing: the plant that lived, the gift you already gave Sam, the apartment on Oak, the wifi name, the meds that actually helped that winter. Search later when your brain is Swiss cheese.
+What it is not
+Not a daily journal or “dear diary”
+Not a habit app (no streaks, badges, red dots, or guilt)
+Not therapy homework or mood charts unless the user chooses a one-line note
+Not FlutterHobby (hobbies as plants — separate app)
+Not Recipe Roller (kitchen dice — separate app)
+Feel
+Soft, pocket-sized, .fun but calm. Empty state like a notebook, not a coach. Okay to disappear for three months. Cute without being cutesy-coach.
+Spine (keep this — it’s the product)
+Everything is an entry with a type. Start with only three:
+Person — name, how you know them, tiny facts (size, don’t-repeat gifts, last time you talked, one line)
+Place — home, city, the cabin, “the apartment on Oak”
+Thing — object you own or care about (warranty-ish, where it lives, “would buy again”)
+Optional later, not v1: made/ate, photos as extras on those three types.
+Each entry: title, type, date (automatic), optional photo, optional one-line note. That’s the whole card.
+Core loop (v1)
+Add a person, place, or thing in a few fields.
+Optional one sentence. Optional photo.
+It lands in a simple list / shelf you can filter by type.
+Search across everything.
+Open a card later and remember.
+No “how was your day.” No daily prompt on first launch.
+v1 pages
+Home / shelf: recent entries + filter chips (All / People / Places / Things)
+Add: pick type, short form
+Card: one entry, edit, delete
+Search
+No account required to start. Save in the browser for v1. Export later (a readable list, not a spreadsheet dump) can wait.
+Guardrails
+No blank page that asks you to perform a day
+No streaks or “you haven’t logged in 4 days”
+Skip months without punishment
+Copy stays “keep this” not “reflect on your journey”
+Tone / copy
+“A place for the stuff you don’t want to lose. Not a diary.”
+Buttons: Keep, Add a person, Add a place, Add a thing.
+Not: Journal, New entry, Daily log, Streak.
+Success for v1
+Someone can add “Sam / coworker / allergic to almonds / gave the candle in 2024” and find it next December. That’s done.

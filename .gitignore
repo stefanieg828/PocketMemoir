@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.output/
+.nitro/
+.vercel/
+.tanstack/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+.vite/
+coverage/
+playwright-report/
+test-results/

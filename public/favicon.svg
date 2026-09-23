@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="PocketMemoir">
+  <rect width="32" height="32" rx="7" fill="#fff3df"/>
+  <circle cx="16" cy="16.2" r="11" fill="#9b2d4a" stroke="#3a2430" stroke-width="2.4"/>
+  <circle cx="12.3" cy="14.6" r="1.45" fill="#fff3df"/>
+  <circle cx="19.7" cy="14.6" r="1.45" fill="#fff3df"/>
+  <path d="M11.4 18.5c1.55 2.45 7.65 2.45 9.2 0" fill="none" stroke="#fff3df" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,75 @@
+PocketMemoir v1.5 — themes, calendar, two new kinds
+Keep the product the same: a shoebox, not a diary. No streaks. No “how was your day.”
+Hosts (locked)
+Pip — small moth. Current / original theme.
+Ash — field crow with a worn satchel.
+Meg — small hare with a ribbon at the ear.
+One host per theme. Do not mix them.
+Theme A — Pip’s Pocket (existing)
+Keep the current look. Cream paper, wax-adjacent stamps, polaroid cards, soft creature energy. Pip is the moth on the shelf / empty state.
+Palette stay-put: warm cream, faded rose/ink you already use.
+Art style: current illustrated stickers + polaroids.
+Theme B — Field Notes (Ash)
+Feel: generic / grounded / a little masculine. Field guide, not a gym app.
+Host: Ash the crow. Ink-line bird, satchel, quiet. Appears on empty shelf and theme picker. Not a cartoon mascot bouncing.
+Art style: dry ink + kraft. Graphite, olive, charcoal, brass. Polaroids become clipped index cards on kraft. Stamps look like survey marks or a simple crow seal — not wax blossoms.
+Tokens (approx)
+Paper: #e6dcc8 kraft
+Ink: #2a2a24
+Olive: #4a5a3c
+Brass: #8a7344
+Rule: #c4b89a notebook grid, very light
+Type: slightly tighter, less ornamental; titles can stay serif but quieter
+Copy bits: “Keep this.” “Field note.” Buttons stay Add a person / place / thing / moment / event.
+Theme C — Ribbon Press (Meg)
+Feel: warmer / more feminine. Scrapbook album, not a glitter planner.
+Host: Meg the small hare, ribbon at one ear. Still, not babyish.
+Art style: gouache + pressed flowers. Dusty rose, lilac, cream, thin gold edge. Cards feel like album pages with washi. Stamps are cameo / blossom wax.
+Tokens (approx)
+Paper: #f7efe6
+Rose: #c48a94
+Lilac: #b5a0c4
+Ink: #4a3540
+Gold: #c4a46a hairline only
+Type: a little more serif in titles, rounder corners
+Copy bits: “Press this in.” Still not “dear diary.”
+Theme picker
+Settings or a small “Jacket” control: Pip’s Pocket / Field Notes / Ribbon Press. Switching jacket does not change data. Host illustration + stamps + card chrome swap.
+New kinds (add to person / place / thing)
+ENTRY_KINDS: person | place | thing | moment | event
+Moment — a scene or day, not a scheduled thing.
+titleHint: “the storm on Oak” / “first snow”
+howLabel: “When / what kind”
+howHint: “winter 2019, a power outage”
+factsHint: “who was there, what we ate”
+note: one line
+optional date (past, can be fuzzy: year-only ok if you already store a timestamp; prefer a date field)
+Event — dated, past or future. Feeds the calendar.
+titleHint: “Sam’s thing” / “move-out” / “the concert”
+howLabel: “What kind”
+howHint: “birthday, trip, appointment I care about”
+factsHint: “who, where, what to remember”
+date required (day precision). Future allowed.
+optional link-by-title to a person/place later; not required in v1.5
+Do not add Recipe, Hobby, Pet, or Journal page in this pass.
+Filters: All · People · Places · Things · Moments · Events
+Calendar
+A month grid. Not a planner that nags.
+Dots on days that have an Event (and Moments that have a real date)
+Tap a day → list those cards + Keep this day (creates Event or Moment with that date)
+Future dates work
+No “you missed Tuesday,” no streaks, no daily prompt
+Month label + prev/next
+Home can keep the shelf. Calendar is its own tab/page: Shelf | Calendar | search as now.
+Card extras (optional, keep forms short)
+date on Event (required), optional on Moment / Person / Place / Thing
+second photo not required this pass
+wouldBuyAgain stays on Thing only
+Art to generate
+Per theme, consistent host + 5 kind stamps (person, place, thing, moment, event):
+Pip: current moth language
+Ash: ink crow + ink stamps
+Meg: gouache hare + blossom/cameo stamps
+Empty states: the host sitting with an empty shelf / album / field desk. Quiet.
+Success
+User can pick Meg’s jacket, add “first snow on Oak” as a Moment, add “Sam’s birthday — Nov 3” as an Event, see it on the calendar, and find Sam on the shelf. Still not a diary.
