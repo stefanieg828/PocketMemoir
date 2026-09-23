@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { EmptyShelf } from "@/components/empty-shelf";
 import { FilterTabs } from "@/components/filter-tabs";
-import { KeepSeal } from "@/components/keep-seal";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { SearchSlip } from "@/components/search-slip";
-import { LOOK_META } from "@/lib/memoir/jackets";
 import { isStarterShelf, matchesQuery, useMemoir } from "@/lib/memoir/store";
 import type { EntryKind } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
@@ -13,8 +12,6 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const entries = useMemoir((s) => s.entries);
-  const jacket = useMemoir((s) => s.jacket);
-  const look = LOOK_META[jacket];
   const [filter, setFilter] = useState<"all" | EntryKind>("all");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -27,15 +24,7 @@ function Home() {
   }, [entries, filter, query]);
 
   if (entries.length === 0) {
-    return (
-      <section className="mx-auto flex max-w-md flex-col items-center py-10 text-center">
-        <h1 className="font-display text-title font-semibold">{look.emptyTitle}</h1>
-        <p className="mt-2 text-muted">{look.emptyBody}</p>
-        <div className="mt-8">
-          <KeepSeal toKeep size="lg" />
-        </div>
-      </section>
-    );
+    return <EmptyShelf />;
   }
 
   return (
@@ -60,7 +49,7 @@ function Home() {
       {visible.length === 0 ? (
         <p className="py-12 text-center font-display text-xl">Nothing matches.</p>
       ) : (
-        <ul className="mt-8 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 sm:gap-6">
+        <ul className="shelf-grid">
           {visible.map((entry) => (
             <li key={entry.id} className={cn(scrapIsWide(entry) && "sm:col-span-2")}>
               <Polaroid entry={entry} />

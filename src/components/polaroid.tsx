@@ -18,24 +18,32 @@ export function scrapIsWide(entry: MemoirEntry) {
   );
 }
 
+function scrapSizeClass(entry: MemoirEntry) {
+  const seed = hashSeed(entry.id) % 5;
+  if (scrapIsWide(entry)) return "scrap-lg";
+  if (seed === 0) return "scrap-sm";
+  if (seed === 1 || seed === 2) return "scrap-lg";
+  return "";
+}
+
 export function Polaroid({ entry, className }: PolaroidProps) {
   const look = useMemoir((s) => s.jacket);
   const meta = KIND_META[entry.kind];
   const tilt = tiltFor(entry.id);
-  const tape = hashSeed(entry.id) % 2 === 0 ? "washi" : "washi washi-b";
-  const pin = ["pin", "pin pin-b", "pin pin-c"][hashSeed(entry.id) % 3];
+  const tapeOptions = ["washi", "washi washi-b", "washi washi-c"] as const;
+  const pinOptions = ["pin", "pin pin-b", "pin pin-c", "pin pin-d"] as const;
+  const tape = tapeOptions[hashSeed(entry.id) % tapeOptions.length];
+  const pin = pinOptions[hashSeed(entry.id) % pinOptions.length];
   const when = formatHappenedOn(entry.happenedOn);
   const caption = entry.how || entry.note || entry.facts;
+  const size = scrapSizeClass(entry);
 
   return (
     <Link
       to="/kept/$id"
       params={{ id: entry.id }}
-      className={cn(
-        "scrap-card group block p-4 text-ink no-underline",
-        className,
-      )}
-      style={{ transform: `rotate(${tilt}deg)` }}
+      className={cn("scrap-card scrap-tilt is-link group block p-4 text-ink no-underline", size, className)}
+      style={{ ["--scrap-tilt" as string]: `${tilt}deg` }}
     >
       <span className={look === "corkboard" ? pin : tape} aria-hidden="true" />
       {entry.photo ? (

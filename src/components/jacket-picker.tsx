@@ -44,7 +44,7 @@ export function JacketPicker() {
             ))}
           </ul>
           <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="font-display text-sm text-faint">Wearing {current.name}</p>
+            <p className="font-display text-sm text-faint">Using {current.name}</p>
             <Dialog.Close asChild>
               <button type="button" className="kind-chip">
                 never mind
