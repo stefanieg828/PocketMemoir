@@ -57,7 +57,7 @@ Keep **Scrapbook** + **Corkboard** Looks, same data, same Stick it in / Pin it.
 |--------|-------|----------------------------------|
 | **Scraps** | note, idea, list, quote | Scraps / Notes |
 | **People** | person, pet | People / Faces |
-| **Out & about** | place, trip, ticket, event, moment | Out & about / Pins on the map |
+| **Out & About** | place, trip, ticket, event, moment | Out & About / Pins on the map |
 | **Everyday** | thing, food, recipe, work, money, health, song | Everyday / Desk pile |
 | **Proud** | win, lesson | Proud / Gold pins |
 | **Dreams** | dream | Dreams / Soft pins |

@@ -192,8 +192,8 @@ export const BUCKET_META: Record<EntryBucket, BucketMeta> = {
   },
   out: {
     id: "out",
-    label: "Out & about",
-    scrapbook: "Out & about",
+    label: "Out & About",
+    scrapbook: "Out & About",
     corkboard: "Pins on the map",
   },
   everyday: {

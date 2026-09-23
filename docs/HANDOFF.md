@@ -57,7 +57,7 @@ Browse groups them into **6 buckets** (Shelf chips = All + buckets, not 21 kinds
 |--------|-------|
 | Scraps | note, idea, list, quote |
 | People | person, pet |
-| Out & about | place, trip, ticket, event, moment |
+| Out & About | place, trip, ticket, event, moment |
 | Everyday | thing, food, recipe, work, money, health, song |
 | Proud | win, lesson |
 | Dreams | dream |
