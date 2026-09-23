@@ -34,7 +34,7 @@ function KeepPage() {
       <p className="mt-1 text-sm text-muted">Write first. The kind is just a sticker.</p>
       {look.id === "scrapbook" ? (
         <div className="mt-6">
-          <AlbumPage>
+          <AlbumPage seed="keep-form">
             <div className="scrap-card scrap-on-page relative px-4 py-6 sm:px-6">
               <span className="washi" aria-hidden="true" />
               <span className="washi-corner" aria-hidden="true" />

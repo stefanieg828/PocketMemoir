@@ -28,7 +28,7 @@ export function EmptyShelf() {
 
   return (
     <section className="mx-auto max-w-2xl py-2">
-      <AlbumPage empty>
+      <AlbumPage empty seed="new-album">
         <div className="album-empty-scene">
           <span className="washi washi-b album-loose-tape" aria-hidden="true" />
           <span className="sticker-dot dot-a" aria-hidden="true" />

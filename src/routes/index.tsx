@@ -7,6 +7,7 @@ import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { SearchSlip } from "@/components/search-slip";
 import { isStarterShelf, matchesQuery, useMemoir } from "@/lib/memoir/store";
 import type { EntryKind } from "@/lib/memoir/types";
+import { paperForShelf } from "@/lib/scrapbook-paper";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -70,10 +71,11 @@ function Home() {
     );
 
   if (jacket === "scrapbook") {
+    const paper = paperForShelf(visible.map((entry) => entry.id));
     return (
       <section className="mx-auto max-w-3xl">
         <div className="mb-4">{tools}</div>
-        <AlbumPage>
+        <AlbumPage paper={paper}>
           {scraps}
         </AlbumPage>
       </section>
