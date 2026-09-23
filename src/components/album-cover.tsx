@@ -22,8 +22,13 @@ export function AlbumCover({ children, heading, sub, className }: AlbumCoverProp
         <span className="album-cover-washi" aria-hidden="true" />
         <span className="album-cover-washi album-cover-washi-b" aria-hidden="true" />
         <span className="album-cover-seal" aria-hidden="true" />
-        <p className="album-cover-wordmark font-display">{APP_NAME}</p>
-        <h1 className="album-cover-title font-display">{heading}</h1>
+        <span className="album-cover-doodle" aria-hidden="true">
+          ★
+        </span>
+        <div className="album-cover-title-block">
+          <p className="album-cover-wordmark font-display">{APP_NAME}</p>
+          <h1 className="album-cover-title font-display">{heading}</h1>
+        </div>
         {sub ? <p className="album-cover-sub">{sub}</p> : null}
         <div className="album-cover-body">{children}</div>
       </div>

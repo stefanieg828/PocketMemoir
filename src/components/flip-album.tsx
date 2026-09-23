@@ -48,6 +48,13 @@ function splitSpread(entries: MemoirEntry[]): { left: MemoirEntry[]; right: Memo
   return { left, right };
 }
 
+/** Collage vs calm energy per spread — mix A chaos + B cottage in-product. */
+function energyFor(bucket: EntryBucket): "collage" | "calm" | "soft" {
+  if (bucket === "out" || bucket === "proud") return "collage";
+  if (bucket === "scraps" || bucket === "everyday") return "calm";
+  return "soft";
+}
+
 type FlipAlbumProps = {
   entries: MemoirEntry[];
   /** Bucket to open on (defaults to first non-empty, else scraps). */
@@ -218,7 +225,11 @@ export function FlipAlbum({
           <span className="flip-whoosh-sheet" />
         </div>
 
-        <div className={cn("flip-book", paperClassName(paper))} data-paper={paper}>
+        <div
+          className={cn("flip-book", paperClassName(paper))}
+          data-paper={paper}
+          data-energy={energyFor(bucket)}
+        >
           <div className="flip-spine" aria-hidden="true">
             <span className="album-spine-ring" />
             <span className="album-spine-ring" />
@@ -327,7 +338,11 @@ function SpreadPage({
       )}
 
       {entries.length === 0 ? (
-        <p className="flip-empty font-display">{emptyHint}</p>
+        <div className="flip-empty-doodle">
+          <span className="flip-empty-ghost" aria-hidden="true" />
+          <p className="flip-empty font-display">{emptyHint}</p>
+          <span className="page-scribble" aria-hidden="true" />
+        </div>
       ) : (
         <ul className="flip-scraps">
           {entries.map((entry, i) => {

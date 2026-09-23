@@ -32,13 +32,27 @@ export function Polaroid({ entry, className }: PolaroidProps) {
   const meta = KIND_META[entry.kind];
   const tilt = tiltFor(entry.id);
   const seed = hashSeed(entry.id);
-  const tapeOptions = ["washi", "washi washi-b", "washi washi-c"] as const;
+  const tapeOptions = [
+    "washi",
+    "washi washi-b",
+    "washi washi-c",
+    "washi washi-d",
+    "washi washi-e",
+  ] as const;
   const pinOptions = ["pin", "pin pin-b", "pin pin-c", "pin pin-d"] as const;
-  const cornerOptions = ["washi-corner", "washi-corner washi-corner-b", "washi-corner washi-corner-c"] as const;
+  const cornerOptions = [
+    "washi-corner",
+    "washi-corner washi-corner-b",
+    "washi-corner washi-corner-c",
+  ] as const;
   const tape = tapeOptions[seed % tapeOptions.length];
   const pin = pinOptions[seed % pinOptions.length];
   const corner = cornerOptions[seed % cornerOptions.length];
   const showSeal = look === "scrapbook" && seed % 3 === 0;
+  const doodle =
+    look === "scrapbook"
+      ? (["heart", "star", "heart-b", "star-b", null, "heart"] as const)[seed % 6]
+      : null;
   const when = formatHappenedOn(entry.happenedOn);
   const caption = entry.how || entry.note || entry.facts;
   const size = scrapSizeClass(entry);
@@ -62,6 +76,26 @@ export function Polaroid({ entry, className }: PolaroidProps) {
           <span className={tape} aria-hidden="true" />
           <span className={corner} aria-hidden="true" />
           {showSeal ? <span className="wax-on-scrap" aria-hidden="true" /> : null}
+          {doodle === "heart" ? (
+            <span className="doodle-heart" aria-hidden="true">
+              ♡
+            </span>
+          ) : null}
+          {doodle === "heart-b" ? (
+            <span className="doodle-heart doodle-b" aria-hidden="true">
+              ♡
+            </span>
+          ) : null}
+          {doodle === "star" ? (
+            <span className="doodle-star" aria-hidden="true">
+              ★
+            </span>
+          ) : null}
+          {doodle === "star-b" ? (
+            <span className="doodle-star doodle-b" aria-hidden="true">
+              ★
+            </span>
+          ) : null}
         </>
       )}
       {entry.photo ? (

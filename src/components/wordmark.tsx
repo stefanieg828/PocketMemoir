@@ -9,8 +9,8 @@ export function Wordmark({ className }: { className?: string }) {
         <svg viewBox="0 0 32 32" className="size-6" fill="none">
           <path
             d="M16 27s-8.5-5.2-11-9.4C3.2 15 3.6 11.4 6.4 10c2.2-1.1 4.4-.2 5.6 1.6C13.2 9.8 15.4 8.8 17.6 10c2.8 1.4 3.2 5 1.4 7.6C24.5 21.8 16 27 16 27z"
-            fill="#fffaf1"
-            stroke="#3a2430"
+            fill="#fffaf3"
+            stroke="#3a2a24"
             strokeWidth="2.2"
             strokeLinejoin="round"
           />

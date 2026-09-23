@@ -31,12 +31,22 @@ export function EmptyShelf() {
       <AlbumPage empty seed="new-album">
         <div className="album-empty-scene">
           <span className="washi washi-b album-loose-tape" aria-hidden="true" />
+          <span className="washi washi-d" aria-hidden="true" style={{ top: "auto", bottom: "3.2rem", left: "1.4rem" }} />
           <span className="sticker-dot dot-a" aria-hidden="true" />
           <span className="sticker-dot dot-b" aria-hidden="true" />
           <span className="sticker-dot dot-c" aria-hidden="true" />
+          <span className="sticker-dot dot-d" aria-hidden="true" />
+          <span className="doodle-star" aria-hidden="true" style={{ top: "1.2rem", left: "1.4rem", bottom: "auto", right: "auto" }}>
+            ★
+          </span>
+          <span className="doodle-heart doodle-b" aria-hidden="true" style={{ bottom: "1.6rem", right: "1.3rem" }}>
+            ♡
+          </span>
           <span className="wax-accent" aria-hidden="true" />
           <h1 className="font-display text-title font-semibold">{look.emptyTitle}</h1>
           <p className="mt-2 text-muted">{look.emptyBody}</p>
+          <span className="page-scribble" aria-hidden="true" />
+          <p className="mt-2 font-display text-sm text-faint">Plenty of page left.</p>
           <div className="mt-8">
             <KeepSeal toKeep size="lg" />
           </div>
