@@ -134,3 +134,11 @@ User has **PocketMemoir.fun** at Hostinger. They do not want Vercel. GitHub repo
 ## Voice
 
 Warm, short, handwritten-adjacent. Not wellness-app copy. Not “capture your journey.” More: stick it in the book before it walks off.
+
+## Flip album slice (feature/visual-polish)
+
+Scrapbook Look Shelf is now a **flip album**: open two-page spread per bucket (Scraps → Dreams). Adjacent flips use a single page-turn; jumping tabs whooshes. Tucked stays behind a fold under the book. Corkboard Look still uses status shelf sections (cork wall is next).
+
+**Cover = Add:** scrapbook `/keep` is a closed album cover; sealing navigates to `/?spread=<bucket>&flipIn=1` and opens that spread.
+
+Do **not** start customization packs or canvas drawing yet. Corkboard wall+zoom is the next visual pass — keep Look cork usable as sectioned boards for now.

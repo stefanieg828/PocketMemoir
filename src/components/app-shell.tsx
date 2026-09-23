@@ -99,6 +99,7 @@ function NavLink({
   return (
     <Link
       to={to}
+      search={to === "/" ? {} : undefined}
       className={cn(
         "font-display inline-flex min-h-11 items-center text-base no-underline",
         active ? "text-ink underline decoration-washi decoration-[3px] underline-offset-[6px]" : "text-muted hover:text-ink",

@@ -21,6 +21,7 @@ import { KIND_META } from "@/lib/memoir/copy";
 import { formatHappenedOn } from "@/lib/memoir/dates";
 import { LOOK_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
+import { bucketForKind } from "@/lib/memoir/types";
 
 export const Route = createFileRoute("/kept/$id")({
   component: KeptPage,
@@ -46,7 +47,7 @@ function KeptPage() {
       <section className="flex flex-col items-center py-10 text-center">
         <h1 className="font-display text-3xl">This one isn’t stuck in.</h1>
         <p className="mt-2 text-muted">It wandered off, or it was never kept.</p>
-        <Link to="/" className="sticker-cta mt-6">
+        <Link to="/" search={{}} className="sticker-cta mt-6">
           Back to the shelf
         </Link>
       </section>
@@ -88,9 +89,10 @@ function KeptPage() {
     <section className="mx-auto grid max-w-3xl gap-8 md:grid-cols-2 md:items-start">
       <Link
         to="/"
+        search={jacket === "scrapbook" ? { spread: bucketForKind(entry.kind) } : {}}
         className="font-display inline-flex min-h-11 items-center text-sm text-muted no-underline hover:text-ink md:col-span-2"
       >
-        Back to the shelf
+        {jacket === "scrapbook" ? "Back to the album" : "Back to the shelf"}
       </Link>
 
       <article className="scrap-card relative mx-auto w-full max-w-sm p-4 md:mx-0">

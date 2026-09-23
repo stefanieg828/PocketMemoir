@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <Link to="/" className={cn("group flex items-center gap-2 text-ink no-underline", className)}>
+    <Link to="/" search={{}} className={cn("group flex items-center gap-2 text-ink no-underline", className)}>
       <span className="grid size-10 place-items-center rounded-full border-[3px] border-ink bg-washi shadow-seal sm:size-11" aria-hidden="true">
         <svg viewBox="0 0 32 32" className="size-6" fill="none">
           <path
