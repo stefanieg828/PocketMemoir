@@ -26,23 +26,18 @@ function KeepPage() {
   const jacket = useMemoir((s) => s.jacket);
   const look = LOOK_META[jacket];
 
-  function afterKeep(entryId: string, entryKind: EntryKind, title: string) {
+  function afterKeep(_entryId: string, entryKind: EntryKind, title: string) {
     if (useMemoir.getState().storageFull || storageFull) {
       toast("Stuck in memory, but this browser is too full for the photo.");
     } else {
       toast(look.keptToast(title));
     }
 
-    if (jacket === "scrapbook") {
-      const spread = bucketForKind(entryKind);
-      void navigate({
-        to: "/",
-        search: { spread, flipIn: true },
-      });
-      return;
-    }
-
-    void navigate({ to: "/kept/$id", params: { id: entryId } });
+    const spread = bucketForKind(entryKind);
+    void navigate({
+      to: "/",
+      search: { spread, flipIn: true },
+    });
   }
 
   if (jacket === "scrapbook") {
@@ -70,7 +65,7 @@ function KeepPage() {
   return (
     <section className="mx-auto max-w-lg">
       <Link to="/" search={{}} className="font-display text-sm text-muted no-underline hover:text-ink">
-        Back to the shelf
+        Back to the wall
       </Link>
       <h1 className="mt-3 font-display text-title font-semibold">{look.addHeading}</h1>
       <p className="mt-1 text-sm text-muted">Write first. The kind is just a sticker.</p>

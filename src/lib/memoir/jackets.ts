@@ -29,8 +29,8 @@ export const LOOK_META: Record<JacketId, LookMeta> = {
   corkboard: {
     id: "corkboard",
     name: "Corkboard",
-    line: "Cork dots, index cards, candy pins.",
-    emptyTitle: "Plenty of cork left.",
+    line: "Soft Storybook — gentle pins, watercolor scraps.",
+    emptyTitle: "Plenty of soft cork left.",
     emptyBody: "Nothing pinned yet.",
     keepLabel: "Pin it",
     addHeading: "Pin something",

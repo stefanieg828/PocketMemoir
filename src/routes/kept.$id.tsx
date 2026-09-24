@@ -89,10 +89,10 @@ function KeptPage() {
     <section className="mx-auto grid max-w-3xl gap-8 md:grid-cols-2 md:items-start">
       <Link
         to="/"
-        search={jacket === "scrapbook" ? { spread: bucketForKind(entry.kind) } : {}}
+        search={{ spread: bucketForKind(entry.kind) }}
         className="font-display inline-flex min-h-11 items-center text-sm text-muted no-underline hover:text-ink md:col-span-2"
       >
-        {jacket === "scrapbook" ? "Back to the album" : "Back to the shelf"}
+        {jacket === "scrapbook" ? "Back to the album" : "Back to the board"}
       </Link>
 
       <article className="scrap-card relative mx-auto w-full max-w-sm p-4 md:mx-0">
