@@ -4,7 +4,7 @@ import {
   type EntryBucket,
   type EntryKind,
   type EntryStatus,
-  type JacketId,
+  type ModeId as JacketId,
 } from "./types";
 
 export const APP_NAME = "PocketMemoir";

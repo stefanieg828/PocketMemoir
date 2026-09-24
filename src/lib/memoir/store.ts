@@ -1,7 +1,15 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import type { EntryStatus, JacketId, MemoirDraft, MemoirEntry } from "./types";
-import { bucketForKind, normalizeJacket, normalizeKind, normalizeStatus } from "./types";
+import { DEFAULT_RISO, normalizeRiso } from "./looks";
+import type {
+  EntryStatus,
+  LookId,
+  MemoirDraft,
+  MemoirEntry,
+  ModeId,
+  RisoPrefs,
+} from "./types";
+import { bucketForKind, normalizeKind, normalizeLook, normalizeMode, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 
@@ -101,11 +109,17 @@ const SEEDS: MemoirEntry[] = [
 
 type MemoirState = {
   entries: MemoirEntry[];
-  jacket: JacketId;
+  /** Layout engine: flip album vs wall of boards. */
+  mode: ModeId;
+  /** Skin: storybook / comic / riso. */
+  look: LookId;
+  riso: RisoPrefs;
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
-  setJacket: (jacket: JacketId) => void;
+  setMode: (mode: ModeId) => void;
+  setLook: (look: LookId) => void;
+  setRiso: (patch: Partial<RisoPrefs>) => void;
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
@@ -220,11 +234,15 @@ export const useMemoir = create<MemoirState>()(
   persist(
     (set, get) => ({
       entries: SEEDS,
-      jacket: "scrapbook",
+      mode: "scrapbook",
+      look: "storybook",
+      riso: { ...DEFAULT_RISO },
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      setJacket: (jacket) => set({ jacket }),
+      setMode: (mode) => set({ mode }),
+      setLook: (look) => set({ look }),
+      setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -255,9 +273,15 @@ export const useMemoir = create<MemoirState>()(
       name: STORAGE_KEY,
       skipHydration: true,
       storage: createJSONStorage(() => browserStorage),
-      partialize: (state) => ({ entries: state.entries, jacket: state.jacket }),
+      partialize: (state) => ({
+        entries: state.entries,
+        mode: state.mode,
+        look: state.look,
+        riso: state.riso,
+      }),
       merge: (persisted, current) => {
-        const incoming = (persisted ?? {}) as Partial<MemoirState>;
+        // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
+        const incoming = (persisted ?? {}) as Partial<MemoirState> & { jacket?: unknown };
         const entries = Array.isArray(incoming.entries)
           ? incoming.entries
               .map(normalizeStoredEntry)
@@ -265,7 +289,9 @@ export const useMemoir = create<MemoirState>()(
           : current.entries;
         return {
           ...current,
-          jacket: normalizeJacket(incoming.jacket),
+          mode: normalizeMode(incoming.mode ?? incoming.jacket),
+          look: normalizeLook(incoming.look),
+          riso: normalizeRiso(incoming.riso),
           entries,
         };
       },

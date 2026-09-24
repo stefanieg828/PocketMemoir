@@ -60,9 +60,27 @@ export const ENTRY_STATUSES = ["fresh", "soft", "keepsake", "tucked"] as const;
 
 export type EntryStatus = (typeof ENTRY_STATUSES)[number];
 
-export const LOOKS = ["scrapbook", "corkboard"] as const;
+/** Mode = layout engine (flip album vs wall of boards). Historically "jacket". */
+export const MODES = ["scrapbook", "corkboard"] as const;
 
-export type JacketId = (typeof LOOKS)[number];
+export type ModeId = (typeof MODES)[number];
+/** @deprecated use ModeId */
+export type JacketId = ModeId;
+
+/** Look = skin applied on top of either mode. */
+export const LOOK_IDS = ["storybook", "comic", "riso"] as const;
+
+export type LookId = (typeof LOOK_IDS)[number];
+
+/** Risograph customization (only used when look === "riso"). */
+export type RisoPrefs = {
+  /** Curated ink pair id, or "custom" to use inkA/inkB. */
+  pair: string;
+  inkA: string;
+  inkB: string;
+  titleFont: string;
+  bodyFont: string;
+};
 
 export type MemoirEntry = {
   id: string;
@@ -110,9 +128,18 @@ export function normalizeStatus(value: unknown): EntryStatus {
   return isEntryStatus(value) ? value : "fresh";
 }
 
-export function normalizeJacket(value: unknown): JacketId {
+export function normalizeMode(value: unknown): ModeId {
   if (value === "corkboard" || value === "ash") return "corkboard";
   return "scrapbook";
+}
+
+/** @deprecated use normalizeMode */
+export const normalizeJacket = normalizeMode;
+
+export function normalizeLook(value: unknown): LookId {
+  return typeof value === "string" && (LOOK_IDS as readonly string[]).includes(value)
+    ? (value as LookId)
+    : "storybook";
 }
 
 export function isCalendarKind(kind: EntryKind): boolean {
