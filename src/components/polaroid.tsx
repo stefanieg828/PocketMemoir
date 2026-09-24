@@ -56,7 +56,7 @@ export function Polaroid({ entry, className }: PolaroidProps) {
   const when = formatHappenedOn(entry.happenedOn);
   const caption = entry.how || entry.note || entry.facts;
   const size = scrapSizeClass(entry);
-  const tone = `scrap-tone-${(seed >> 3) % 4}`;
+  const tone = `scrap-tone-${(seed >>> 3) % 4}`;
 
   return (
     <Link
@@ -67,6 +67,7 @@ export function Polaroid({ entry, className }: PolaroidProps) {
         look === "scrapbook" && "scrap-on-page",
         size,
         tone,
+        `tear-${(seed >>> 5) % 12}`,
         className,
       )}
       style={{ ["--scrap-tilt" as string]: `${tilt}deg` }}

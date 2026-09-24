@@ -157,8 +157,8 @@
     inset: 0;
     z-index: -1;
     background: var(--tex-grain-fine), var(--paper-fill);
-    -webkit-mask: var(--paper-mask) center / 100% 100% no-repeat;
-    mask: var(--paper-mask) center / 100% 100% no-repeat;
+    -webkit-mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+    mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
   }
 
   html[data-look="riso"] :is(
@@ -178,8 +178,8 @@
     z-index: -2;
     translate: var(--mis) var(--mis);
     background: var(--mis-ink, var(--shadow-ink));
-    -webkit-mask: var(--paper-mask) center / 100% 100% no-repeat;
-    mask: var(--paper-mask) center / 100% 100% no-repeat;
+    -webkit-mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+    mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
     mix-blend-mode: multiply;
   }
 
@@ -192,6 +192,11 @@
   }
 
   /* Card tones: cream / accent / key-ink (inverted) / kraft */
+  /* cream cards sat invisibly on the cream album page: use a brighter sheet */
+  html[data-look="riso"] .scrap-card.scrap-tone-0 {
+    --paper-fill: color-mix(in srgb, #fff 62%, var(--riso-paper));
+  }
+
   html[data-look="riso"] .scrap-card.scrap-tone-1 {
     --paper-fill: color-mix(in srgb, var(--riso-a) 58%, var(--riso-paper));
     --paper-mask: var(--mask-torn-b);
@@ -435,15 +440,15 @@
     padding-top: 0.45rem;
     font-size: 1rem;
   }
-  html[data-look="riso"] .flip-tab:nth-child(3n + 2) { --paper-fill: var(--tab-2); --paper-mask: var(--mask-torn-b); }
-  html[data-look="riso"] .flip-tab:nth-child(3n) { --paper-fill: var(--tab-3); --paper-mask: var(--mask-torn-c); }
+  html[data-look="riso"] .flip-tab:nth-child(3n + 2) { --paper-fill: var(--tab-2); }
+  html[data-look="riso"] .flip-tab:nth-child(3n) { --paper-fill: var(--tab-3); }
   html[data-look="riso"] .flip-tab.is-active {
     --paper-fill: var(--riso-b);
     color: #f4ecdf;
   }
 
   html[data-look="riso"] .flip-page-banner-tape {
-    clip-path: var(--clip-torn-strip);
+    clip-path: var(--strip, var(--clip-torn-strip));
   }
 
   html[data-look="riso"] .flip-page-banner:not(.flip-page-banner-quiet)::after {
@@ -453,7 +458,7 @@
     z-index: -1;
     translate: 3px 3px;
     background: var(--shadow-ink);
-    clip-path: var(--clip-torn-strip);
+    clip-path: var(--strip, var(--clip-torn-strip));
     transform: rotate(-2deg);
   }
 
@@ -532,7 +537,7 @@
     padding: 0.2rem 0.6rem;
     background: var(--riso-b);
     color: #f4ecdf;
-    clip-path: var(--clip-torn-strip-b);
+    clip-path: var(--strip, var(--clip-torn-strip-b));
     transform: rotate(1deg);
   }
 
@@ -582,7 +587,7 @@
   }
 
   html[data-look="riso"] .cork-mini-label {
-    font-size: 1.2rem;
+    font-size: min(1.2rem, 11cqi);
     letter-spacing: -0.01em;
   }
 
@@ -592,7 +597,7 @@
     background: color-mix(in srgb, #fff 70%, var(--riso-paper));
     color: var(--riso-b);
     box-shadow: 2px 2px 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
-    clip-path: var(--clip-torn-strip);
+    clip-path: var(--strip, var(--clip-torn-strip));
   }
 
   html[data-look="riso"] .cork-peek-pin {
@@ -650,12 +655,12 @@
   html[data-look="riso"] .cork-zoom-toolbar {
     padding: 0.35rem 0.45rem;
     background: color-mix(in srgb, var(--riso-paper) 92%, transparent);
-    clip-path: var(--clip-torn-strip-b);
+    clip-path: var(--strip, var(--clip-torn-strip-b));
   }
 
   html[data-look="riso"][data-mode="corkboard"] :is(.shelf-lede, .app-footer, .app-tagline) {
     border-radius: 0;
-    clip-path: var(--clip-torn-strip-b);
+    clip-path: var(--strip, var(--clip-torn-strip-b));
     padding-block: 0.35rem;
   }
 

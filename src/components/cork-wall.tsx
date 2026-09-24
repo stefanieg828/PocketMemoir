@@ -128,13 +128,13 @@ export function CorkWall({
                 <li key={bucket} className="cork-wall-cell">
                   <button
                     type="button"
-                    className={cn("cork-mini-board", `board-tone-${tone}`, `board-${i + 1}`)}
+                    className={cn("cork-mini-board", `board-tone-${tone}`, `board-${i + 1}`, `tear-${(hashSeed(bucket) >>> 3) % 12}`)}
                     style={{ ["--board-tilt" as string]: `${tilt}deg` }}
                     aria-label={`${label}${list.length ? `, ${list.length} pinned` : ", empty board"}`}
                     onClick={() => openBoard(bucket)}
                   >
                     <span className="pin pin-center" style={{ ["--pin" as string]: pin }} aria-hidden="true" />
-                    <span className="cork-mini-label-scrap" aria-hidden="true">
+                    <span className={cn("cork-mini-label-scrap", `strip-${(hashSeed(bucket) >>> 5) % 8}`)} aria-hidden="true">
                       <span className="cork-mini-label">{label}</span>
                     </span>
                     {peeks.length === 0 ? (
@@ -144,7 +144,7 @@ export function CorkWall({
                         {peeks.map((entry, pi) => (
                           <li
                             key={entry.id}
-                            className={cn("cork-peek", `cork-peek-${(pi % 3) + 1}`)}
+                            className={cn("cork-peek", `cork-peek-${(pi % 3) + 1}`, `strip-${hashSeed(entry.id) % 8}`)}
                           >
                             <span className="cork-peek-pin" />
                             <span className="cork-peek-title">{entry.title}</span>

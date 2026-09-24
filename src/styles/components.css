@@ -86,6 +86,43 @@
     box-shadow: var(--sh-md), var(--soft);
   }
 
+  /* Decorations (blooms, bursts, misregistered shadows) may bleed past the
+   * page edge; never let them make the phone page scroll sideways. */
+  .app-frame {
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  /* ——— Per-element torn edges (seeded: .tear-N / .strip-N; chips by position) ——— */
+  .tear-0 { --tear: var(--tear-mask-0); --strip: var(--tear-strip-0); }
+  .tear-1 { --tear: var(--tear-mask-1); --strip: var(--tear-strip-1); }
+  .tear-2 { --tear: var(--tear-mask-2); --strip: var(--tear-strip-2); }
+  .tear-3 { --tear: var(--tear-mask-3); --strip: var(--tear-strip-3); }
+  .tear-4 { --tear: var(--tear-mask-4); --strip: var(--tear-strip-4); }
+  .tear-5 { --tear: var(--tear-mask-5); --strip: var(--tear-strip-5); }
+  .tear-6 { --tear: var(--tear-mask-6); --strip: var(--tear-strip-6); }
+  .tear-7 { --tear: var(--tear-mask-7); --strip: var(--tear-strip-7); }
+  .tear-8 { --tear: var(--tear-mask-8); --strip: var(--tear-strip-0); }
+  .tear-9 { --tear: var(--tear-mask-9); --strip: var(--tear-strip-1); }
+  .tear-10 { --tear: var(--tear-mask-10); --strip: var(--tear-strip-2); }
+  .tear-11 { --tear: var(--tear-mask-11); --strip: var(--tear-strip-3); }
+  .strip-0 { --strip: var(--tear-strip-0); }
+  .strip-1 { --strip: var(--tear-strip-1); }
+  .strip-2 { --strip: var(--tear-strip-2); }
+  .strip-3 { --strip: var(--tear-strip-3); }
+  .strip-4 { --strip: var(--tear-strip-4); }
+  .strip-5 { --strip: var(--tear-strip-5); }
+  .strip-6 { --strip: var(--tear-strip-6); }
+  .strip-7 { --strip: var(--tear-strip-7); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(1) { --tear: var(--tear-mask-2); --strip: var(--tear-strip-1); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(2) { --tear: var(--tear-mask-7); --strip: var(--tear-strip-4); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(3) { --tear: var(--tear-mask-0); --strip: var(--tear-strip-7); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(4) { --tear: var(--tear-mask-5); --strip: var(--tear-strip-2); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(5) { --tear: var(--tear-mask-10); --strip: var(--tear-strip-5); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(6) { --tear: var(--tear-mask-3); --strip: var(--tear-strip-0); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(7) { --tear: var(--tear-mask-8); --strip: var(--tear-strip-3); }
+  :is(.app-nav-link, .flip-tab, .kind-chip-row > *):nth-child(8) { --tear: var(--tear-mask-1); --strip: var(--tear-strip-6); }
+
   /* ——— Cards (Polaroid / scrap) ——— */
   .scrap-card {
     position: relative;
@@ -841,10 +878,7 @@
   }
 
   .flip-tab-label {
-    max-width: 5.2rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: nowrap; /* the tab row scrolls sideways, so names stay whole */
   }
 
   .flip-stage {
@@ -1315,7 +1349,8 @@
     align-items: stretch;
     width: 100%;
     min-height: 11rem;
-    padding: 2.6rem 0.7rem 0.85rem;
+    padding: 0.8rem 0.7rem 0.85rem;
+    container-type: inline-size;
     border: var(--b3) solid var(--color-line);
     border-radius: var(--radius-card);
     text-align: left;
@@ -1341,11 +1376,10 @@
   }
 
   .cork-mini-label-scrap {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.55rem;
-    right: 0.55rem;
+    position: relative;
     z-index: 2;
+    align-self: stretch;
+    margin: 0 -0.15rem 0.45rem;
     padding: 0.25rem 0.5rem 0.3rem;
     background: var(--label-bg, var(--color-card));
     color: var(--label-ink, var(--color-ink));
@@ -1356,10 +1390,11 @@
     display: block;
     font-family: var(--font-display);
     font-size: 1.02rem;
-    line-height: 1.15;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.1;
+    /* Full names always: wrap to two lines and ease down on narrow boards */
+    font-size: min(1.02rem, 10.5cqi);
+    overflow-wrap: break-word;
+    text-wrap: balance;
   }
 
   .cork-mini-empty {
@@ -1459,9 +1494,14 @@
   }
 
   .cork-zoom-title {
+    flex: 1 1 auto;
+    min-width: 0;
     margin: 0;
+    text-align: center;
+    text-wrap: balance;
+    line-height: 1.1;
     font-family: var(--font-title);
-    font-size: 1.5rem;
+    font-size: clamp(1.15rem, 5.4vw, 1.5rem);
     color: var(--headline-color);
   }
 

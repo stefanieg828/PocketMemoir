@@ -71,7 +71,7 @@ function KeepPage() {
         <h1 className="look-headline mt-2 font-display text-title">{look.addHeading}</h1>
         <p className="mt-1 text-sm text-muted">Write first. The kind is just a sticker.</p>
       </div>
-      <div className="scrap-card relative mt-6 px-4 py-6 sm:px-6">
+      <div className="scrap-card tear-3 relative mt-6 px-4 py-6 sm:px-6">
         <span className="pin" aria-hidden="true" />
         <KeepForm
           key={`${kind ?? "note"}-${date ?? ""}`}

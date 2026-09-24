@@ -69,7 +69,7 @@ function CalendarPage() {
         Dots mean a dated event, moment, trip, or checkup. No nagging.
       </p>
 
-      <div className="scrap-card mt-6 p-3 sm:p-4">
+      <div className="scrap-card tear-7 mt-6 p-3 sm:p-4">
         <div className="grid grid-cols-7 gap-1 text-center">
           {WEEKDAYS.map((d) => (
             <div key={d} className="pb-2 font-display text-xs text-faint">

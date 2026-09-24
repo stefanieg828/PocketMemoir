@@ -22,6 +22,7 @@ import { formatHappenedOn } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
 import { bucketForKind } from "@/lib/memoir/types";
+import { cn, hashSeed } from "@/lib/utils";
 
 export const Route = createFileRoute("/kept/$id")({
   component: KeptPage,
@@ -95,7 +96,7 @@ function KeptPage() {
         {jacket === "scrapbook" ? "Back to the album" : "Back to the board"}
       </Link>
 
-      <article className="scrap-card relative mx-auto w-full max-w-sm p-4 md:mx-0">
+      <article className={cn("scrap-card relative mx-auto w-full max-w-sm p-4 md:mx-0", `tear-${(hashSeed(entry.id) >>> 5) % 12}`)}>
         <span className={jacket === "corkboard" ? "pin" : "washi"} aria-hidden="true" />
         {entry.photo ? (
           <span className="drawn-frame mb-3 block overflow-hidden">
