@@ -559,4 +559,72 @@
     background: #fff;
     box-shadow: 2px 2px 0 #111;
   }
+
+  /* Backup / restore */
+  html[data-look="comic"] .restore-dialog {
+    --restore-radius: 0.3rem;
+    border: 4px solid #111;
+    border-radius: 0.3rem;
+    background:
+      radial-gradient(circle, rgb(0 174 239 / 0.22) 30%, transparent 33%) 0 0 / 10px 10px,
+      #fff5e1;
+    box-shadow: 8px 8px 0 #111;
+  }
+
+  html[data-look="comic"] .restore-title {
+    font-family: "Bangers", var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    font-size: 1.9rem;
+    color: #ffd600;
+    -webkit-text-stroke: 2px #111;
+    paint-order: stroke fill;
+    text-shadow: 3px 3px 0 #111;
+  }
+
+  html[data-look="comic"] .restore-choice {
+    border: 3px solid #111;
+    border-radius: 0.3rem;
+    background: #fff;
+    box-shadow: 3px 3px 0 #111;
+  }
+
+  html[data-look="comic"] .restore-choice.is-selected {
+    outline: 0;
+    background: #ffd600;
+    box-shadow: 4px 4px 0 #ff2ecc;
+  }
+
+  html[data-look="comic"] .restore-choice-name,
+  html[data-look="comic"] .backup-section .picker-section-title {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  html[data-look="comic"] .backup-step {
+    background: #ff2ecc;
+    color: #fff;
+  }
+
+  html[data-look="comic"] .backup-error,
+  html[data-look="comic"] .restore-warn {
+    border: 2.5px solid #111;
+    border-radius: 0.2rem;
+    background: #fff;
+    box-shadow: 3px 3px 0 #ff7a00;
+  }
+
+  html[data-look="comic"] .backup-nudge {
+    border: 3px solid #111;
+    border-radius: 0.2rem;
+    background:
+      radial-gradient(circle, rgb(255 214 0 / 0.45) 30%, transparent 33%) 0 0 / 9px 9px,
+      #fff;
+    box-shadow: 4px 4px 0 #111;
+  }
+
+  html[data-look="comic"] .backup-section {
+    border-top: 3px solid #111;
+  }
 }

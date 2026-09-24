@@ -1,6 +1,7 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, type CSSProperties, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Lock } from "lucide-react";
+import { BackupSection } from "@/components/backup-section";
 import { MODE_META } from "@/lib/memoir/jackets";
 import {
   LOOK_SKINS,
@@ -9,6 +10,7 @@ import {
   RISO_TITLE_FONTS,
   risoCssVars,
 } from "@/lib/memoir/looks";
+import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
 import { LOOK_IDS, MODES, type LookId, type ModeId } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
@@ -22,7 +24,21 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const look = useMemoir((s) => s.look);
   const setMode = useMemoir((s) => s.setMode);
   const setLook = useMemoir((s) => s.setLook);
-  const [open, setOpen] = useState(defaultOpen);
+  const open = usePickerUi((s) => s.open);
+  const focus = usePickerUi((s) => s.focus);
+  const setOpen = usePickerUi((s) => s.setOpen);
+
+  useEffect(() => {
+    if (defaultOpen) setOpen(true);
+  }, [defaultOpen, setOpen]);
+
+  useEffect(() => {
+    if (!open || focus !== "backup") return;
+    const id = window.setTimeout(() => {
+      document.getElementById("keep-safe")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, 60);
+    return () => window.clearTimeout(id);
+  }, [open, focus]);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -60,6 +76,8 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           </PickerSection>
 
           {look === "riso" ? <RisoOptions /> : null}
+
+          <BackupSection />
 
           <div className="picker-footer">
             <p className="picker-using">

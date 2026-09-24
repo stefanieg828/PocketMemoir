@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
+import type { BackupSettings } from "./backup";
 import { DEFAULT_RISO, normalizeRiso } from "./looks";
 import type {
   EntryStatus,
@@ -114,6 +115,10 @@ type MemoirState = {
   /** Skin: storybook / comic / riso. */
   look: LookId;
   riso: RisoPrefs;
+  /** When the last backup file was saved (ms), or null if never. */
+  lastBackupAt: number | null;
+  /** "Not now" on the backup nudge (ms). */
+  backupNudgeDismissedAt: number | null;
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
@@ -125,6 +130,10 @@ type MemoirState = {
   updateEntry: (id: string, draft: MemoirDraft) => void;
   setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
+  markBackedUp: (at?: number) => void;
+  dismissBackupNudge: () => void;
+  /** Swap in restored scraps (already merged/replaced) and optionally settings. */
+  applyRestore: (entries: MemoirEntry[], settings?: BackupSettings) => void;
 };
 
 function createId() {
@@ -204,7 +213,7 @@ const SEED_STATUS = Object.fromEntries(SEEDS.map((s) => [s.id, s.status])) as Re
   EntryStatus
 >;
 
-function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
+export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
   if (!raw || typeof raw !== "object") return null;
   const entry = raw as Partial<MemoirEntry>;
   if (typeof entry.id !== "string" || typeof entry.title !== "string") return null;
@@ -237,6 +246,8 @@ export const useMemoir = create<MemoirState>()(
       mode: "scrapbook",
       look: "storybook",
       riso: { ...DEFAULT_RISO },
+      lastBackupAt: null,
+      backupNudgeDismissedAt: null,
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
@@ -268,6 +279,19 @@ export const useMemoir = create<MemoirState>()(
       },
       removeEntry: (id) =>
         set({ entries: get().entries.filter((entry) => entry.id !== id) }),
+      markBackedUp: (at = Date.now()) => set({ lastBackupAt: at, backupNudgeDismissedAt: null }),
+      dismissBackupNudge: () => set({ backupNudgeDismissedAt: Date.now() }),
+      applyRestore: (entries, settings) =>
+        set(
+          settings
+            ? {
+                entries,
+                mode: normalizeMode(settings.mode),
+                look: normalizeLook(settings.look),
+                riso: normalizeRiso(settings.riso),
+              }
+            : { entries },
+        ),
     }),
     {
       name: STORAGE_KEY,
@@ -278,6 +302,8 @@ export const useMemoir = create<MemoirState>()(
         mode: state.mode,
         look: state.look,
         riso: state.riso,
+        lastBackupAt: state.lastBackupAt,
+        backupNudgeDismissedAt: state.backupNudgeDismissedAt,
       }),
       merge: (persisted, current) => {
         // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
@@ -292,6 +318,9 @@ export const useMemoir = create<MemoirState>()(
           mode: normalizeMode(incoming.mode ?? incoming.jacket),
           look: normalizeLook(incoming.look),
           riso: normalizeRiso(incoming.riso),
+          lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
+          backupNudgeDismissedAt:
+            typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
           entries,
         };
       },

@@ -699,4 +699,63 @@
     border-radius: 0;
     background: color-mix(in srgb, #fff 45%, var(--riso-paper));
   }
+
+  /* Backup / restore */
+  html[data-look="riso"] .restore-dialog {
+    --restore-radius: 0.15rem;
+    border: 2px dashed var(--riso-b);
+    border-radius: 0.2rem;
+    background: var(--tex-grain-fine), var(--riso-paper);
+    box-shadow: 7px 7px 0 var(--shadow-ink);
+  }
+
+  html[data-look="riso"] .restore-title {
+    color: var(--riso-b);
+    text-shadow: 2px 1.5px 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+  }
+
+  html[data-look="riso"] .restore-choice {
+    border: 2px solid var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 40%, var(--riso-paper));
+    clip-path: var(--tear-strip-2);
+  }
+
+  html[data-look="riso"] .restore-choice:nth-child(2) {
+    clip-path: var(--tear-strip-6);
+  }
+
+  html[data-look="riso"] .restore-choice.is-selected {
+    outline: 0;
+    background: color-mix(in srgb, var(--riso-a) 45%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .restore-choice-name {
+    color: var(--riso-b);
+  }
+
+  html[data-look="riso"] .backup-step {
+    border: 2px solid var(--riso-b);
+    background: var(--riso-b);
+    color: var(--riso-paper);
+  }
+
+  html[data-look="riso"] .backup-section {
+    border-top: 2px dashed var(--riso-b);
+  }
+
+  html[data-look="riso"] .backup-error,
+  html[data-look="riso"] .restore-warn {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--riso-a) 22%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .backup-nudge {
+    border: 0;
+    border-radius: 0;
+    background: var(--tex-grain-fine), color-mix(in srgb, #fff 40%, var(--riso-paper));
+    box-shadow: var(--mis) var(--mis) 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+    clip-path: var(--tear-strip-5);
+  }
 }

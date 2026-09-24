@@ -1,11 +1,13 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { BackupNudge } from "@/components/backup-nudge";
 import { LookPicker } from "@/components/look-picker";
 import { KeepSeal } from "@/components/keep-seal";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
 import { applyThemeToDocument } from "@/lib/memoir/looks";
+import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const mode = useMemoir((s) => s.mode);
   const look = useMemoir((s) => s.look);
   const riso = useMemoir((s) => s.riso);
+  const openPickerAt = usePickerUi((s) => s.openAt);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,10 +66,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
       </header>
 
-      <main className="flex-1 pt-7">{children}</main>
+      <main className="flex-1 pt-7">
+        {pathname === "/" ? <BackupNudge /> : null}
+        {children}
+      </main>
 
       <footer className="app-footer mt-12 pt-4 pr-24 text-center text-xs sm:pr-0">
-        Lives in this browser. Disappear for three months if you want.
+        Lives in this browser. Disappear for three months if you want.{" "}
+        <button type="button" className="footer-link" onClick={() => openPickerAt("backup")}>
+          Keep a copy
+        </button>
       </footer>
 
       {!onKeep ? (

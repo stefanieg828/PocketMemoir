@@ -461,4 +461,47 @@
       var(--wc-paper) 0 0 / 200px,
       #f8f2e6;
   }
+
+  /* Backup / restore */
+  html[data-look="storybook"] .restore-dialog {
+    --restore-radius: 0.4rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background:
+      var(--wc-duck-b) calc(100% + 3rem) -2.5rem / 14rem 10rem no-repeat,
+      var(--wc-peach) -4rem calc(100% + 3rem) / 15rem 11rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      #fbf6ec;
+    box-shadow: 0 1px 0 rgb(90 70 56 / 0.25), 0 18px 40px -12px rgb(74 63 55 / 0.45);
+    outline: 1.3px solid rgb(90 70 56 / 0.5);
+    outline-offset: -6px;
+  }
+
+  html[data-look="storybook"] .restore-title {
+    font-weight: 600;
+    color: #6f8b6c;
+  }
+
+  html[data-look="storybook"] .restore-choice {
+    border: 1px solid rgb(106 86 70 / 0.4);
+    background: rgb(255 252 246 / 0.85);
+  }
+
+  html[data-look="storybook"] .restore-choice.is-selected {
+    outline-color: rgb(138 165 133 / 0.6);
+    background: rgb(233 241 228 / 0.9);
+  }
+
+  html[data-look="storybook"] .backup-step {
+    background: #f3c8b0;
+    color: #8a5d4f;
+  }
+
+  html[data-look="storybook"] .backup-nudge {
+    border: 1px solid rgb(106 86 70 / 0.35);
+    background:
+      var(--wc-peach-b) -2rem 50% / 9rem 7rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      rgb(255 250 241 / 0.94);
+  }
 }
