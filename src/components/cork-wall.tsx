@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { BUCKET_META, bucketLabel, statusLabel } from "@/lib/memoir/copy";
+import { LOOK_SKINS } from "@/lib/memoir/looks";
+import { useMemoir } from "@/lib/memoir/store";
 import {
   ENTRY_BUCKETS,
   bucketForKind,
@@ -10,8 +12,9 @@ import {
 } from "@/lib/memoir/types";
 import { cn, hashSeed } from "@/lib/utils";
 
-const BOARD_TONES = ["peach", "sage", "duck", "cream", "peach", "sage"] as const;
-const PIN_TONES = ["soft-pin-teal", "soft-pin-rose", "soft-pin-tan", "soft-pin-sage"] as const;
+/** Board tone per bucket (0-3); each look maps tones to its own palette. */
+const BOARD_TONES = [0, 1, 2, 3, 1, 0] as const;
+const PIN_VARS = ["var(--pin-1)", "var(--pin-2)", "var(--pin-3)", "var(--pin-4)"] as const;
 const PEEK_MAX = 3;
 const ZOOM_MS = 480;
 
@@ -43,6 +46,7 @@ export function CorkWall({
     zoomIn && activeBucket ? "zoom-in" : "idle",
   );
   const [tuckedOpen, setTuckedOpen] = useState(false);
+  const look = useMemoir((s) => s.look);
 
   useEffect(() => {
     if (!zoomIn || !activeBucket) return;
@@ -104,18 +108,18 @@ export function CorkWall({
       {!zoomed ? (
         <>
           <header className="cork-wall-intro">
-            <p className="cork-wall-kicker font-display">Soft Storybook</p>
+            <p className="cork-wall-kicker font-display">{LOOK_SKINS[look].kicker}</p>
             <h1 className="cork-wall-title font-display">Wall of boards</h1>
             <p className="cork-wall-sub">
-              Six gentle boards — same buckets as the scrapbook. Tap one to zoom in.
+              Six boards, same buckets as the scrapbook. Tap one to zoom in.
             </p>
           </header>
 
           <ul className="cork-wall-grid" role="list">
             {ENTRY_BUCKETS.map((bucket, i) => {
               const list = byBucket.map[bucket];
-              const tone = BOARD_TONES[i] ?? "cream";
-              const pin = PIN_TONES[i % PIN_TONES.length]!;
+              const tone = BOARD_TONES[i] ?? 0;
+              const pin = PIN_VARS[i % PIN_VARS.length]!;
               const tilt = ((hashSeed(bucket) % 9) - 4) * 0.55;
               const peeks = list.slice(0, PEEK_MAX);
               const label = BUCKET_META[bucket].corkboard;
@@ -124,17 +128,17 @@ export function CorkWall({
                 <li key={bucket} className="cork-wall-cell">
                   <button
                     type="button"
-                    className={cn("cork-mini-board", `tone-${tone}`)}
+                    className={cn("cork-mini-board", `board-tone-${tone}`, `board-${i + 1}`)}
                     style={{ ["--board-tilt" as string]: `${tilt}deg` }}
                     aria-label={`${label}${list.length ? `, ${list.length} pinned` : ", empty board"}`}
                     onClick={() => openBoard(bucket)}
                   >
-                    <span className={cn("soft-pin", pin)} aria-hidden="true" />
+                    <span className="pin pin-center" style={{ ["--pin" as string]: pin }} aria-hidden="true" />
                     <span className="cork-mini-label-scrap" aria-hidden="true">
                       <span className="cork-mini-label">{label}</span>
                     </span>
                     {peeks.length === 0 ? (
-                      <span className="cork-mini-empty font-display">soft cork</span>
+                      <span className="cork-mini-empty font-display">nothing pinned</span>
                     ) : (
                       <ul className="cork-mini-peeks" aria-hidden="true">
                         {peeks.map((entry, pi) => (
@@ -148,10 +152,11 @@ export function CorkWall({
                         ))}
                       </ul>
                     )}
-                    {list.length > PEEK_MAX ? (
-                      <span className="cork-mini-more">+{list.length - PEEK_MAX}</span>
-                    ) : list.length > 0 ? (
-                      <span className="cork-mini-count">{list.length}</span>
+                    {list.length > 0 ? (
+                      <span className="cork-mini-count">
+                        <span className="cork-count-n">{list.length}</span>
+                        <span className="cork-count-label">{list.length === 1 ? " scrap" : " scraps"}</span>
+                      </span>
                     ) : null}
                     <span className="cork-mini-washi" aria-hidden="true" />
                   </button>
@@ -179,10 +184,8 @@ export function CorkWall({
 
           <div className="cork-zoom-board">
             <span
-              className={cn(
-                "soft-pin",
-                PIN_TONES[ENTRY_BUCKETS.indexOf(activeBucket!) % PIN_TONES.length],
-              )}
+              className="pin pin-center"
+              style={{ ["--pin" as string]: PIN_VARS[ENTRY_BUCKETS.indexOf(activeBucket!) % PIN_VARS.length] }}
               aria-hidden="true"
             />
             <span className="cork-zoom-plaque font-display" aria-hidden="true">
@@ -193,7 +196,7 @@ export function CorkWall({
               <div className="cork-zoom-empty">
                 <span className="cork-zoom-empty-ghost" aria-hidden="true" />
                 <p className="font-display text-xl">Nothing pinned here yet.</p>
-                <p className="mt-1 text-sm text-muted">Soft cork, waiting for a scrap.</p>
+                <p className="mt-1 text-sm text-muted">Plenty of cork, waiting for a scrap.</p>
               </div>
             ) : (
               <ul className="cork-zoom-grid">

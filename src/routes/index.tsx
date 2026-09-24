@@ -36,7 +36,7 @@ function Home() {
   const { spread, flipIn } = Route.useSearch();
   const navigate = useNavigate();
   const entries = useMemoir((s) => s.entries);
-  const jacket = useMemoir((s) => s.jacket);
+  const jacket = useMemoir((s) => s.mode);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -85,18 +85,18 @@ function Home() {
       <div className="min-w-0 flex-1">
         {jacket === "corkboard" ? (
           isStarterShelf(entries) ? (
-            <p className="text-sm text-muted">
-              Starter scraps on soft cork. Tap a board to zoom — or search.
+            <p className="shelf-lede text-sm text-muted">
+              Starter scraps, pinned up. Tap a board to zoom — or search.
             </p>
           ) : (
-            <p className="text-sm text-muted">Six boards on the wall. Same buckets as the book.</p>
+            <p className="shelf-lede text-sm text-muted">Six boards on the wall. Same buckets as the book.</p>
           )
         ) : isStarterShelf(entries) ? (
-          <p className="text-sm text-muted">
+          <p className="shelf-lede text-sm text-muted">
             Starter scraps so the book isn’t shy. Flip the spreads — or search.
           </p>
         ) : (
-          <p className="text-sm text-muted">Flip the spreads. Six buckets, one book.</p>
+          <p className="shelf-lede text-sm text-muted">Flip the spreads. Six buckets, one book.</p>
         )}
       </div>
       <SearchSlip

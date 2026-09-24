@@ -28,7 +28,7 @@ function scrapSizeClass(entry: MemoirEntry) {
 }
 
 export function Polaroid({ entry, className }: PolaroidProps) {
-  const look = useMemoir((s) => s.jacket);
+  const look = useMemoir((s) => s.mode);
   const meta = KIND_META[entry.kind];
   const tilt = tiltFor(entry.id);
   const seed = hashSeed(entry.id);
@@ -56,6 +56,7 @@ export function Polaroid({ entry, className }: PolaroidProps) {
   const when = formatHappenedOn(entry.happenedOn);
   const caption = entry.how || entry.note || entry.facts;
   const size = scrapSizeClass(entry);
+  const tone = `scrap-tone-${(seed >> 3) % 4}`;
 
   return (
     <Link
@@ -65,6 +66,7 @@ export function Polaroid({ entry, className }: PolaroidProps) {
         "scrap-card scrap-tilt is-link group block p-4 text-ink no-underline",
         look === "scrapbook" && "scrap-on-page",
         size,
+        tone,
         className,
       )}
       style={{ ["--scrap-tilt" as string]: `${tilt}deg` }}
@@ -77,24 +79,16 @@ export function Polaroid({ entry, className }: PolaroidProps) {
           <span className={corner} aria-hidden="true" />
           {showSeal ? <span className="wax-on-scrap" aria-hidden="true" /> : null}
           {doodle === "heart" ? (
-            <span className="doodle-heart" aria-hidden="true">
-              ♡
-            </span>
+            <span className="doodle doodle-heart" aria-hidden="true" />
           ) : null}
           {doodle === "heart-b" ? (
-            <span className="doodle-heart doodle-b" aria-hidden="true">
-              ♡
-            </span>
+            <span className="doodle doodle-heart doodle-b" aria-hidden="true" />
           ) : null}
           {doodle === "star" ? (
-            <span className="doodle-star" aria-hidden="true">
-              ★
-            </span>
+            <span className="doodle doodle-star" aria-hidden="true" />
           ) : null}
           {doodle === "star-b" ? (
-            <span className="doodle-star doodle-b" aria-hidden="true">
-              ★
-            </span>
+            <span className="doodle doodle-star doodle-b" aria-hidden="true" />
           ) : null}
         </>
       )}
@@ -105,9 +99,9 @@ export function Polaroid({ entry, className }: PolaroidProps) {
       ) : (
         <KindMark kind={entry.kind} className="mb-3" />
       )}
-      <p className="font-display text-xl font-semibold leading-snug">{entry.title}</p>
-      {caption ? <p className="mt-1 text-sm leading-relaxed text-muted">{caption}</p> : null}
-      <p className="mt-2 text-xs font-display text-faint">
+      <p className="scrap-title font-display text-xl font-semibold leading-snug">{entry.title}</p>
+      {caption ? <p className="scrap-caption mt-1 text-sm leading-relaxed text-muted">{caption}</p> : null}
+      <p className="scrap-meta mt-2 text-xs font-display text-faint">
         {meta.label}
         {when ? ` · ${when}` : ""}
       </p>

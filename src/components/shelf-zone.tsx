@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { statusLabel } from "@/lib/memoir/copy";
-import type { EntryStatus, JacketId } from "@/lib/memoir/types";
+import type { EntryStatus, ModeId as JacketId } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 type ShelfZoneProps = {

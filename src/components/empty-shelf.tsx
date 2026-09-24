@@ -1,11 +1,11 @@
 import { AlbumPage } from "@/components/album-page";
 import { KeepSeal } from "@/components/keep-seal";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
 
 export function EmptyShelf() {
-  const jacket = useMemoir((s) => s.jacket);
-  const look = LOOK_META[jacket];
+  const jacket = useMemoir((s) => s.mode);
+  const look = MODE_META[jacket];
 
   if (jacket === "corkboard") {
     return (
@@ -13,12 +13,14 @@ export function EmptyShelf() {
         <div className="empty-cork" aria-hidden="true">
           <div className="ghost-card">
             <span className="pin pin-b" />
-            <p className="font-display text-lg text-ink/50">index card</p>
+            <p className="font-display text-lg text-faint">index card</p>
             <p className="mt-2 text-xs text-faint">waiting for a pin</p>
           </div>
         </div>
-        <h1 className="mt-8 font-display text-title font-semibold">{look.emptyTitle}</h1>
-        <p className="mt-2 text-muted">{look.emptyBody}</p>
+        <div className="cork-sheet mt-8">
+          <h1 className="font-display text-title font-semibold">{look.emptyTitle}</h1>
+          <p className="mt-1 text-muted">{look.emptyBody}</p>
+        </div>
         <div className="mt-7">
           <KeepSeal toKeep size="lg" />
         </div>
@@ -36,12 +38,8 @@ export function EmptyShelf() {
           <span className="sticker-dot dot-b" aria-hidden="true" />
           <span className="sticker-dot dot-c" aria-hidden="true" />
           <span className="sticker-dot dot-d" aria-hidden="true" />
-          <span className="doodle-star" aria-hidden="true" style={{ top: "1.2rem", left: "1.4rem", bottom: "auto", right: "auto" }}>
-            ★
-          </span>
-          <span className="doodle-heart doodle-b" aria-hidden="true" style={{ bottom: "1.6rem", right: "1.3rem" }}>
-            ♡
-          </span>
+          <span className="doodle doodle-star" aria-hidden="true" style={{ top: "1.2rem", left: "1.4rem", bottom: "auto", right: "auto" }} />
+          <span className="doodle doodle-heart doodle-b" aria-hidden="true" style={{ bottom: "1.6rem", right: "1.3rem" }} />
           <span className="wax-accent" aria-hidden="true" />
           <h1 className="font-display text-title font-semibold">{look.emptyTitle}</h1>
           <p className="mt-2 text-muted">{look.emptyBody}</p>

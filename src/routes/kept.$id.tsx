@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { KIND_META } from "@/lib/memoir/copy";
 import { formatHappenedOn } from "@/lib/memoir/dates";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
 import { bucketForKind } from "@/lib/memoir/types";
 
@@ -31,8 +31,8 @@ function KeptPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const hasHydrated = useMemoir((s) => s.hasHydrated);
-  const jacket = useMemoir((s) => s.jacket);
-  const look = LOOK_META[jacket];
+  const jacket = useMemoir((s) => s.mode);
+  const look = MODE_META[jacket];
   const entry = useMemoir((s) => s.entries.find((item) => item.id === id));
   const updateEntry = useMemoir((s) => s.updateEntry);
   const removeEntry = useMemoir((s) => s.removeEntry);
@@ -62,11 +62,11 @@ function KeptPage() {
         <button
           type="button"
           onClick={() => setChanging(false)}
-          className="font-display min-h-11 text-sm text-muted hover:text-ink"
+          className="on-cork font-display min-h-11 text-sm text-muted hover:text-ink"
         >
           never mind
         </button>
-        <h1 className="mt-3 font-display text-title font-semibold">Change this</h1>
+        <h1 className="on-cork mt-3 font-display text-title font-semibold">Change this</h1>
         <div className="scrap-card relative mt-6 px-5 py-8 sm:px-8">
           <span className={jacket === "corkboard" ? "pin" : "washi"} aria-hidden="true" />
           <KeepForm
@@ -90,7 +90,7 @@ function KeptPage() {
       <Link
         to="/"
         search={{ spread: bucketForKind(entry.kind) }}
-        className="font-display inline-flex min-h-11 items-center text-sm text-muted no-underline hover:text-ink md:col-span-2"
+        className="on-cork font-display inline-flex min-h-11 w-fit items-center text-sm text-muted no-underline hover:text-ink md:col-span-2"
       >
         {jacket === "scrapbook" ? "Back to the album" : "Back to the board"}
       </Link>
@@ -114,7 +114,7 @@ function KeptPage() {
         />
       </article>
 
-      <div className="min-w-0">
+      <div className="cork-sheet min-w-0">
         <LetterLine label="Details" value={entry.how} />
         <LetterLine label="Also" value={entry.facts} />
         <LetterLine label="A scrap of a line" value={entry.note} />
@@ -169,7 +169,7 @@ function KeptPage() {
 function LetterLine({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
-    <div className="border-b-[3px] border-ink/15 py-3">
+    <div className="kept-row py-3">
       <p className="font-display text-sm text-muted">{label}</p>
       <p className="mt-1 text-base leading-relaxed">{value}</p>
     </div>

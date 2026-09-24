@@ -18,7 +18,7 @@ export function StatusMover({
   size = "detail",
   className,
 }: StatusMoverProps) {
-  const jacket = useMemoir((s) => s.jacket);
+  const jacket = useMemoir((s) => s.mode);
   const setEntryStatus = useMemoir((s) => s.setEntryStatus);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

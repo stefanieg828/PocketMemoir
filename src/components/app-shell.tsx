@@ -1,10 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { JacketPicker } from "@/components/jacket-picker";
+import { LookPicker } from "@/components/look-picker";
 import { KeepSeal } from "@/components/keep-seal";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
+import { applyThemeToDocument } from "@/lib/memoir/looks";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onKeep = pathname.startsWith("/keep");
   const setHasHydrated = useMemoir((s) => s.setHasHydrated);
-  const jacket = useMemoir((s) => s.jacket);
+  const mode = useMemoir((s) => s.mode);
+  const look = useMemoir((s) => s.look);
+  const riso = useMemoir((s) => s.riso);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,23 +37,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [setHasHydrated]);
 
   useEffect(() => {
-    document.documentElement.dataset.jacket = jacket;
-  }, [jacket]);
+    applyThemeToDocument(mode, look, riso);
+  }, [mode, look, riso]);
 
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-32 pt-5 sm:px-6 sm:pb-16 sm:pt-7">
-      <header className="flex items-start justify-between gap-3">
+    <div className="app-frame relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-32 pt-5 sm:px-6 sm:pb-16 sm:pt-7">
+      <header className="app-header flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Wordmark />
-          <p className="mt-1 max-w-sm text-sm leading-relaxed text-muted">{TAGLINE}</p>
-          <nav className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p className="app-tagline mt-1 max-w-sm text-sm leading-relaxed">{TAGLINE}</p>
+          <nav className="app-nav mt-3" aria-label="Main">
             <NavLink to="/" active={pathname === "/"}>
               Shelf
             </NavLink>
             <NavLink to="/calendar" active={pathname.startsWith("/calendar")}>
               Calendar
             </NavLink>
-            <JacketPicker />
+            <LookPicker />
           </nav>
         </div>
         {!onKeep ? (
@@ -60,9 +63,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
       </header>
 
-      <main className="flex-1 pt-8">{children}</main>
+      <main className="flex-1 pt-7">{children}</main>
 
-      <footer className="mt-12 border-t border-ink/10 pt-4 pr-24 text-center text-xs text-faint sm:pr-0">
+      <footer className="app-footer mt-12 pt-4 pr-24 text-center text-xs sm:pr-0">
         Lives in this browser. Disappear for three months if you want.
       </footer>
 
@@ -79,7 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         toastOptions={{
           duration: 2000,
           classNames: {
-            toast: "border-[3px] border-ink bg-card font-display text-ink shadow-paper rounded-xl",
+            toast: "app-toast",
           },
         }}
       />
@@ -100,10 +103,8 @@ function NavLink({
     <Link
       to={to}
       search={to === "/" ? {} : undefined}
-      className={cn(
-        "font-display inline-flex min-h-11 items-center text-base no-underline",
-        active ? "text-ink underline decoration-washi decoration-[3px] underline-offset-[6px]" : "text-muted hover:text-ink",
-      )}
+      aria-current={active ? "page" : undefined}
+      className={cn("app-nav-link no-underline", active && "is-active")}
     >
       {children}
     </Link>

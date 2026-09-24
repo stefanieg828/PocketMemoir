@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
 import { Button } from "@/components/ui/button";
 import { BUCKET_META, KIND_META } from "@/lib/memoir/copy";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { compressPhoto } from "@/lib/memoir/photos";
 import { useMemoir } from "@/lib/memoir/store";
 import {
@@ -24,7 +24,7 @@ type KeepFormProps = {
 };
 
 export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
-  const look = useMemoir((s) => s.jacket);
+  const look = useMemoir((s) => s.mode);
   const fileRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "note");
   const [bucket, setBucket] = useState<EntryBucket>(
@@ -248,7 +248,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         ) : (
           <span />
         )}
-        <KeepSeal type="submit" label={LOOK_META[look].keepLabel} size="lg" />
+        <KeepSeal type="submit" label={MODE_META[look].keepLabel} size="lg" />
       </div>
     </form>
   );
