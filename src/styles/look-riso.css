@@ -247,7 +247,12 @@
     color: var(--riso-b);
   }
 
+  html[data-look="riso"] .scrap-meta {
+    --color-faint: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
   html[data-look="riso"] .scrap-tone-1 .scrap-meta {
+    --color-faint: var(--riso-b);
     color: var(--riso-b);
     border-color: color-mix(in srgb, var(--riso-b) 70%, transparent);
   }
