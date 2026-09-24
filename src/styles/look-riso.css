@@ -247,6 +247,11 @@
     color: var(--riso-b);
   }
 
+  html[data-look="riso"] .scrap-tone-1 .scrap-meta {
+    color: var(--riso-b);
+    border-color: color-mix(in srgb, var(--riso-b) 70%, transparent);
+  }
+
   html[data-look="riso"] .drawn-frame {
     border: 2px dashed var(--riso-b);
     border-radius: 0;
