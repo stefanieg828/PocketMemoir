@@ -31,4 +31,11 @@ writeFileSync(indexPath, cleaned);
 writeFileSync(join(dest, "404.html"), cleaned);
 writeFileSync(join(dest, ".nojekyll"), "");
 
+// Custom domain for GitHub Pages (also copied from public/ via Vite when present).
+const cnameSrc = join(root, "public", "CNAME");
+const cnameBody = existsSync(cnameSrc)
+  ? readFileSync(cnameSrc, "utf8").trim()
+  : "pocketmemoir.fun";
+writeFileSync(join(dest, "CNAME"), `${cnameBody}\n`);
+
 console.log("[pages-dist] wrote dist/ from .vercel/output/static (SPA + 404 fallback)");

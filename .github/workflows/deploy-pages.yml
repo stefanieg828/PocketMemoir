@@ -33,7 +33,7 @@ jobs:
       - name: Build
         env:
           GITHUB_PAGES: "true"
-          VITE_BASE: /PocketMemoir/
+          VITE_BASE: /
         run: npm run build:pages
 
       - name: Upload Pages artifact

@@ -19,7 +19,7 @@
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:pages": "GITHUB_PAGES=true VITE_BASE=/PocketMemoir/ node scripts/with-app-env.mjs vite build && node scripts/pages-dist.mjs && npm run db:migrate",
+    "build:pages": "GITHUB_PAGES=true VITE_BASE=/ node scripts/with-app-env.mjs vite build && node scripts/pages-dist.mjs && npm run db:migrate",
     "test:backup": "node --test scripts/backup.test.mjs",
     "test:backup:e2e": "node scripts/backup-roundtrip.mjs"
   },
