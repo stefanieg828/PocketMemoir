@@ -399,8 +399,20 @@ export const useMemoir = create<MemoirState>()(
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:
             typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
-          // Missing tourSeen (pre-tour saves) → already "seen" so we don't nag return visitors.
-          tourSeen: typeof incoming.tourSeen === "boolean" ? incoming.tourSeen : true,
+          // Zustand persist always calls merge(persisted, current). On a brand-new
+          // browser, persisted is undefined — keep current.tourSeen (false) so the tour shows.
+          // Only treat as legacy-seen when we have a real pre-tour save (object with
+          // shelf/settings keys but no tourSeen). Empty {} must not count as legacy.
+          tourSeen: (() => {
+            if (typeof incoming.tourSeen === "boolean") return incoming.tourSeen;
+            if (persisted == null || typeof persisted !== "object") return current.tourSeen;
+            const legacy =
+              Array.isArray(incoming.entries) ||
+              incoming.mode != null ||
+              incoming.look != null ||
+              incoming.jacket != null;
+            return legacy ? true : current.tourSeen;
+          })(),
           entries,
         };
       },
