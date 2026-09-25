@@ -10,8 +10,8 @@ import { useMemoir } from "./store";
 export const MAX_BACKUP_BYTES = 60 * 1024 * 1024;
 
 export function buildBackupText(now = new Date()) {
-  const { entries, mode, look, riso } = useMemoir.getState();
-  const backup = createBackup({ entries, mode, look, riso }, now);
+  const { entries, mode, look, riso, unlocked, categories } = useMemoir.getState();
+  const backup = createBackup({ entries, mode, look, riso, unlocked, categories }, now);
   return { text: serializeBackup(backup), name: backupFileName(now), backup };
 }
 

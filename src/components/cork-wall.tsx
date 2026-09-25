@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
-import { BUCKET_META, bucketLabel, statusLabel } from "@/lib/memoir/copy";
+import { statusLabel } from "@/lib/memoir/copy";
+import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
 import { useMemoir } from "@/lib/memoir/store";
-import {
-  ENTRY_BUCKETS,
-  bucketForKind,
-  type EntryBucket,
-  type MemoirEntry,
-} from "@/lib/memoir/types";
+import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
+import type { MemoirEntry } from "@/lib/memoir/types";
 import { cn, hashSeed } from "@/lib/utils";
 
 /** Board tone per bucket (0-3); each look maps tones to its own palette. */
@@ -26,10 +23,10 @@ function prefersReducedMotion(): boolean {
 type CorkWallProps = {
   entries: MemoirEntry[];
   /** Open this board (from URL `spread`). Undefined = wall overview. */
-  activeBucket?: EntryBucket;
+  activeBucket?: string;
   /** Animate zoom-in after pin/add. */
   zoomIn?: boolean;
-  onBucketChange?: (bucket: EntryBucket) => void;
+  onBucketChange?: (bucket: string) => void;
   onBackToWall?: () => void;
   className?: string;
 };
@@ -47,6 +44,10 @@ export function CorkWall({
   );
   const [tuckedOpen, setTuckedOpen] = useState(false);
   const look = useMemoir((s) => s.look);
+  const config = useMemoir((s) => s.categories);
+  const mode = useMemoir((s) => s.mode);
+  const shelf = useShelfCategories();
+  const shelfIds = shelf.map((c) => c.id);
 
   useEffect(() => {
     if (!zoomIn || !activeBucket) return;
@@ -56,30 +57,20 @@ export function CorkWall({
     return () => window.clearTimeout(t);
   }, [zoomIn, activeBucket]);
 
-  const byBucket = useMemo(() => {
-    const map: Record<EntryBucket, MemoirEntry[]> = {
-      scraps: [],
-      people: [],
-      out: [],
-      everyday: [],
-      proud: [],
-      dreams: [],
-    };
+  const byCategory = useMemo(() => {
+    const map = groupEntriesByCategory(entries, shelfIds);
     const tucked: MemoirEntry[] = [];
     for (const entry of entries) {
-      if ((entry.status ?? "fresh") === "tucked") {
-        tucked.push(entry);
-        continue;
-      }
-      map[bucketForKind(entry.kind)].push(entry);
+      if ((entry.status ?? "fresh") === "tucked") tucked.push(entry);
     }
     return { map, tucked };
-  }, [entries]);
+  }, [entries, shelfIds]);
 
   const zoomed = Boolean(activeBucket);
-  const boardEntries = activeBucket ? byBucket.map[activeBucket] : [];
+  const boardEntries = activeBucket ? (byCategory.map[activeBucket] ?? []) : [];
+  const activeLabel = activeBucket ? categoryLabel(config, activeBucket, mode) : "";
 
-  function openBoard(bucket: EntryBucket) {
+  function openBoard(bucket: string) {
     if (prefersReducedMotion()) {
       onBucketChange?.(bucket);
       return;
@@ -111,18 +102,19 @@ export function CorkWall({
             <p className="cork-wall-kicker font-display">{LOOK_SKINS[look].kicker}</p>
             <h1 className="cork-wall-title font-display">Wall of boards</h1>
             <p className="cork-wall-sub">
-              Six boards, same buckets as the scrapbook. Tap one to zoom in.
+              Your boards — same sticky-note shelf as the scrapbook. Tap one to zoom in.
             </p>
           </header>
 
           <ul className="cork-wall-grid" role="list">
-            {ENTRY_BUCKETS.map((bucket, i) => {
-              const list = byBucket.map[bucket];
-              const tone = BOARD_TONES[i] ?? 0;
+            {shelf.map((cat, i) => {
+              const bucket = cat.id;
+              const list = byCategory.map[bucket] ?? [];
+              const tone = BOARD_TONES[i % BOARD_TONES.length] ?? 0;
               const pin = PIN_VARS[i % PIN_VARS.length]!;
               const tilt = ((hashSeed(bucket) % 9) - 4) * 0.55;
               const peeks = list.slice(0, PEEK_MAX);
-              const label = BUCKET_META[bucket].corkboard;
+              const label = cat.name;
 
               return (
                 <li key={bucket} className="cork-wall-cell">
@@ -173,7 +165,7 @@ export function CorkWall({
               <span>Back to wall</span>
             </button>
             <p className="cork-zoom-title font-display" aria-live="polite">
-              {activeBucket ? bucketLabel(activeBucket, "corkboard") : ""}
+              {activeLabel}
             </p>
             <span className="cork-zoom-meta font-display">
               {boardEntries.length
@@ -185,11 +177,11 @@ export function CorkWall({
           <div className="cork-zoom-board">
             <span
               className="pin pin-center"
-              style={{ ["--pin" as string]: PIN_VARS[ENTRY_BUCKETS.indexOf(activeBucket!) % PIN_VARS.length] }}
+              style={{ ["--pin" as string]: PIN_VARS[Math.max(0, shelfIds.indexOf(activeBucket!)) % PIN_VARS.length] }}
               aria-hidden="true"
             />
             <span className="cork-zoom-plaque font-display" aria-hidden="true">
-              {activeBucket ? BUCKET_META[activeBucket].corkboard : ""}
+              {activeLabel}
             </span>
 
             {boardEntries.length === 0 ? (
@@ -214,7 +206,7 @@ export function CorkWall({
         </div>
       )}
 
-      {byBucket.tucked.length > 0 ? (
+      {byCategory.tucked.length > 0 ? (
         <section
           className="shelf-zone shelf-zone-tucked mt-5"
           aria-label={statusLabel("tucked", "corkboard")}
@@ -227,13 +219,13 @@ export function CorkWall({
           >
             <span className="shelf-plaque-text">{statusLabel("tucked", "corkboard")}</span>
             <span className="shelf-fold-meta">
-              {byBucket.tucked.length}
+              {byCategory.tucked.length}
               <span aria-hidden="true">{tuckedOpen ? " · open" : " · folded"}</span>
             </span>
           </button>
           {tuckedOpen ? (
             <ul className="shelf-grid">
-              {byBucket.tucked.map((entry) => (
+              {byCategory.tucked.map((entry) => (
                 <li key={entry.id} className={cn(scrapIsWide(entry) && "sm:col-span-2")}>
                   <Polaroid entry={entry} />
                 </li>

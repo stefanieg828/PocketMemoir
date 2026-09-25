@@ -5,7 +5,8 @@ import { KeepForm } from "@/components/keep-form";
 import { hasDayDate } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
-import { bucketForKind, isEntryKind, type EntryKind } from "@/lib/memoir/types";
+import { categoryForEntry } from "@/lib/memoir/categories";
+import { isEntryKind, type EntryKind } from "@/lib/memoir/types";
 
 function validateSearch(search: Record<string, unknown>): { kind?: EntryKind; date?: string } {
   const kind = isEntryKind(search.kind) ? search.kind : undefined;
@@ -33,7 +34,7 @@ function KeepPage() {
       toast(look.keptToast(title));
     }
 
-    const spread = bucketForKind(entryKind);
+    const spread = categoryForEntry({ kind: entryKind });
     void navigate({
       to: "/",
       search: { spread, flipIn: true },

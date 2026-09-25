@@ -5,20 +5,11 @@ import { EmptyShelf } from "@/components/empty-shelf";
 import { FlipAlbum } from "@/components/flip-album";
 import { SearchSlip } from "@/components/search-slip";
 import { isStarterShelf, matchesQuery, useMemoir } from "@/lib/memoir/store";
-import {
-  ENTRY_BUCKETS,
-  type EntryBucket,
-} from "@/lib/memoir/types";
-
-function isBucket(value: unknown): value is EntryBucket {
-  return typeof value === "string" && (ENTRY_BUCKETS as readonly string[]).includes(value);
-}
-
 function validateSearch(search: Record<string, unknown>): {
-  spread?: EntryBucket;
+  spread?: string;
   flipIn?: boolean;
 } {
-  const spread = isBucket(search.spread) ? search.spread : undefined;
+  const spread = typeof search.spread === "string" && search.spread.trim() ? search.spread.trim() : undefined;
   const raw = search.flipIn;
   const flipIn = raw === true || raw === 1 || raw === "1" || raw === "true";
   return {
@@ -45,7 +36,7 @@ function Home() {
   }, [entries, query]);
 
   const onBucketChange = useCallback(
-    (bucket: EntryBucket) => {
+    (bucket: string) => {
       void navigate({
         to: "/",
         search: { spread: bucket },
@@ -89,14 +80,14 @@ function Home() {
               Starter scraps, pinned up. Tap a board to zoom — or search.
             </p>
           ) : (
-            <p className="shelf-lede text-sm text-muted">Six boards on the wall. Same buckets as the book.</p>
+            <p className="shelf-lede text-sm text-muted">Boards on the wall. Same sticky-note shelf as the book.</p>
           )
         ) : isStarterShelf(entries) ? (
           <p className="shelf-lede text-sm text-muted">
             Starter scraps so the book isn’t shy. Flip the spreads — or search.
           </p>
         ) : (
-          <p className="shelf-lede text-sm text-muted">Flip the spreads. Six buckets, one book.</p>
+          <p className="shelf-lede text-sm text-muted">Flip the spreads. Your shelf, one book.</p>
         )}
       </div>
       <SearchSlip

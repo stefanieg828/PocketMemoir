@@ -504,4 +504,20 @@
       var(--wc-paper) 0 0 / 200px,
       rgb(255 250 241 / 0.94);
   }
+
+html[data-look="storybook"] .categories-lock-card,
+  html[data-look="storybook"] .cat-row {
+    border-color: rgb(106 86 70 / 0.35);
+    background:
+      var(--wc-paper, none) 0 0 / 200px,
+      rgb(255 250 241 / 0.94);
+  }
+
+  html[data-look="storybook"] .cat-row-name {
+    color: #5a4638;
+  }
+
+  html[data-look="storybook"] .categories-unlock-btn {
+    background: linear-gradient(180deg, #98b193, #849f7f);
+  }
 }

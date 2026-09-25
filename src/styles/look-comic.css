@@ -627,4 +627,32 @@
   html[data-look="comic"] .backup-section {
     border-top: 3px solid #111;
   }
+
+html[data-look="comic"] .categories-lock-card,
+  html[data-look="comic"] .cat-row {
+    border: 3px solid #111;
+    border-radius: 0.25rem;
+    background: #fff;
+    box-shadow: 3px 3px 0 #111;
+  }
+
+  html[data-look="comic"] .cat-row-name {
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  html[data-look="comic"] .cat-preset-chip {
+    border: 2.5px solid #111;
+    border-radius: 0.2rem;
+    box-shadow: 2px 2px 0 #111;
+  }
+
+  html[data-look="comic"] .categories-unlock-btn {
+    background: #ffd600;
+    color: #111;
+    border: 3px solid #111;
+    box-shadow: 4px 4px 0 #ff2ecc;
+  }
 }

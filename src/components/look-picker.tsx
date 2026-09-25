@@ -2,6 +2,7 @@ import { useEffect, type CSSProperties, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Lock } from "lucide-react";
 import { BackupSection } from "@/components/backup-section";
+import { CategoriesSection } from "@/components/categories-section";
 import { MODE_META } from "@/lib/memoir/jackets";
 import {
   LOOK_SKINS,
@@ -33,9 +34,11 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   }, [defaultOpen, setOpen]);
 
   useEffect(() => {
-    if (!open || focus !== "backup") return;
+    if (!open || !focus) return;
+    const target = focus === "categories" ? "shelf-categories" : focus === "backup" ? "keep-safe" : null;
+    if (!target) return;
     const id = window.setTimeout(() => {
-      document.getElementById("keep-safe")?.scrollIntoView({ block: "start", behavior: "smooth" });
+      document.getElementById(target)?.scrollIntoView({ block: "start", behavior: "smooth" });
     }, 60);
     return () => window.clearTimeout(id);
   }, [open, focus]);
@@ -76,6 +79,8 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           </PickerSection>
 
           {look === "riso" ? <RisoOptions /> : null}
+
+          <CategoriesSection />
 
           <BackupSection />
 

@@ -4,16 +4,27 @@
  * Mode / Look / Riso settings. Pure functions only — no DOM, no store — so this
  * is unit-tested in scripts/backup.test.mjs.
  */
+import {
+  normalizeCategoryConfig,
+  type CategoryConfig,
+} from "./categories.ts";
 import { normalizeRiso } from "./looks.ts";
 import type { LookId, MemoirEntry, ModeId, RisoPrefs } from "./types.ts";
 import { normalizeLook, normalizeMode } from "./types.ts";
 
 export const BACKUP_FORMAT = "pocketmemoir-backup";
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 /** Suggest a backup after this many new scraps since the last one (or last dismiss). */
 export const BACKUP_NUDGE_AFTER = 10;
 
-export type BackupSettings = { mode: ModeId; look: LookId; riso: RisoPrefs };
+export type BackupSettings = {
+  mode: ModeId;
+  look: LookId;
+  riso: RisoPrefs;
+  /** Same gate as Comic / Riso. Older backups omit this → left as-is on restore. */
+  unlocked?: boolean;
+  categories?: CategoryConfig;
+};
 
 export type BackupFile = {
   format: typeof BACKUP_FORMAT;
@@ -62,7 +73,14 @@ export function countPhotos(entries: readonly MemoirEntry[]) {
 }
 
 export function createBackup(
-  data: { entries: readonly MemoirEntry[]; mode: ModeId; look: LookId; riso: RisoPrefs },
+  data: {
+    entries: readonly MemoirEntry[];
+    mode: ModeId;
+    look: LookId;
+    riso: RisoPrefs;
+    unlocked?: boolean;
+    categories?: CategoryConfig;
+  },
   now: Date = new Date(),
 ): BackupFile {
   const entries = data.entries.map((e) => ({ ...e }));
@@ -72,7 +90,13 @@ export function createBackup(
     app: "PocketMemoir",
     exportedAt: now.toISOString(),
     counts: { scraps: entries.length, photos: countPhotos(entries) },
-    settings: { mode: data.mode, look: data.look, riso: { ...data.riso } },
+    settings: {
+      mode: data.mode,
+      look: data.look,
+      riso: { ...data.riso },
+      unlocked: Boolean(data.unlocked),
+      categories: normalizeCategoryConfig(data.categories),
+    },
     entries,
   };
 }
@@ -128,6 +152,8 @@ export function parseBackup(text: string, normalizeEntry: EntryNormalizer): Pars
     mode: normalizeMode(s.mode),
     look: normalizeLook(s.look),
     riso: normalizeRiso(s.riso),
+    unlocked: typeof s.unlocked === "boolean" ? s.unlocked : undefined,
+    categories: s.categories !== undefined ? normalizeCategoryConfig(s.categories) : undefined,
   };
   const when = typeof file.exportedAt === "string" ? new Date(file.exportedAt) : null;
   return {

@@ -3,13 +3,17 @@ import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
 import { Button } from "@/components/ui/button";
-import { BUCKET_META, KIND_META } from "@/lib/memoir/copy";
+import { KIND_META } from "@/lib/memoir/copy";
+import {
+  defaultKindForCategory,
+  isStarterId,
+} from "@/lib/memoir/categories";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { compressPhoto } from "@/lib/memoir/photos";
 import { useMemoir } from "@/lib/memoir/store";
+import { useShelfCategories } from "@/lib/memoir/use-shelf";
 import {
   BUCKET_KINDS,
-  ENTRY_BUCKETS,
   bucketForKind,
   type EntryBucket,
   type EntryKind,
@@ -25,10 +29,12 @@ type KeepFormProps = {
 
 export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const look = useMemoir((s) => s.mode);
+  const shelf = useShelfCategories();
   const fileRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "note");
-  const [bucket, setBucket] = useState<EntryBucket>(
-    bucketForKind(initial?.kind ?? "note"),
+  const [bucket, setBucket] = useState<string>(
+    initial?.category
+      ?? (initial?.kind ? bucketForKind(initial.kind) : shelf[0]?.id ?? "scraps"),
   );
   const meta = KIND_META[kind];
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -39,13 +45,15 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const [photo, setPhoto] = useState<string | undefined>(initial?.photo);
   const [busy, setBusy] = useState(false);
 
-  const kindsInBucket = BUCKET_KINDS[bucket];
+  const kindsInBucket = isStarterId(bucket) ? BUCKET_KINDS[bucket as EntryBucket] : [defaultKindForCategory(bucket)];
 
-  function pickBucket(next: EntryBucket) {
+  function pickBucket(next: string) {
     setBucket(next);
-    const kinds = BUCKET_KINDS[next];
-    if (!kinds.includes(kind)) {
-      setKind(kinds[0] ?? "note");
+    if (isStarterId(next)) {
+      const kinds = BUCKET_KINDS[next];
+      if (!kinds.includes(kind)) setKind(kinds[0] ?? "note");
+    } else {
+      setKind(defaultKindForCategory(next));
     }
   }
 
@@ -88,6 +96,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       happenedOn: dateValue || undefined,
       wouldBuyAgain: kind === "thing" ? wouldBuyAgain : undefined,
       photo,
+      category: bucket,
     });
   }
 
@@ -96,25 +105,26 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       <div className="flex flex-col gap-3">
         <div
           role="radiogroup"
-          aria-label="Shelf bucket"
+          aria-label="Shelf category"
           className="flex flex-wrap gap-2"
         >
-          {ENTRY_BUCKETS.map((id) => {
-            const on = id === bucket;
+          {shelf.map((cat) => {
+            const on = cat.id === bucket;
             return (
               <button
-                key={id}
+                key={cat.id}
                 type="button"
                 role="radio"
                 aria-checked={on}
-                onClick={() => pickBucket(id)}
+                onClick={() => pickBucket(cat.id)}
                 className={cn("kind-chip", on && "bg-gold")}
               >
-                {BUCKET_META[id].label}
+                {cat.name}
               </button>
             );
           })}
         </div>
+        {isStarterId(bucket) ? (
         <div
           role="radiogroup"
           aria-label="What kind of scrap"
@@ -136,6 +146,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
             );
           })}
         </div>
+        ) : null}
       </div>
 
       <button

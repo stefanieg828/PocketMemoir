@@ -2213,4 +2213,230 @@
     background: transparent;
     color: var(--color-muted);
   }
+
+  /* ——— Categories / shelf manager ——— */
+  .categories-section {
+    margin-top: 1.35rem;
+    padding-top: 1rem;
+    border-top: 1.5px dashed color-mix(in srgb, var(--color-line) 40%, transparent);
+    scroll-margin-top: 0.75rem;
+  }
+
+  .categories-step {
+    background: var(--color-seal);
+    color: var(--color-seal-ink);
+  }
+
+  .categories-lede,
+  .categories-hint,
+  .categories-lock-line,
+  .categories-lock-hint {
+    margin: 0.35rem 0 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+
+  .categories-lock-card {
+    padding: 0.85rem 0.9rem 1rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 50%, transparent);
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, var(--color-card) 92%, transparent);
+  }
+
+  .categories-starter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 0.85rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.2rem 0.7rem;
+    border: var(--b1) solid var(--color-line);
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+  }
+
+  .categories-unlock-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .categories-on-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cat-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.6rem;
+    padding: 0.45rem 0.55rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 45%, transparent);
+    border-radius: 0.7rem;
+    background: color-mix(in srgb, var(--color-card) 94%, transparent);
+  }
+
+  .cat-row-main {
+    flex: 1 1 10rem;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.55rem;
+  }
+
+  .cat-row-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    color: var(--color-ink);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: color-mix(in srgb, var(--color-line) 55%, transparent);
+    text-underline-offset: 0.18em;
+  }
+
+  .cat-renamed-mark {
+    margin-left: 0.25rem;
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+
+  .cat-row-kind {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .cat-row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+  }
+
+  .cat-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-muted);
+  }
+
+  .cat-icon-btn:disabled {
+    opacity: 0.35;
+  }
+
+  .cat-rename-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  .cat-rename-input {
+    flex: 1 1 8rem;
+    min-width: 0;
+    min-height: 2.4rem;
+    padding: 0.35rem 0.65rem;
+    border: var(--b1) solid var(--color-line);
+    border-radius: 0.55rem;
+    background: #fffef9;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    color: var(--color-ink);
+  }
+
+  .categories-preset-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .cat-preset-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.2rem;
+    padding: 0.25rem 0.7rem;
+    border: var(--b1) dashed var(--color-line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-card) 88%, transparent);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--color-ink);
+  }
+
+  .categories-custom-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .cat-vibe-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .cat-vibe-dot {
+    width: 1.55rem;
+    height: 1.55rem;
+    border: 2px solid transparent;
+    border-radius: 999px;
+  }
+
+  .cat-vibe-dot.is-selected {
+    border-color: var(--color-ink);
+    outline: 2px solid color-mix(in srgb, var(--color-seal) 50%, transparent);
+    outline-offset: 1px;
+  }
+
+  .categories-add-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* Soft paper vibes for chips / rows */
+  .cat-vibe-peach { background-color: color-mix(in srgb, #f3c4a8 55%, #fffef8); }
+  .cat-vibe-sage { background-color: color-mix(in srgb, #b9c9a8 55%, #fffef8); }
+  .cat-vibe-sky { background-color: color-mix(in srgb, #a8c5d4 55%, #fffef8); }
+  .cat-vibe-cream { background-color: color-mix(in srgb, #efe2c6 70%, #fffef8); }
+  .cat-vibe-rose { background-color: color-mix(in srgb, #e2b0b6 55%, #fffef8); }
+  .cat-vibe-mustard { background-color: color-mix(in srgb, #e5c56a 55%, #fffef8); }
+  .cat-vibe-ink { background-color: color-mix(in srgb, #9aa4b8 50%, #fffef8); }
+
+  .cat-vibe-dot.cat-vibe-peach { background: #f3c4a8; }
+  .cat-vibe-dot.cat-vibe-sage { background: #b9c9a8; }
+  .cat-vibe-dot.cat-vibe-sky { background: #a8c5d4; }
+  .cat-vibe-dot.cat-vibe-cream { background: #efe2c6; }
+  .cat-vibe-dot.cat-vibe-rose { background: #e2b0b6; }
+  .cat-vibe-dot.cat-vibe-mustard { background: #e5c56a; }
+  .cat-vibe-dot.cat-vibe-ink { background: #6b7388; }
+
 }

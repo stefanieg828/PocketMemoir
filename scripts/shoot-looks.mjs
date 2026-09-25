@@ -3,12 +3,13 @@
  * Screenshot every Mode × Look combo (plus zoomed cork boards, the picker, and a
  * custom-ink Riso variant) at a phone viewport.
  *
- *   node scripts/shoot-looks.mjs [baseUrl] [--only=substr] [--pages] [--narrow] [--backup]
+ *   node scripts/shoot-looks.mjs [baseUrl] [--only=substr] [--pages] [--narrow] [--backup] [--categories]
  *
  * Writes to docs/preview/looks/. Uses the app's starter scraps (no saved entries).
  * --pages   Keep / kept detail / Calendar / empty shelf per combo → pages/
  * --narrow  375px shelves + zooms, and every Riso title × body font → narrow/
  * --backup  "Keep them safe" section, restore confirm, backup nudge → backup/
+ * --categories  Shelf manager + scrapbook/cork with Books/Movies/Bucket List → categories/
  *
  * Every shot also checks that board / tab / label names are shown in full
  * (no ellipsis, no overflow, max two lines) and exits non-zero if not.
@@ -24,8 +25,9 @@ const only = args.find((a) => a.startsWith("--only="))?.slice(7);
 const pages = args.includes("--pages");
 const narrow = args.includes("--narrow");
 const backup = args.includes("--backup");
+const categories = args.includes("--categories");
 const outDir = join(process.cwd(), "docs", "preview", "looks");
-for (const sub of ["pages", "narrow", "backup"]) mkdirSync(join(outDir, sub), { recursive: true });
+for (const sub of ["pages", "narrow", "backup", "categories"]) mkdirSync(join(outDir, sub), { recursive: true });
 
 const MODES = ["scrapbook", "corkboard"];
 const LOOKS = ["storybook", "comic", "riso"];
@@ -157,6 +159,56 @@ if (backup) {
   }
 }
 
+
+if (categories) {
+  const catConfig = {
+    order: ["scraps", "people", "out", "everyday", "proud", "dreams", "books-to-read", "movies-shows", "bucket-list", "custom-songs01"],
+    names: {
+      scraps: "Bits & bobs",
+      "books-to-read": "To be read-ish",
+      "movies-shows": "Couch queue",
+    },
+    customs: [{ id: "custom-songs01", name: "Songs stuck in my head", vibe: "rose" }],
+  };
+  const withCats = userEntries(10).map((e, i) => {
+    const ids = ["books-to-read", "movies-shows", "bucket-list", "scraps", "people"];
+    return { ...e, category: ids[i % ids.length] };
+  });
+  for (const [mode, look] of [
+    ["scrapbook", "comic"],
+    ["corkboard", "riso"],
+    ["scrapbook", "storybook"],
+  ]) {
+    shots.push({
+      name: `categories/${mode}-${look}-manager`,
+      state: { mode, look, unlocked: true, categories: catConfig, entries: withCats },
+      path: "/",
+      categoriesSection: true,
+    });
+  }
+  shots.push({
+    name: "categories/scrapbook-comic-shelf",
+    state: { mode: "scrapbook", look: "comic", unlocked: true, categories: catConfig, entries: withCats },
+    path: "/",
+  });
+  shots.push({
+    name: "categories/corkboard-riso-shelf",
+    state: { mode: "corkboard", look: "riso", unlocked: true, categories: catConfig, entries: withCats },
+    path: "/",
+  });
+  shots.push({
+    name: "categories/corkboard-comic-books",
+    state: { mode: "corkboard", look: "comic", unlocked: true, categories: catConfig, entries: withCats },
+    path: "/?spread=books-to-read",
+  });
+  shots.push({
+    name: "categories/free-tease-storybook",
+    state: { mode: "scrapbook", look: "storybook", unlocked: false, entries: withCats },
+    path: "/",
+    categoriesSection: true,
+  });
+}
+
 /** Names must show in full: no ellipsis, no clipped overflow, ≤ 2 lines, inside their board. */
 async function checkNames(page) {
   return page.evaluate(() => {
@@ -220,10 +272,11 @@ for (const shot of shots) {
     });
     await page.waitForTimeout(400);
   }
-  if (shot.backupSection || shot.restoreConfirm) {
+  if (shot.backupSection || shot.restoreConfirm || shot.categoriesSection) {
     await page.getByRole("button", { name: /^Look/ }).click();
     await page.waitForSelector(".picker-dialog");
-    await page.locator("#keep-safe").evaluate((el) => el.scrollIntoView({ block: "start" }));
+    const scrollId = shot.categoriesSection ? "#shelf-categories" : "#keep-safe";
+    await page.locator(scrollId).evaluate((el) => el.scrollIntoView({ block: "start" }));
     await page.waitForTimeout(300);
   }
   if (shot.restoreConfirm) {
@@ -237,7 +290,7 @@ for (const shot of shots) {
   if (names.length) errors.push(`NAMES: ${names.join("; ")}`);
   const file = join(outDir, `${shot.name}.png`);
   if (!shot.noShot) {
-    const viewportOnly = shot.viewportOnly || shot.backupSection || shot.restoreConfirm;
+    const viewportOnly = shot.viewportOnly || shot.backupSection || shot.restoreConfirm || shot.categoriesSection;
     await page.screenshot({ path: file, fullPage: !viewportOnly });
   }
   const attrs = await page.evaluate(() => ({ ...document.documentElement.dataset }));

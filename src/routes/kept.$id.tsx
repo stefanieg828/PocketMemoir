@@ -21,7 +21,7 @@ import { KIND_META } from "@/lib/memoir/copy";
 import { formatHappenedOn } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
-import { bucketForKind } from "@/lib/memoir/types";
+import { categoryForEntry } from "@/lib/memoir/categories";
 import { cn, hashSeed } from "@/lib/utils";
 
 export const Route = createFileRoute("/kept/$id")({
@@ -90,7 +90,7 @@ function KeptPage() {
     <section className="mx-auto grid max-w-3xl gap-8 md:grid-cols-2 md:items-start">
       <Link
         to="/"
-        search={{ spread: bucketForKind(entry.kind) }}
+        search={{ spread: categoryForEntry(entry) }}
         className="on-cork font-display inline-flex min-h-11 w-fit items-center text-sm text-muted no-underline hover:text-ink md:col-span-2"
       >
         {jacket === "scrapbook" ? "Back to the album" : "Back to the board"}

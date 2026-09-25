@@ -1,7 +1,22 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { BackupSettings } from "./backup";
-import { DEFAULT_RISO, normalizeRiso } from "./looks";
+import {
+  DEFAULT_CATEGORY_CONFIG,
+  addCustom,
+  hideCategory,
+  moveCategory,
+  normalizeCategoryConfig,
+  removeCustom,
+  renameCategory,
+  resetCategoryName,
+  showCategory,
+  togglePreset,
+  type CategoryConfig,
+  type CategoryVibe,
+  type PresetId,
+} from "./categories";
+import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
 import type {
   EntryStatus,
   LookId,
@@ -115,6 +130,13 @@ type MemoirState = {
   /** Skin: storybook / comic / riso. */
   look: LookId;
   riso: RisoPrefs;
+  /**
+   * Same gate as Comic / Riso Looks. Free taste = starters only; unlock opens
+   * presets, customs, rename / hide / reorder. Selecting an unlock Look (or
+   * tapping Unlock on the categories tease) turns this on — no paywall yet.
+   */
+  unlocked: boolean;
+  categories: CategoryConfig;
   /** When the last backup file was saved (ms), or null if never. */
   lastBackupAt: number | null;
   /** "Not now" on the backup nudge (ms). */
@@ -125,6 +147,7 @@ type MemoirState = {
   setMode: (mode: ModeId) => void;
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
+  setUnlocked: (unlocked: boolean) => void;
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
@@ -134,6 +157,14 @@ type MemoirState = {
   dismissBackupNudge: () => void;
   /** Swap in restored scraps (already merged/replaced) and optionally settings. */
   applyRestore: (entries: MemoirEntry[], settings?: BackupSettings) => void;
+  setPresetOn: (id: PresetId, on: boolean) => void;
+  createCategory: (name: string, vibe?: CategoryVibe) => string;
+  renameCategory: (id: string, name: string) => void;
+  resetCategoryName: (id: string) => void;
+  hideCategory: (id: string) => void;
+  showCategory: (id: string) => void;
+  removeCategory: (id: string) => void;
+  moveCategory: (id: string, dir: -1 | 1) => void;
 };
 
 function createId() {
@@ -203,6 +234,7 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
     wouldBuyAgain: kind === "thing" ? Boolean(draft.wouldBuyAgain) : undefined,
     photo: draft.photo,
     happenedOn: draft.happenedOn?.trim() || undefined,
+    category: draft.category?.trim() || base?.category,
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
   };
@@ -234,6 +266,9 @@ export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     wouldBuyAgain: kind === "thing" ? Boolean(entry.wouldBuyAgain) : undefined,
     photo: typeof entry.photo === "string" ? entry.photo : undefined,
     happenedOn: typeof entry.happenedOn === "string" ? entry.happenedOn : undefined,
+    category: typeof entry.category === "string" && entry.category.trim()
+      ? entry.category.trim()
+      : undefined,
     createdAt: typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
     updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : Date.now(),
   };
@@ -246,14 +281,21 @@ export const useMemoir = create<MemoirState>()(
       mode: "scrapbook",
       look: "storybook",
       riso: { ...DEFAULT_RISO },
+      unlocked: false,
+      categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
       lastBackupAt: null,
       backupNudgeDismissedAt: null,
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setMode: (mode) => set({ mode }),
-      setLook: (look) => set({ look }),
+      setLook: (look) => {
+        // Unlock Looks (Comic / Riso) also unlock category editing — same gate, no paywall yet.
+        const unlock = LOOK_SKINS[look]?.unlock === true;
+        set(unlock ? { look, unlocked: true } : { look });
+      },
       setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
+      setUnlocked: (unlocked) => set({ unlocked }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -289,9 +331,25 @@ export const useMemoir = create<MemoirState>()(
                 mode: normalizeMode(settings.mode),
                 look: normalizeLook(settings.look),
                 riso: normalizeRiso(settings.riso),
+                unlocked: settings.unlocked ?? get().unlocked,
+                categories: settings.categories
+                  ? normalizeCategoryConfig(settings.categories)
+                  : get().categories,
               }
             : { entries },
         ),
+      setPresetOn: (id, on) => set({ categories: togglePreset(get().categories, id, on) }),
+      createCategory: (name, vibe) => {
+        const { config, id } = addCustom(get().categories, { name, vibe });
+        set({ categories: config });
+        return id;
+      },
+      renameCategory: (id, name) => set({ categories: renameCategory(get().categories, id, name) }),
+      resetCategoryName: (id) => set({ categories: resetCategoryName(get().categories, id) }),
+      hideCategory: (id) => set({ categories: hideCategory(get().categories, id) }),
+      showCategory: (id) => set({ categories: showCategory(get().categories, id) }),
+      removeCategory: (id) => set({ categories: removeCustom(get().categories, id) }),
+      moveCategory: (id, dir) => set({ categories: moveCategory(get().categories, id, dir) }),
     }),
     {
       name: STORAGE_KEY,
@@ -302,6 +360,8 @@ export const useMemoir = create<MemoirState>()(
         mode: state.mode,
         look: state.look,
         riso: state.riso,
+        unlocked: state.unlocked,
+        categories: state.categories,
         lastBackupAt: state.lastBackupAt,
         backupNudgeDismissedAt: state.backupNudgeDismissedAt,
       }),
@@ -313,11 +373,19 @@ export const useMemoir = create<MemoirState>()(
               .map(normalizeStoredEntry)
               .filter((entry): entry is MemoirEntry => Boolean(entry))
           : current.entries;
+        const unlocked =
+          typeof incoming.unlocked === "boolean"
+            ? incoming.unlocked
+            : LOOK_SKINS[normalizeLook(incoming.look)]?.unlock === true
+              ? true
+              : current.unlocked;
         return {
           ...current,
           mode: normalizeMode(incoming.mode ?? incoming.jacket),
           look: normalizeLook(incoming.look),
           riso: normalizeRiso(incoming.riso),
+          unlocked,
+          categories: normalizeCategoryConfig(incoming.categories),
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:
             typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,

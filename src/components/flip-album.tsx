@@ -8,13 +8,11 @@ import {
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Polaroid } from "@/components/polaroid";
-import { BUCKET_META, statusLabel } from "@/lib/memoir/copy";
-import {
-  ENTRY_BUCKETS,
-  bucketForKind,
-  type EntryBucket,
-  type MemoirEntry,
-} from "@/lib/memoir/types";
+import { statusLabel } from "@/lib/memoir/copy";
+import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
+import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
+import { useMemoir } from "@/lib/memoir/store";
+import type { MemoirEntry } from "@/lib/memoir/types";
 import { paperClassName, paperFor, type ScrapbookPaper } from "@/lib/scrapbook-paper";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +28,8 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function bucketIndex(bucket: EntryBucket): number {
-  const i = ENTRY_BUCKETS.indexOf(bucket);
+function categoryIndex(ids: readonly string[], id: string): number {
+  const i = ids.indexOf(id);
   return i < 0 ? 0 : i;
 }
 
@@ -49,20 +47,20 @@ function splitSpread(entries: MemoirEntry[]): { left: MemoirEntry[]; right: Memo
 }
 
 /** Collage vs calm energy per spread — mix A chaos + B cottage in-product. */
-function energyFor(bucket: EntryBucket): "collage" | "calm" | "soft" {
-  if (bucket === "out" || bucket === "proud") return "collage";
-  if (bucket === "scraps" || bucket === "everyday") return "calm";
+function energyFor(categoryId: string): "collage" | "calm" | "soft" {
+  if (categoryId === "out" || categoryId === "proud" || categoryId === "places-to-go") return "collage";
+  if (categoryId === "scraps" || categoryId === "everyday" || categoryId === "recipes-to-try") return "calm";
   return "soft";
 }
 
 type FlipAlbumProps = {
   entries: MemoirEntry[];
-  /** Bucket to open on (defaults to first non-empty, else scraps). */
-  initialBucket?: EntryBucket;
+  /** Category to open on (defaults to first non-empty, else first on shelf). */
+  initialBucket?: string;
   /** Animate opening from the cover after an add. */
   flipIn?: boolean;
   /** Called when the active spread changes (for URL sync). */
-  onBucketChange?: (bucket: EntryBucket) => void;
+  onBucketChange?: (bucket: string) => void;
   className?: string;
 };
 
@@ -73,13 +71,18 @@ export function FlipAlbum({
   onBucketChange,
   className,
 }: FlipAlbumProps) {
+  const shelf = useShelfCategories();
+  const shelfIds = useMemo(() => shelf.map((c) => c.id), [shelf]);
+  const config = useMemoir((s) => s.categories);
+  const mode = useMemoir((s) => s.mode);
+
   const startIndex = useMemo(() => {
-    if (initialBucket) return bucketIndex(initialBucket);
-    const firstFilled = ENTRY_BUCKETS.findIndex((b) =>
-      entries.some((e) => bucketForKind(e.kind) === b),
+    if (initialBucket && shelfIds.includes(initialBucket)) return categoryIndex(shelfIds, initialBucket);
+    const firstFilled = shelfIds.findIndex((id) =>
+      entries.some((e) => categoryForEntry(e) === id),
     );
     return firstFilled >= 0 ? firstFilled : 0;
-  }, [initialBucket, entries]);
+  }, [initialBucket, entries, shelfIds]);
 
   const [index, setIndex] = useState(startIndex);
   const [anim, setAnim] = useState<FlipAnim>(flipIn ? "flip-in" : "idle");
@@ -88,10 +91,14 @@ export function FlipAlbum({
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const locked = useRef(false);
 
-  // Sync when parent pushes a new initialBucket (e.g. after add).
+  // Sync when parent pushes a new initialBucket (e.g. after add), or shelf shrinks.
   useEffect(() => {
     setIndex(startIndex);
   }, [startIndex]);
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, Math.max(0, shelfIds.length - 1)));
+  }, [shelfIds.length]);
 
   useEffect(() => {
     if (!flipIn) return;
@@ -104,41 +111,31 @@ export function FlipAlbum({
     };
   }, [flipIn, startIndex]);
 
-  const byBucket = useMemo(() => {
-    const map: Record<EntryBucket, MemoirEntry[]> = {
-      scraps: [],
-      people: [],
-      out: [],
-      everyday: [],
-      proud: [],
-      dreams: [],
-    };
+  const byCategory = useMemo(() => {
+    const map = groupEntriesByCategory(entries, shelfIds);
     const tucked: MemoirEntry[] = [];
     for (const entry of entries) {
-      if ((entry.status ?? "fresh") === "tucked") {
-        tucked.push(entry);
-        continue;
-      }
-      map[bucketForKind(entry.kind)].push(entry);
+      if ((entry.status ?? "fresh") === "tucked") tucked.push(entry);
     }
     return { map, tucked };
-  }, [entries]);
+  }, [entries, shelfIds]);
 
-  const bucket = ENTRY_BUCKETS[index] ?? "scraps";
-  const spreadEntries = byBucket.map[bucket];
+  const bucket = shelfIds[index] ?? shelfIds[0] ?? "scraps";
+  const spreadEntries = byCategory.map[bucket] ?? [];
   const { left, right } = useMemo(() => splitSpread(spreadEntries), [spreadEntries]);
   const paper: ScrapbookPaper = paperFor(`spread-${bucket}-${spreadEntries.map((e) => e.id).join("+") || "empty"}`);
+  const bucketLabel = categoryLabel(config, bucket, mode);
 
   const goTo = useCallback(
     (nextIndex: number) => {
-      const clamped = Math.max(0, Math.min(ENTRY_BUCKETS.length - 1, nextIndex));
+      const clamped = Math.max(0, Math.min(shelfIds.length - 1, nextIndex));
       if (clamped === index || locked.current) return;
 
       const delta = clamped - index;
       const reduce = prefersReducedMotion();
       if (reduce) {
         setIndex(clamped);
-        onBucketChange?.(ENTRY_BUCKETS[clamped]!);
+        onBucketChange?.(shelfIds[clamped]!);
         return;
       }
 
@@ -157,12 +154,12 @@ export function FlipAlbum({
       if (animTimer.current) window.clearTimeout(animTimer.current);
       animTimer.current = window.setTimeout(() => {
         setIndex(clamped);
-        onBucketChange?.(ENTRY_BUCKETS[clamped]!);
+        onBucketChange?.(shelfIds[clamped]!);
         setAnim("idle");
         locked.current = false;
       }, ms);
     },
-    [index, onBucketChange],
+    [index, onBucketChange, shelfIds],
   );
 
   useEffect(() => {
@@ -187,25 +184,24 @@ export function FlipAlbum({
     else goTo(index - 1);
   }
 
-  const counts = ENTRY_BUCKETS.map((b) => byBucket.map[b].length);
+  const counts = shelfIds.map((b) => byCategory.map[b]?.length ?? 0);
 
   return (
     <section className={cn("flip-album", className)} aria-label="Scrapbook album">
       <nav className="flip-tabs" aria-label="Album spreads">
-        {ENTRY_BUCKETS.map((b, i) => {
+        {shelf.map((cat, i) => {
           const active = i === index;
-          const meta = BUCKET_META[b];
           return (
             <button
-              key={b}
+              key={cat.id}
               type="button"
-              className={cn("flip-tab", active && "is-active")}
+              className={cn("flip-tab", active && "is-active", cat.tuckedAway && "is-tucked")}
               aria-current={active ? "page" : undefined}
-              aria-label={`${meta.label}${counts[i] ? `, ${counts[i]} scraps` : ", empty"}`}
+              aria-label={`${cat.name}${counts[i] ? `, ${counts[i]} scraps` : ", empty"}${cat.tuckedAway ? ", tucked" : ""}`}
               onClick={() => goTo(i)}
             >
               <span className="flip-tab-dot" aria-hidden="true" />
-              <span className="flip-tab-label">{meta.label}</span>
+              <span className="flip-tab-label">{cat.name}</span>
             </button>
           );
         })}
@@ -237,7 +233,7 @@ export function FlipAlbum({
           </div>
 
           <div className="flip-spread">
-            <SpreadPage side="left" title={BUCKET_META[bucket].label} entries={left} emptyHint="Left page waiting." />
+            <SpreadPage side="left" title={bucketLabel} entries={left} emptyHint="Left page waiting." />
             <SpreadPage
               side="right"
               title=" "
@@ -264,17 +260,17 @@ export function FlipAlbum({
           <span>Back</span>
         </button>
         <p className="flip-index font-display" aria-live="polite">
-          {BUCKET_META[bucket].label}
+          {bucketLabel}
           <span className="flip-index-meta">
             {" "}
-            · {index + 1}/{ENTRY_BUCKETS.length}
+            · {index + 1}/{shelfIds.length}
           </span>
         </p>
         <button
           type="button"
           className="flip-nav-btn"
           aria-label="Next spread"
-          disabled={index >= ENTRY_BUCKETS.length - 1 || anim !== "idle"}
+          disabled={index >= shelfIds.length - 1 || anim !== "idle"}
           onClick={() => goTo(index + 1)}
         >
           <span>Next</span>
@@ -282,7 +278,7 @@ export function FlipAlbum({
         </button>
       </div>
 
-      {byBucket.tucked.length > 0 ? (
+      {byCategory.tucked.length > 0 ? (
         <section className="shelf-zone shelf-zone-tucked mt-5" aria-label={statusLabel("tucked", "scrapbook")}>
           <button
             type="button"
@@ -292,13 +288,13 @@ export function FlipAlbum({
           >
             <span className="shelf-plaque-text">{statusLabel("tucked", "scrapbook")}</span>
             <span className="shelf-fold-meta">
-              {byBucket.tucked.length}
+              {byCategory.tucked.length}
               <span aria-hidden="true">{tuckedOpen ? " · open" : " · folded"}</span>
             </span>
           </button>
           {tuckedOpen ? (
             <ul className="album-scraps mt-3">
-              {byBucket.tucked.map((entry, i) => (
+              {byCategory.tucked.map((entry, i) => (
                 <li key={entry.id} className={cn("album-scrap", `album-scrap-${(i % 6) + 1}`)}>
                   <Polaroid entry={entry} />
                 </li>

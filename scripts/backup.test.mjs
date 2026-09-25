@@ -156,3 +156,33 @@ describe("backup nudge", () => {
     assert.equal(m.shouldNudgeBackup([...list, ...many(10, t0 + 200, "n")], t0 + 100), true);
   });
 });
+
+describe("backup includes categories", () => {
+  it("round-trips unlocked + category renames + presets", () => {
+    const categories = {
+      order: ["scraps", "people", "books-to-read", "bucket-list"],
+      names: { scraps: "Bits & bobs", "books-to-read": "To be read-ish" },
+      customs: [{ id: "custom-abc12345", name: "Songs stuck in my head", vibe: "rose" }],
+    };
+    const file = m.createBackup(
+      {
+        entries: [entry("a")],
+        mode: "corkboard",
+        look: "comic",
+        riso: settings.riso,
+        unlocked: true,
+        categories,
+      },
+      new Date(2026, 8, 25),
+    );
+    assert.equal(file.version, 2);
+    assert.equal(file.settings.unlocked, true);
+    assert.deepEqual(file.settings.categories.names["books-to-read"], "To be read-ish");
+    assert.ok(file.settings.categories.order.includes("bucket-list"));
+    const parsed = m.parseBackup(m.serializeBackup(file), m.normalizeStoredEntry);
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.settings.unlocked, true);
+    assert.equal(parsed.settings.categories.names.scraps, "Bits & bobs");
+    assert.ok(parsed.settings.categories.customs.some((c) => c.name === "Songs stuck in my head"));
+  });
+});

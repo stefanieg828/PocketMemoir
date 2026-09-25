@@ -93,6 +93,8 @@ export type MemoirEntry = {
   wouldBuyAgain?: boolean;
   photo?: string;
   happenedOn?: string;
+  /** Shelf category id (starter / preset / custom). Falls back to kind→bucket. */
+  category?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -107,6 +109,7 @@ export type MemoirDraft = {
   photo?: string;
   happenedOn?: string;
   status?: EntryStatus;
+  category?: string;
 };
 
 const KIND_SET = new Set<string>(ENTRY_KINDS);

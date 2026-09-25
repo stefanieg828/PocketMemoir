@@ -758,4 +758,26 @@
     box-shadow: var(--mis) var(--mis) 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
     clip-path: var(--tear-strip-5);
   }
+
+html[data-look="riso"] .categories-lock-card,
+  html[data-look="riso"] .cat-row {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 40%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .cat-row-name {
+    color: var(--riso-b);
+    text-decoration-color: var(--riso-a);
+  }
+
+  html[data-look="riso"] .cat-preset-chip {
+    border: 2px solid var(--riso-b);
+    border-radius: 0;
+  }
+
+  html[data-look="riso"] .categories-unlock-btn {
+    background: var(--riso-b);
+    color: var(--riso-paper);
+  }
 }
