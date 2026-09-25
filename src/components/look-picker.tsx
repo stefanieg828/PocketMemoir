@@ -25,6 +25,7 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const look = useMemoir((s) => s.look);
   const setMode = useMemoir((s) => s.setMode);
   const setLook = useMemoir((s) => s.setLook);
+  const setTourSeen = useMemoir((s) => s.setTourSeen);
   const open = usePickerUi((s) => s.open);
   const focus = usePickerUi((s) => s.focus);
   const setOpen = usePickerUi((s) => s.setOpen);
@@ -83,6 +84,19 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           <CategoriesSection />
 
           <BackupSection />
+
+          <section className="picker-section tour-replay-section" aria-label="Tour">
+            <button
+              type="button"
+              className="tour-replay"
+              onClick={() => {
+                setOpen(false);
+                setTourSeen(false);
+              }}
+            >
+              Show the tour again
+            </button>
+          </section>
 
           <div className="picker-footer">
             <p className="picker-using">

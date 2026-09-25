@@ -141,9 +141,16 @@ type MemoirState = {
   lastBackupAt: number | null;
   /** "Not now" on the backup nudge (ms). */
   backupNudgeDismissedAt: number | null;
+  /**
+   * First-visit tour finished or skipped. Omitted in older saves → treated as
+   * true on hydrate so we don't re-nag people who already use the shelf.
+   * Not part of BackupSettings — restore leaves tourSeen alone.
+   */
+  tourSeen: boolean;
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
+  setTourSeen: (seen: boolean) => void;
   setMode: (mode: ModeId) => void;
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
@@ -285,9 +292,11 @@ export const useMemoir = create<MemoirState>()(
       categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
       lastBackupAt: null,
       backupNudgeDismissedAt: null,
+      tourSeen: false,
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
+      setTourSeen: (seen) => set({ tourSeen: seen }),
       setMode: (mode) => set({ mode }),
       setLook: (look) => {
         // Unlock Looks (Comic / Riso) also unlock category editing — same gate, no paywall yet.
@@ -364,6 +373,7 @@ export const useMemoir = create<MemoirState>()(
         categories: state.categories,
         lastBackupAt: state.lastBackupAt,
         backupNudgeDismissedAt: state.backupNudgeDismissedAt,
+        tourSeen: state.tourSeen,
       }),
       merge: (persisted, current) => {
         // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
@@ -389,6 +399,8 @@ export const useMemoir = create<MemoirState>()(
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:
             typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
+          // Missing tourSeen (pre-tour saves) → already "seen" so we don't nag return visitors.
+          tourSeen: typeof incoming.tourSeen === "boolean" ? incoming.tourSeen : true,
           entries,
         };
       },

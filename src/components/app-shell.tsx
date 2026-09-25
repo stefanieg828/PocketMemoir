@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { BackupNudge } from "@/components/backup-nudge";
+import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
 import { KeepSeal } from "@/components/keep-seal";
 import { Wordmark } from "@/components/wordmark";
@@ -85,6 +86,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       ) : null}
+
+      <TourOverlay />
 
       <Toaster
         position="bottom-center"
