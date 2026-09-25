@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="app-footer mt-12 pt-4 pr-24 text-center text-xs sm:pr-0">
-        Lives in this browser. Disappear for three months if you want.{" "}
+        Lives in this browser.{" "}
         <button type="button" className="footer-link" onClick={() => openPickerAt("backup")}>
           Keep a copy
         </button>

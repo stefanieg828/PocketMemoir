@@ -1,6 +1,6 @@
 # PocketMemoir
 
-A cartoon scrapbook for the random stuff life drops on you.
+An app to keep life a little more organized.
 
 Private scrapbook / corkboard for notes, people, tickets, lists, wins — not a social network and not a journaling app with prompts. Cute container, real life inside it (user photos sit in drawn frames).
 

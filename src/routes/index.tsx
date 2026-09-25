@@ -77,14 +77,14 @@ function Home() {
         {jacket === "corkboard" ? (
           isStarterShelf(entries) ? (
             <p className="shelf-lede text-sm text-muted">
-              Starter scraps, pinned up. Tap a board to zoom — or search.
+              A few sample scraps are already pinned so you can peek around. Stick your own in whenever you’re ready — or search.
             </p>
           ) : (
             <p className="shelf-lede text-sm text-muted">Boards on the wall. Same sticky-note shelf as the book.</p>
           )
         ) : isStarterShelf(entries) ? (
           <p className="shelf-lede text-sm text-muted">
-            Starter scraps so the book isn’t shy. Flip the spreads — or search.
+            A few sample scraps are already stuck in so you can flip around. Stick your own in whenever you’re ready — or search.
           </p>
         ) : (
           <p className="shelf-lede text-sm text-muted">Flip the spreads. Your shelf, one book.</p>

@@ -9,7 +9,7 @@ import {
 
 export const APP_NAME = "PocketMemoir";
 
-export const TAGLINE = "A cartoon scrapbook for the random stuff life drops on you.";
+export const TAGLINE = "An app to keep life a little more organized.";
 
 export type KindMeta = {
   label: string;

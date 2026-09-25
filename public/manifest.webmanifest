@@ -1,7 +1,7 @@
 {
   "name": "PocketMemoir",
   "short_name": "PocketMemoir",
-  "description": "A cartoon scrapbook for the random stuff life drops on you.",
+  "description": "An app to keep life a little more organized.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
