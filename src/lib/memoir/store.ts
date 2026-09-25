@@ -1,7 +1,31 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import type { JacketId, MemoirDraft, MemoirEntry } from "./types";
-import { normalizeJacket, normalizeKind } from "./types";
+import type { BackupSettings } from "./backup";
+import {
+  DEFAULT_CATEGORY_CONFIG,
+  addCustom,
+  hideCategory,
+  moveCategory,
+  normalizeCategoryConfig,
+  removeCustom,
+  renameCategory,
+  resetCategoryName,
+  showCategory,
+  togglePreset,
+  type CategoryConfig,
+  type CategoryVibe,
+  type PresetId,
+} from "./categories";
+import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
+import type {
+  EntryStatus,
+  LookId,
+  MemoirDraft,
+  MemoirEntry,
+  ModeId,
+  RisoPrefs,
+} from "./types";
+import { bucketForKind, normalizeKind, normalizeLook, normalizeMode, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 
@@ -19,6 +43,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-win",
     kind: "win",
+    status: "keepsake",
     title: "Finished the drawer",
     how: "It closes. That is the whole win.",
     facts: "",
@@ -29,6 +54,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-dentist",
     kind: "health",
+    status: "fresh",
     title: "The dentist who gives stickers",
     how: "Morning. Bring the old card.",
     facts: "",
@@ -40,6 +66,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-bday",
     kind: "event",
+    status: "fresh",
     title: "Sam’s birthday",
     how: "The restaurant with the green awning.",
     facts: "",
@@ -51,6 +78,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-lamp",
     kind: "thing",
+    status: "soft",
     title: "The green lamp",
     how: "Kitchen shelf.",
     facts: "would buy again",
@@ -62,6 +90,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-sam",
     kind: "person",
+    status: "keepsake",
     title: "Sam",
     how: "Coworker.",
     facts: "allergic to almonds",
@@ -72,6 +101,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-snow",
     kind: "moment",
+    status: "soft",
     title: "First snow on Oak",
     how: "The lights went and it kept falling.",
     facts: "",
@@ -83,6 +113,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-wifi",
     kind: "note",
+    status: "fresh",
     title: "Wifi is oaknest",
     how: "Third floor. The plant knows.",
     facts: "",
@@ -94,15 +125,53 @@ const SEEDS: MemoirEntry[] = [
 
 type MemoirState = {
   entries: MemoirEntry[];
-  jacket: JacketId;
+  /** Layout engine: flip album vs wall of boards. */
+  mode: ModeId;
+  /** Skin: storybook / comic / riso. */
+  look: LookId;
+  riso: RisoPrefs;
+  /**
+   * Same gate as Comic / Riso Looks. Free taste = starters only; unlock opens
+   * presets, customs, rename / hide / reorder. Selecting an unlock Look (or
+   * tapping Unlock on the categories tease) turns this on — no paywall yet.
+   */
+  unlocked: boolean;
+  categories: CategoryConfig;
+  /** When the last backup file was saved (ms), or null if never. */
+  lastBackupAt: number | null;
+  /** "Not now" on the backup nudge (ms). */
+  backupNudgeDismissedAt: number | null;
+  /**
+   * First-visit tour finished or skipped. Omitted in older saves → treated as
+   * true on hydrate so we don't re-nag people who already use the shelf.
+   * Not part of BackupSettings — restore leaves tourSeen alone.
+   */
+  tourSeen: boolean;
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
-  setJacket: (jacket: JacketId) => void;
+  setTourSeen: (seen: boolean) => void;
+  setMode: (mode: ModeId) => void;
+  setLook: (look: LookId) => void;
+  setRiso: (patch: Partial<RisoPrefs>) => void;
+  setUnlocked: (unlocked: boolean) => void;
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
+  setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
+  markBackedUp: (at?: number) => void;
+  dismissBackupNudge: () => void;
+  /** Swap in restored scraps (already merged/replaced) and optionally settings. */
+  applyRestore: (entries: MemoirEntry[], settings?: BackupSettings) => void;
+  setPresetOn: (id: PresetId, on: boolean) => void;
+  createCategory: (name: string, vibe?: CategoryVibe) => string;
+  renameCategory: (id: string, name: string) => void;
+  resetCategoryName: (id: string) => void;
+  hideCategory: (id: string) => void;
+  showCategory: (id: string) => void;
+  removeCategory: (id: string) => void;
+  moveCategory: (id: string, dir: -1 | 1) => void;
 };
 
 function createId() {
@@ -160,6 +229,11 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
   return {
     id: base?.id ?? createId(),
     kind,
+    status: draft.status
+      ? normalizeStatus(draft.status)
+      : base
+        ? normalizeStatus(base.status)
+        : "fresh",
     title: draft.title.trim(),
     how: draft.how.trim(),
     facts: draft.facts.trim(),
@@ -167,19 +241,31 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
     wouldBuyAgain: kind === "thing" ? Boolean(draft.wouldBuyAgain) : undefined,
     photo: draft.photo,
     happenedOn: draft.happenedOn?.trim() || undefined,
+    category: draft.category?.trim() || base?.category,
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
   };
 }
 
-function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
+const SEED_STATUS = Object.fromEntries(SEEDS.map((s) => [s.id, s.status])) as Record<
+  string,
+  EntryStatus
+>;
+
+export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
   if (!raw || typeof raw !== "object") return null;
   const entry = raw as Partial<MemoirEntry>;
   if (typeof entry.id !== "string" || typeof entry.title !== "string") return null;
   const kind = normalizeKind(entry.kind);
+  // First migrate: missing status → seed’s demo shelf if known, else fresh
+  const status =
+    "status" in entry
+      ? normalizeStatus(entry.status)
+      : normalizeStatus(SEED_STATUS[entry.id] ?? "fresh");
   return {
     id: entry.id,
     kind,
+    status,
     title: entry.title,
     how: typeof entry.how === "string" ? entry.how : "",
     facts: typeof entry.facts === "string" ? entry.facts : "",
@@ -187,6 +273,9 @@ function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     wouldBuyAgain: kind === "thing" ? Boolean(entry.wouldBuyAgain) : undefined,
     photo: typeof entry.photo === "string" ? entry.photo : undefined,
     happenedOn: typeof entry.happenedOn === "string" ? entry.happenedOn : undefined,
+    category: typeof entry.category === "string" && entry.category.trim()
+      ? entry.category.trim()
+      : undefined,
     createdAt: typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
     updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : Date.now(),
   };
@@ -196,11 +285,26 @@ export const useMemoir = create<MemoirState>()(
   persist(
     (set, get) => ({
       entries: SEEDS,
-      jacket: "scrapbook",
+      mode: "scrapbook",
+      look: "storybook",
+      riso: { ...DEFAULT_RISO },
+      unlocked: false,
+      categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
+      lastBackupAt: null,
+      backupNudgeDismissedAt: null,
+      tourSeen: false,
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      setJacket: (jacket) => set({ jacket }),
+      setTourSeen: (seen) => set({ tourSeen: seen }),
+      setMode: (mode) => set({ mode }),
+      setLook: (look) => {
+        // Unlock Looks (Comic / Riso) also unlock category editing — same gate, no paywall yet.
+        const unlock = LOOK_SKINS[look]?.unlock === true;
+        set(unlock ? { look, unlocked: true } : { look });
+      },
+      setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
+      setUnlocked: (unlocked) => set({ unlocked }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -214,24 +318,101 @@ export const useMemoir = create<MemoirState>()(
           ),
         });
       },
+      setEntryStatus: (id, status) => {
+        const next = normalizeStatus(status);
+        set({
+          entries: get().entries.map((entry) =>
+            entry.id === id
+              ? { ...entry, status: next, updatedAt: Date.now() }
+              : entry,
+          ),
+        });
+      },
       removeEntry: (id) =>
         set({ entries: get().entries.filter((entry) => entry.id !== id) }),
+      markBackedUp: (at = Date.now()) => set({ lastBackupAt: at, backupNudgeDismissedAt: null }),
+      dismissBackupNudge: () => set({ backupNudgeDismissedAt: Date.now() }),
+      applyRestore: (entries, settings) =>
+        set(
+          settings
+            ? {
+                entries,
+                mode: normalizeMode(settings.mode),
+                look: normalizeLook(settings.look),
+                riso: normalizeRiso(settings.riso),
+                unlocked: settings.unlocked ?? get().unlocked,
+                categories: settings.categories
+                  ? normalizeCategoryConfig(settings.categories)
+                  : get().categories,
+              }
+            : { entries },
+        ),
+      setPresetOn: (id, on) => set({ categories: togglePreset(get().categories, id, on) }),
+      createCategory: (name, vibe) => {
+        const { config, id } = addCustom(get().categories, { name, vibe });
+        set({ categories: config });
+        return id;
+      },
+      renameCategory: (id, name) => set({ categories: renameCategory(get().categories, id, name) }),
+      resetCategoryName: (id) => set({ categories: resetCategoryName(get().categories, id) }),
+      hideCategory: (id) => set({ categories: hideCategory(get().categories, id) }),
+      showCategory: (id) => set({ categories: showCategory(get().categories, id) }),
+      removeCategory: (id) => set({ categories: removeCustom(get().categories, id) }),
+      moveCategory: (id, dir) => set({ categories: moveCategory(get().categories, id, dir) }),
     }),
     {
       name: STORAGE_KEY,
       skipHydration: true,
       storage: createJSONStorage(() => browserStorage),
-      partialize: (state) => ({ entries: state.entries, jacket: state.jacket }),
+      partialize: (state) => ({
+        entries: state.entries,
+        mode: state.mode,
+        look: state.look,
+        riso: state.riso,
+        unlocked: state.unlocked,
+        categories: state.categories,
+        lastBackupAt: state.lastBackupAt,
+        backupNudgeDismissedAt: state.backupNudgeDismissedAt,
+        tourSeen: state.tourSeen,
+      }),
       merge: (persisted, current) => {
-        const incoming = (persisted ?? {}) as Partial<MemoirState>;
+        // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
+        const incoming = (persisted ?? {}) as Partial<MemoirState> & { jacket?: unknown };
         const entries = Array.isArray(incoming.entries)
           ? incoming.entries
               .map(normalizeStoredEntry)
               .filter((entry): entry is MemoirEntry => Boolean(entry))
           : current.entries;
+        const unlocked =
+          typeof incoming.unlocked === "boolean"
+            ? incoming.unlocked
+            : LOOK_SKINS[normalizeLook(incoming.look)]?.unlock === true
+              ? true
+              : current.unlocked;
         return {
           ...current,
-          jacket: normalizeJacket(incoming.jacket),
+          mode: normalizeMode(incoming.mode ?? incoming.jacket),
+          look: normalizeLook(incoming.look),
+          riso: normalizeRiso(incoming.riso),
+          unlocked,
+          categories: normalizeCategoryConfig(incoming.categories),
+          lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
+          backupNudgeDismissedAt:
+            typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
+          // Zustand persist always calls merge(persisted, current). On a brand-new
+          // browser, persisted is undefined — keep current.tourSeen (false) so the tour shows.
+          // Only treat as legacy-seen when we have a real pre-tour save (object with
+          // shelf/settings keys but no tourSeen). Empty {} must not count as legacy.
+          tourSeen: (() => {
+            if (typeof incoming.tourSeen === "boolean") return incoming.tourSeen;
+            if (persisted == null || typeof persisted !== "object") return current.tourSeen;
+            const legacy =
+              Array.isArray(incoming.entries) ||
+              incoming.mode != null ||
+              incoming.look != null ||
+              incoming.jacket != null;
+            return legacy ? true : current.tourSeen;
+          })(),
           entries,
         };
       },
@@ -245,7 +426,16 @@ export const useMemoir = create<MemoirState>()(
 export function matchesQuery(entry: MemoirEntry, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const hay = [entry.title, entry.how, entry.facts, entry.note, entry.kind, entry.happenedOn]
+  const hay = [
+    entry.title,
+    entry.how,
+    entry.facts,
+    entry.note,
+    entry.kind,
+    bucketForKind(entry.kind),
+    entry.status,
+    entry.happenedOn,
+  ]
     .join(" ")
     .toLowerCase();
   return hay.includes(q);

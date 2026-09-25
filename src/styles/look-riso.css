@@ -1,0 +1,783 @@
+/* ———————————————————————————————————————————————
+ * Risograph Zine — two inks (--riso-a accent, --riso-b key) on grainy cream,
+ * torn edges, grain, off-register misprint shadow, ADMIT ONE tickets,
+ * round stamps, handwritten labels, brush-script title.
+ * Inks + fonts come from user prefs (inline vars on <html>); grain, tears,
+ * off-register and stamps are fixed so it always reads as riso.
+ * ——————————————————————————————————————————————— */
+@layer components {
+  html[data-look="riso"] {
+    --doodle-heart: var(--img-heart);
+    --doodle-star: var(--img-asterisk);
+    --cover: var(--riso-b);
+    --mis: 4px; /* off-register distance */
+  }
+
+  /* Page surfaces */
+  html[data-look="riso"][data-mode="scrapbook"] body {
+    background-color: var(--riso-paper);
+    background-image:
+      var(--tex-grain),
+      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in srgb, var(--riso-a) 14%, transparent), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, color-mix(in srgb, var(--riso-b) 10%, transparent), transparent 70%);
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] body {
+    background-color: var(--cork);
+    background-image: var(--tex-grain), var(--tex-cork-dark), var(--tex-cork-mid), var(--tex-cork-light);
+  }
+
+  /* Wordmark gets a torn cream paper backing on cork so both inks read */
+  html[data-look="riso"][data-mode="corkboard"] .wm-riso {
+    isolation: isolate;
+    padding: 0.5rem 1.4rem 0.7rem 0.7rem;
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] .wm-riso::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--tex-grain-fine), #f4ecdf;
+    -webkit-mask: var(--mask-torn-b) center / 100% 100% no-repeat;
+    mask: var(--mask-torn-b) center / 100% 100% no-repeat;
+    transform: rotate(-1.5deg);
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] .wm-riso-swash {
+    left: 1rem;
+    right: 0.6rem;
+    bottom: 0.45rem;
+  }
+
+  /* Registration mark, top-right of the page */
+  html[data-look="riso"] .app-frame::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    background: var(--riso-a);
+    -webkit-mask: var(--mask-crosshair) center / contain no-repeat;
+    mask: var(--mask-crosshair) center / contain no-repeat;
+    opacity: 0.9;
+  }
+
+  /* Headlines: key ink with accent misprint */
+  html[data-look="riso"] :is(.look-headline, .cork-wall-title, .cork-zoom-title, .picker-title, .album-cover-title) {
+    font-family: var(--font-title);
+    font-weight: 400;
+    color: var(--riso-b);
+    text-shadow: 2px 2px 0 color-mix(in srgb, var(--riso-a) 85%, transparent);
+  }
+
+  /* Wordmark: stacked two-ink brush title */
+  .wm-riso {
+    position: relative;
+    display: inline-grid;
+    padding-bottom: 0.35rem;
+    font-family: var(--font-title);
+    font-size: clamp(2.3rem, 1.8rem + 2vw, 3rem);
+    line-height: 0.92;
+  }
+
+  .wm-riso-a {
+    color: var(--riso-a);
+    text-shadow: -1.5px 1px 0 color-mix(in srgb, var(--riso-b) 22%, transparent);
+    transform: rotate(-4deg);
+    transform-origin: left bottom;
+  }
+
+  .wm-riso-b {
+    margin-left: 1.2rem;
+    color: var(--riso-b);
+    text-shadow: 2.5px 2px 0 color-mix(in srgb, var(--riso-a) 80%, transparent);
+    transform: rotate(-4deg);
+    transform-origin: left bottom;
+  }
+
+  .wm-riso-swash {
+    position: absolute;
+    left: 0.4rem;
+    right: -0.8rem;
+    bottom: 0;
+    height: 0.4rem;
+    background: var(--riso-a);
+    border-radius: 999px 40% 999px 30%;
+    transform: rotate(-3deg);
+    opacity: 0.9;
+  }
+
+  html[data-look="riso"] .app-tagline {
+    font-size: 1.05rem;
+    color: var(--riso-b);
+  }
+
+  /* ——— Torn paper chrome (shared recipe) ———
+   * ::before = paper fill + grain, torn mask
+   * ::after  = off-register accent ink layer, same mask, nudged
+   */
+  html[data-look="riso"] :is(
+      .scrap-card,
+      .cork-mini-board,
+      .app-nav-link,
+      .cork-wall-intro,
+      .sticker-cta,
+      .album-cover-title-block,
+      .album-cover-body,
+      .cork-zoom-plaque,
+      .flip-tab
+    ) {
+    position: relative;
+    isolation: isolate;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    --paper-fill: var(--color-card);
+    --paper-mask: var(--mask-torn-a);
+  }
+
+  html[data-look="riso"] :is(
+      .scrap-card,
+      .cork-mini-board,
+      .app-nav-link,
+      .cork-wall-intro,
+      .sticker-cta,
+      .album-cover-title-block,
+      .album-cover-body,
+      .cork-zoom-plaque,
+      .flip-tab
+    )::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--tex-grain-fine), var(--paper-fill);
+    -webkit-mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+    mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+  }
+
+  html[data-look="riso"] :is(
+      .scrap-card,
+      .cork-mini-board,
+      .app-nav-link,
+      .cork-wall-intro,
+      .sticker-cta,
+      .album-cover-title-block,
+      .album-cover-body,
+      .cork-zoom-plaque
+    )::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    translate: var(--mis) var(--mis);
+    background: var(--mis-ink, var(--shadow-ink));
+    -webkit-mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+    mask: var(--tear, var(--paper-mask)) center / 100% 100% no-repeat;
+    mix-blend-mode: multiply;
+  }
+
+  html[data-look="riso"] a.scrap-card:hover {
+    box-shadow: none;
+  }
+
+  html[data-look="riso"] a.scrap-card:hover::after {
+    translate: calc(var(--mis) + 2px) calc(var(--mis) + 2px);
+  }
+
+  /* Card tones: cream / accent / key-ink (inverted) / kraft */
+  /* cream cards sat invisibly on the cream album page: use a brighter sheet */
+  html[data-look="riso"] .scrap-card.scrap-tone-0 {
+    --paper-fill: color-mix(in srgb, #fff 62%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .scrap-card.scrap-tone-1 {
+    --paper-fill: color-mix(in srgb, var(--riso-a) 58%, var(--riso-paper));
+    --paper-mask: var(--mask-torn-b);
+    --mis-ink: color-mix(in srgb, var(--riso-b) 55%, transparent);
+  }
+
+  html[data-look="riso"] .scrap-card.scrap-tone-2 {
+    --paper-fill: var(--riso-b);
+    --paper-mask: var(--mask-torn-c);
+    --color-ink: #f4ecdf;
+    --color-muted: color-mix(in srgb, #f4ecdf 82%, var(--riso-b));
+    --color-faint: color-mix(in srgb, var(--riso-a) 80%, #f4ecdf);
+    --color-line: #f4ecdf;
+    --color-card: color-mix(in srgb, var(--riso-b) 80%, #000);
+    color: #f4ecdf;
+  }
+
+  html[data-look="riso"] .scrap-card.scrap-tone-3 {
+    --paper-fill: color-mix(in srgb, #d9c7a4 55%, var(--riso-paper));
+    --paper-mask: var(--mask-torn-b);
+  }
+
+  html[data-look="riso"] .scrap-title {
+    font-size: 1.4rem;
+    line-height: 1.15;
+  }
+
+  /* ADMIT ONE ticket meta */
+  html[data-look="riso"] .scrap-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0.15rem 0.5rem;
+    border: 1.5px dashed currentColor;
+    color: var(--color-ink);
+    opacity: 0.9;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: rotate(-1.5deg);
+  }
+
+  html[data-look="riso"] .scrap-meta::before {
+    content: "admit one";
+    color: var(--riso-a);
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+  }
+
+  html[data-look="riso"] .scrap-tone-1 .scrap-meta::before {
+    color: var(--riso-b);
+  }
+
+  html[data-look="riso"] .scrap-meta {
+    --color-faint: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  html[data-look="riso"] .scrap-tone-1 .scrap-meta {
+    --color-faint: var(--riso-b);
+    color: var(--riso-b);
+    border-color: color-mix(in srgb, var(--riso-b) 70%, transparent);
+  }
+
+  html[data-look="riso"] .drawn-frame {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--riso-a) 16%, var(--riso-paper));
+    box-shadow: var(--mis) var(--mis) 0 color-mix(in srgb, var(--riso-a) 60%, transparent);
+    color: var(--riso-b);
+  }
+
+  html[data-look="riso"] .drawn-frame > span {
+    border-radius: 0;
+    background: var(--tex-grain-fine), color-mix(in srgb, #fff 55%, var(--riso-paper));
+  }
+
+  /* Photos print as a one-ink duotone */
+  html[data-look="riso"] :is(.drawn-frame, .scrap-card, .kept-row) img {
+    filter: grayscale(1) contrast(1.15);
+    mix-blend-mode: multiply;
+  }
+
+  /* Tape: gingham / flat accent with torn ends */
+  html[data-look="riso"] :is(.washi, .washi-corner, .album-cover-washi, .cork-mini-washi) {
+    box-shadow: none;
+    clip-path: polygon(0 10%, 4% 0, 8% 12%, 12% 2%, 88% 0, 92% 10%, 96% 2%, 100% 12%, 100% 90%, 96% 100%, 92% 88%, 88% 98%, 12% 100%, 8% 90%, 4% 100%, 0 88%);
+    mix-blend-mode: multiply;
+  }
+
+  /* Brass tacks */
+  html[data-look="riso"] .pin {
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 1.5px solid #6b5224;
+    background: radial-gradient(circle at 35% 30%, #f7e2a6 0 16%, #c9a35a 17% 55%, #8a6a2f 56%);
+    box-shadow: 1px 3px 3px rgb(40 28 18 / 0.35);
+  }
+
+  html[data-look="riso"] .cork-peek-pin {
+    border-color: #6b5224;
+    background: #c9a35a;
+  }
+
+  /* Doodles & stamps printed in accent ink */
+  html[data-look="riso"] .doodle {
+    background: var(--riso-a) !important;
+    -webkit-mask: var(--doodle-img) center / contain no-repeat;
+    mask: var(--doodle-img) center / contain no-repeat;
+  }
+
+  html[data-look="riso"] :is(.wax-on-scrap, .album-cover-seal, .wax-accent, .flip-keepsake-badge) {
+    display: grid;
+    place-items: center;
+    width: 2.7rem;
+    height: 2.7rem;
+    border: 2.5px double var(--riso-a);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--riso-paper) 70%, transparent) !important;
+    color: var(--riso-a);
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: none;
+    transform: rotate(-12deg);
+    mix-blend-mode: multiply;
+  }
+
+  html[data-look="riso"] :is(.wax-on-scrap, .album-cover-seal, .wax-accent)::after {
+    content: "keep ★";
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  html[data-look="riso"] .flip-keepsake-badge {
+    width: 2.3rem;
+    height: 2.3rem;
+    font-size: 0.9rem;
+  }
+
+  /* Kind sticker → round rubber stamp */
+  html[data-look="riso"] .kind-sticker {
+    width: 4.5rem !important;
+    height: 4.5rem !important;
+    padding: 0 !important;
+    border: 3px double var(--riso-a);
+    border-radius: 999px;
+    background: transparent !important;
+    color: var(--riso-a);
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: none;
+    transform: rotate(-10deg);
+    mix-blend-mode: multiply;
+  }
+
+  html[data-look="riso"] .kind-sticker.h-28 {
+    width: 6.5rem !important;
+    height: 6.5rem !important;
+    font-size: 0.9rem;
+  }
+
+  html[data-look="riso"] .scrap-tone-1 .kind-sticker {
+    border-color: var(--riso-b);
+    color: var(--riso-b);
+  }
+
+  html[data-look="riso"] .scrap-tone-2 .kind-sticker {
+    mix-blend-mode: normal;
+  }
+
+  /* CTA: key-ink torn label, brush lettering */
+  html[data-look="riso"] .sticker-cta {
+    --paper-fill: var(--riso-b);
+    --paper-mask: var(--mask-torn-c);
+    padding: 0.5rem 1.2rem 0.55rem 0.7rem;
+    color: #f4ecdf;
+    font-family: var(--font-title);
+    font-size: 1.35rem;
+  }
+
+  html[data-look="riso"] .seal-face {
+    border: 0;
+    background: transparent;
+    color: var(--riso-a);
+  }
+
+  /* Chips: key-ink outline + misprint offset */
+  html[data-look="riso"] :is(.kind-chip, .status-chip, .flip-nav-btn, .cork-back-btn, .search-slip) {
+    border-style: solid;
+    border-width: 1.5px;
+  }
+
+  html[data-look="riso"] .kind-chip[aria-checked="true"],
+  html[data-look="riso"] .kind-chip[aria-selected="true"] {
+    background: color-mix(in srgb, var(--riso-a) 55%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .notebook-line {
+    border: 0;
+    border-bottom: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--riso-paper) 60%, #fff);
+    box-shadow: none;
+  }
+
+  /* Nav: torn paper tabs */
+  html[data-look="riso"] .app-nav {
+    gap: 0.5rem;
+  }
+
+  html[data-look="riso"] .app-nav-link {
+    --paper-mask: var(--mask-torn-b);
+    min-height: 2.5rem;
+    padding: 0.2rem 1rem;
+    font-size: 1.12rem;
+  }
+
+  html[data-look="riso"] .app-nav-link.is-active {
+    --paper-fill: var(--riso-b);
+    color: #f4ecdf;
+  }
+
+  html[data-look="riso"] .app-nav-link:nth-child(3) {
+    --paper-fill: color-mix(in srgb, var(--riso-a) 55%, var(--riso-paper));
+    --paper-mask: var(--mask-torn-c);
+  }
+
+  /* Flip album */
+  html[data-look="riso"] .flip-book {
+    border-width: 2px;
+    box-shadow: 6px 6px 0 var(--shadow-ink);
+  }
+
+  html[data-look="riso"] .flip-tab {
+    --paper-fill: var(--tab-1);
+    padding-top: 0.45rem;
+    font-size: 1rem;
+  }
+  html[data-look="riso"] .flip-tab:nth-child(3n + 2) { --paper-fill: var(--tab-2); }
+  html[data-look="riso"] .flip-tab:nth-child(3n) { --paper-fill: var(--tab-3); }
+  html[data-look="riso"] .flip-tab.is-active {
+    --paper-fill: var(--riso-b);
+    color: #f4ecdf;
+  }
+
+  html[data-look="riso"] .flip-page-banner-tape {
+    clip-path: var(--strip, var(--clip-torn-strip));
+  }
+
+  html[data-look="riso"] .flip-page-banner:not(.flip-page-banner-quiet)::after {
+    content: "";
+    position: absolute;
+    inset: -0.2rem -0.45rem;
+    z-index: -1;
+    translate: 3px 3px;
+    background: var(--shadow-ink);
+    clip-path: var(--strip, var(--clip-torn-strip));
+    transform: rotate(-2deg);
+  }
+
+  html[data-look="riso"] .flip-page-banner {
+    isolation: isolate;
+  }
+
+  html[data-look="riso"] .flip-page-title {
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  html[data-look="riso"] .flip-page-left {
+    border-right: 1.5px dashed color-mix(in srgb, var(--riso-b) 45%, transparent);
+  }
+
+  /* Riso papers: grainy cream, ink detail per preset */
+  html[data-look="riso"] .flip-book[class*="album-paper-"],
+  html[data-look="riso"] .album-page[class*="album-paper-"] {
+    background: var(--tex-grain-fine), color-mix(in srgb, var(--riso-paper) 70%, #fff);
+  }
+  html[data-look="riso"] .album-paper-cream-ruled {
+    background:
+      var(--tex-grain-fine),
+      repeating-linear-gradient(transparent 0 27px, color-mix(in srgb, var(--riso-b) 14%, transparent) 27px 28px),
+      color-mix(in srgb, var(--riso-paper) 70%, #fff) !important;
+  }
+  html[data-look="riso"] .album-paper-blush-dots,
+  html[data-look="riso"] .album-paper-floral-washi {
+    background:
+      var(--tex-grain-fine),
+      radial-gradient(circle, color-mix(in srgb, var(--riso-a) 30%, transparent) 1.3px, transparent 1.6px) 0 0 / 14px 14px,
+      color-mix(in srgb, var(--riso-paper) 70%, #fff) !important;
+  }
+  html[data-look="riso"] .album-paper-mint-grid,
+  html[data-look="riso"] .album-paper-lavender-dots {
+    background:
+      var(--tex-grain-fine),
+      linear-gradient(color-mix(in srgb, var(--riso-b) 11%, transparent) 1px, transparent 1px) 0 0 / 20px 20px,
+      linear-gradient(90deg, color-mix(in srgb, var(--riso-b) 11%, transparent) 1px, transparent 1px) 0 0 / 20px 20px,
+      color-mix(in srgb, var(--riso-paper) 70%, #fff) !important;
+  }
+  html[data-look="riso"] .album-paper-kraft-flecks {
+    background: var(--tex-grain), color-mix(in srgb, #d9c7a4 45%, var(--riso-paper)) !important;
+  }
+
+  /* Album cover (Keep route) */
+  html[data-look="riso"] .album-cover-title-block {
+    --paper-mask: var(--mask-torn-b);
+  }
+
+  /* Cork wall */
+  html[data-look="riso"] .cork-wall-intro {
+    --paper-fill: color-mix(in srgb, var(--riso-a) 62%, var(--riso-paper));
+    --paper-mask: var(--mask-torn-b);
+    --mis-ink: color-mix(in srgb, var(--riso-b) 70%, transparent);
+    padding: 1rem 1.1rem 1.1rem;
+    transform: rotate(-1deg);
+  }
+
+  html[data-look="riso"] .cork-wall-kicker {
+    color: var(--riso-b);
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  html[data-look="riso"] .cork-wall-title {
+    text-shadow: 2px 2px 0 color-mix(in srgb, #f4ecdf 70%, transparent);
+  }
+
+  html[data-look="riso"] .cork-wall-sub {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    background: var(--riso-b);
+    color: #f4ecdf;
+    clip-path: var(--strip, var(--clip-torn-strip-b));
+    transform: rotate(1deg);
+  }
+
+  html[data-look="riso"] .cork-mini-board {
+    padding-top: 2.7rem;
+  }
+  html[data-look="riso"] .cork-mini-board.board-tone-0 {
+    --paper-fill: color-mix(in srgb, var(--riso-a) 60%, var(--riso-paper));
+    --mis-ink: color-mix(in srgb, var(--riso-b) 60%, transparent);
+  }
+  html[data-look="riso"] .cork-mini-board.board-tone-1 {
+    --paper-fill: var(--riso-b);
+    --paper-mask: var(--mask-torn-b);
+    --color-ink: #f4ecdf;
+    --color-line: #f4ecdf;
+    color: #f4ecdf;
+  }
+  html[data-look="riso"] .cork-mini-board.board-tone-2 {
+    --paper-fill: #f4ecdf;
+    --paper-mask: var(--mask-torn-c);
+  }
+  html[data-look="riso"] .cork-mini-board.board-tone-3 {
+    --paper-fill: color-mix(in srgb, #d9c7a4 55%, var(--riso-paper));
+    --paper-mask: var(--mask-torn-b);
+  }
+
+  html[data-look="riso"] .cork-mini-label-scrap {
+    background: transparent;
+    color: inherit;
+    padding-bottom: 0.4rem;
+    transform: rotate(-2deg);
+  }
+
+  html[data-look="riso"] .cork-mini-label-scrap::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    width: 60%;
+    bottom: 0.1rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--riso-a);
+  }
+
+  html[data-look="riso"] .cork-mini-board.board-tone-0 .cork-mini-label-scrap::after {
+    background: var(--riso-b);
+  }
+
+  html[data-look="riso"] .cork-mini-label {
+    font-size: min(1.2rem, 11cqi);
+    letter-spacing: -0.01em;
+  }
+
+  html[data-look="riso"] .cork-peek {
+    border: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 70%, var(--riso-paper));
+    color: var(--riso-b);
+    box-shadow: 2px 2px 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+    clip-path: var(--strip, var(--clip-torn-strip));
+  }
+
+  html[data-look="riso"] .cork-peek-pin {
+    display: none;
+  }
+
+  html[data-look="riso"] .cork-mini-board.board-tone-0 .cork-peek {
+    box-shadow: 2px 2px 0 color-mix(in srgb, var(--riso-b) 55%, transparent);
+  }
+
+  /* count → round stamp */
+  html[data-look="riso"] .cork-mini-count {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    width: 3.3rem;
+    height: 3.3rem;
+    right: -0.4rem;
+    bottom: -0.9rem;
+    padding: 0;
+    border: 2.5px double var(--riso-b);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--riso-paper) 88%, transparent);
+    color: var(--riso-b);
+    box-shadow: none;
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1;
+    transform: rotate(-12deg);
+  }
+
+  html[data-look="riso"] .cork-count-n {
+    font-size: 1.05rem;
+  }
+
+  html[data-look="riso"] .cork-count-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  html[data-look="riso"] .cork-zoom-board {
+    border: 0;
+    border-radius: 0.2rem;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--riso-b) 25%, transparent);
+  }
+
+  html[data-look="riso"] .cork-zoom-plaque {
+    --paper-fill: color-mix(in srgb, var(--riso-a) 60%, var(--riso-paper));
+    --mis-ink: color-mix(in srgb, var(--riso-b) 60%, transparent);
+    padding: 0.35rem 0.9rem;
+    font-size: 1.15rem;
+  }
+
+  html[data-look="riso"] .cork-zoom-toolbar {
+    padding: 0.35rem 0.45rem;
+    background: color-mix(in srgb, var(--riso-paper) 92%, transparent);
+    clip-path: var(--strip, var(--clip-torn-strip-b));
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] :is(.shelf-lede, .app-footer, .app-tagline) {
+    border-radius: 0;
+    clip-path: var(--strip, var(--clip-torn-strip-b));
+    padding-block: 0.35rem;
+  }
+
+  /* Picker */
+  html[data-look="riso"] .picker-dialog {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0.2rem;
+    background: var(--tex-grain-fine), var(--riso-paper);
+    box-shadow: 7px 7px 0 var(--shadow-ink);
+  }
+
+  html[data-look="riso"] .picker-step {
+    border: 2px solid var(--riso-b);
+    background: var(--riso-a);
+  }
+
+  html[data-look="riso"] .picker-sub {
+    font-family: "Karla", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+  }
+
+  html[data-look="riso"] .app-toast {
+    border-style: dashed !important;
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] .cork-sheet {
+    border: 0;
+    border-radius: 0;
+    background: var(--tex-grain-fine), color-mix(in srgb, #fff 45%, var(--riso-paper));
+    box-shadow: var(--mis) var(--mis) 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+    clip-path: polygon(0 1%, 6% 0, 14% 1.5%, 30% 0, 47% 1%, 63% 0, 80% 1.5%, 94% 0, 100% 1%, 99.5% 30%, 100% 62%, 99% 100%, 84% 99%, 66% 100%, 48% 98.8%, 30% 100%, 12% 99%, 0 100%, 0.8% 66%, 0 34%);
+  }
+
+  html[data-look="riso"][data-mode="corkboard"] .on-cork {
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 45%, var(--riso-paper));
+  }
+
+  /* Backup / restore */
+  html[data-look="riso"] .restore-dialog {
+    --restore-radius: 0.15rem;
+    border: 2px dashed var(--riso-b);
+    border-radius: 0.2rem;
+    background: var(--tex-grain-fine), var(--riso-paper);
+    box-shadow: 7px 7px 0 var(--shadow-ink);
+  }
+
+  html[data-look="riso"] .restore-title {
+    color: var(--riso-b);
+    text-shadow: 2px 1.5px 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+  }
+
+  html[data-look="riso"] .restore-choice {
+    border: 2px solid var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 40%, var(--riso-paper));
+    clip-path: var(--tear-strip-2);
+  }
+
+  html[data-look="riso"] .restore-choice:nth-child(2) {
+    clip-path: var(--tear-strip-6);
+  }
+
+  html[data-look="riso"] .restore-choice.is-selected {
+    outline: 0;
+    background: color-mix(in srgb, var(--riso-a) 45%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .restore-choice-name {
+    color: var(--riso-b);
+  }
+
+  html[data-look="riso"] .backup-step {
+    border: 2px solid var(--riso-b);
+    background: var(--riso-b);
+    color: var(--riso-paper);
+  }
+
+  html[data-look="riso"] .backup-section {
+    border-top: 2px dashed var(--riso-b);
+  }
+
+  html[data-look="riso"] .backup-error,
+  html[data-look="riso"] .restore-warn {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--riso-a) 22%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .backup-nudge {
+    border: 0;
+    border-radius: 0;
+    background: var(--tex-grain-fine), color-mix(in srgb, #fff 40%, var(--riso-paper));
+    box-shadow: var(--mis) var(--mis) 0 color-mix(in srgb, var(--riso-a) 70%, transparent);
+    clip-path: var(--tear-strip-5);
+  }
+
+html[data-look="riso"] .categories-lock-card,
+  html[data-look="riso"] .cat-row {
+    border: 2px dashed var(--riso-b);
+    border-radius: 0;
+    background: color-mix(in srgb, #fff 40%, var(--riso-paper));
+  }
+
+  html[data-look="riso"] .cat-row-name {
+    color: var(--riso-b);
+    text-decoration-color: var(--riso-a);
+  }
+
+  html[data-look="riso"] .cat-preset-chip {
+    border: 2px solid var(--riso-b);
+    border-radius: 0;
+  }
+
+  html[data-look="riso"] .categories-unlock-btn {
+    background: var(--riso-b);
+    color: var(--riso-paper);
+  }
+}

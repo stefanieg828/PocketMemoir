@@ -3,7 +3,7 @@ import { addMonths, format, getDay, startOfMonth } from "date-fns";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { daysMarkedInMonth, entriesOnDay, toDayKey } from "@/lib/memoir/dates";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ type CalCell = { day: null } | { day: number; date: Date };
 
 function CalendarPage() {
   const entries = useMemoir((s) => s.entries);
-  const look = LOOK_META[useMemoir((s) => s.jacket)];
+  const look = MODE_META[useMemoir((s) => s.mode)];
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selected, setSelected] = useState<Date | null>(null);
 
@@ -50,7 +50,7 @@ function CalendarPage() {
         >
           Prev
         </button>
-        <h1 className="text-center font-display text-xl font-semibold sm:text-title">
+        <h1 className="on-cork text-center font-display text-xl font-semibold sm:text-title">
           {format(cursor, "MMMM yyyy")}
         </h1>
         <button
@@ -65,11 +65,11 @@ function CalendarPage() {
           Next
         </button>
       </div>
-      <p className="mt-3 text-center text-sm text-muted">
+      <p className="on-cork mx-auto mt-3 text-center text-sm text-muted">
         Dots mean a dated event, moment, trip, or checkup. No nagging.
       </p>
 
-      <div className="scrap-card mt-6 p-3 sm:p-4">
+      <div className="scrap-card tear-7 mt-6 p-3 sm:p-4">
         <div className="grid grid-cols-7 gap-1 text-center">
           {WEEKDAYS.map((d) => (
             <div key={d} className="pb-2 font-display text-xs text-faint">
@@ -103,7 +103,7 @@ function CalendarPage() {
                 {hasMark ? (
                   <span
                     className={cn(
-                      "mt-0.5 size-2 rounded-full border-2 border-ink",
+                      "cal-dot mt-0.5 size-2 rounded-full",
                       isSelected ? "bg-seal-ink" : "bg-washi",
                     )}
                   />
@@ -136,7 +136,7 @@ function CalendarPage() {
             </Link>
           </div>
           {selectedEntries.length === 0 ? (
-            <p className="mt-5 text-sm text-muted">{look.emptyBody}</p>
+            <p className="on-cork mt-5 text-sm text-muted">{look.emptyBody}</p>
           ) : (
             <ul className="mt-6 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2">
               {selectedEntries.map((entry) => (
@@ -148,7 +148,7 @@ function CalendarPage() {
           )}
         </div>
       ) : (
-        <p className="mt-6 text-center text-sm text-faint">Tap a day to see what’s there.</p>
+        <p className="on-cork mx-auto mt-6 text-center text-sm text-faint">Tap a day to see what’s there.</p>
       )}
     </section>
   );

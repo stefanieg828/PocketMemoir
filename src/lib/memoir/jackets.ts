@@ -1,7 +1,7 @@
-import type { JacketId } from "./types";
+import type { ModeId } from "./types";
 
-export type LookMeta = {
-  id: JacketId;
+export type ModeMeta = {
+  id: ModeId;
   name: string;
   line: string;
   emptyTitle: string;
@@ -13,11 +13,12 @@ export type LookMeta = {
   keptToast: (title: string) => string;
 };
 
-export const LOOK_META: Record<JacketId, LookMeta> = {
+/** Mode copy (layout engine). Skins live in looks.ts. */
+export const MODE_META: Record<ModeId, ModeMeta> = {
   scrapbook: {
     id: "scrapbook",
     name: "Scrapbook",
-    line: "Cream pages, washi, a smiling seal.",
+    line: "A flip album. Six spreads, one book.",
     emptyTitle: "The page is blank on purpose.",
     emptyBody: "Nothing stuck in yet.",
     keepLabel: "Stick it in",
@@ -29,7 +30,7 @@ export const LOOK_META: Record<JacketId, LookMeta> = {
   corkboard: {
     id: "corkboard",
     name: "Corkboard",
-    line: "Cork dots, index cards, candy pins.",
+    line: "A wall of six boards. Tap one to zoom in.",
     emptyTitle: "Plenty of cork left.",
     emptyBody: "Nothing pinned yet.",
     keepLabel: "Pin it",
@@ -40,4 +41,4 @@ export const LOOK_META: Record<JacketId, LookMeta> = {
   },
 };
 
-export const JACKET_META = LOOK_META;
+export const JACKET_META = MODE_META;

@@ -4,10 +4,21 @@ import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
 import { Button } from "@/components/ui/button";
 import { KIND_META } from "@/lib/memoir/copy";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import {
+  defaultKindForCategory,
+  isStarterId,
+} from "@/lib/memoir/categories";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { compressPhoto } from "@/lib/memoir/photos";
 import { useMemoir } from "@/lib/memoir/store";
-import { ENTRY_KINDS, type EntryKind, type MemoirDraft } from "@/lib/memoir/types";
+import { useShelfCategories } from "@/lib/memoir/use-shelf";
+import {
+  BUCKET_KINDS,
+  bucketForKind,
+  type EntryBucket,
+  type EntryKind,
+  type MemoirDraft,
+} from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 type KeepFormProps = {
@@ -17,9 +28,14 @@ type KeepFormProps = {
 };
 
 export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
-  const look = useMemoir((s) => s.jacket);
+  const look = useMemoir((s) => s.mode);
+  const shelf = useShelfCategories();
   const fileRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "note");
+  const [bucket, setBucket] = useState<string>(
+    initial?.category
+      ?? (initial?.kind ? bucketForKind(initial.kind) : shelf[0]?.id ?? "scraps"),
+  );
   const meta = KIND_META[kind];
   const [title, setTitle] = useState(initial?.title ?? "");
   const [how, setHow] = useState(initial?.how ?? "");
@@ -28,6 +44,18 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const [wouldBuyAgain, setWouldBuyAgain] = useState(Boolean(initial?.wouldBuyAgain));
   const [photo, setPhoto] = useState<string | undefined>(initial?.photo);
   const [busy, setBusy] = useState(false);
+
+  const kindsInBucket = isStarterId(bucket) ? BUCKET_KINDS[bucket as EntryBucket] : [defaultKindForCategory(bucket)];
+
+  function pickBucket(next: string) {
+    setBucket(next);
+    if (isStarterId(next)) {
+      const kinds = BUCKET_KINDS[next];
+      if (!kinds.includes(kind)) setKind(kinds[0] ?? "note");
+    } else {
+      setKind(defaultKindForCategory(next));
+    }
+  }
 
   async function onPickPhoto(file: File | undefined) {
     if (!file) return;
@@ -68,27 +96,57 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       happenedOn: dateValue || undefined,
       wouldBuyAgain: kind === "thing" ? wouldBuyAgain : undefined,
       photo,
+      category: bucket,
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div role="radiogroup" aria-label="What kind of scrap" className="flex flex-wrap gap-2">
-        {ENTRY_KINDS.map((id) => {
-          const on = id === kind;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => setKind(id)}
-              className={cn("kind-chip", on && "bg-gold")}
-            >
-              {KIND_META[id].label}
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-3">
+        <div
+          role="radiogroup"
+          aria-label="Shelf category"
+          className="flex flex-wrap gap-2"
+        >
+          {shelf.map((cat) => {
+            const on = cat.id === bucket;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => pickBucket(cat.id)}
+                className={cn("kind-chip", on && "bg-gold")}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
+        {isStarterId(bucket) ? (
+        <div
+          role="radiogroup"
+          aria-label="What kind of scrap"
+          className="keep-kind-row flex flex-wrap gap-2"
+        >
+          {kindsInBucket.map((id) => {
+            const on = id === kind;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setKind(id)}
+                className={cn("kind-chip kind-chip-soft", on && "bg-gold")}
+              >
+                {KIND_META[id].label}
+              </button>
+            );
+          })}
+        </div>
+        ) : null}
       </div>
 
       <button
@@ -201,7 +259,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         ) : (
           <span />
         )}
-        <KeepSeal type="submit" label={LOOK_META[look].keepLabel} size="lg" />
+        <KeepSeal type="submit" label={MODE_META[look].keepLabel} size="lg" />
       </div>
     </form>
   );

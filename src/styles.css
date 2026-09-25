@@ -1,58 +1,230 @@
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bangers&family=Caveat+Brush&family=Comic+Neue:wght@400;700&family=Courier+Prime:wght@400;700&family=DM+Serif+Display&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@500;700&family=Kaushan+Script&family=Nunito:wght@600;700;800&family=Patrick+Hand&family=Permanent+Marker&display=swap");
 @import "tailwindcss";
+@import "./styles/assets.css";
+@import "./styles/components.css";
+@import "./styles/look-storybook.css";
+@import "./styles/look-comic.css";
+@import "./styles/look-riso.css";
 
-@theme {
-  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fredoka", "Nunito", ui-sans-serif, system-ui, sans-serif;
+/*
+ * Two independent axes on <html>:
+ *   data-mode = scrapbook | corkboard   → layout engine (flip album vs wall of boards)
+ *   data-look = storybook | comic | riso → skin (palette, type, outlines, textures, chrome)
+ * Components read tokens only; look files set tokens + add look-specific ornament.
+ */
 
-  --color-paper: #fff3df;
-  --color-paper-deep: #ffe4b8;
+@theme static {
+  --font-sans: "Patrick Hand", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Patrick Hand", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "Fraunces", Georgia, serif;
+
+  /* Soft Storybook defaults (overridden per look below) */
+  --color-paper: #f5efe3;
+  --color-paper-deep: #e9dfcc;
   --color-card: #fffaf1;
-  --color-ink: #3a2430;
-  --color-muted: #7a5360;
-  --color-faint: #b18490;
-  --color-line: #3a2430;
-  --color-seal: #9b2d4a;
+  --color-ink: #4a3f37;
+  --color-muted: #75665a;
+  --color-faint: #a2927f;
+  --color-line: #6a5646;
+  --color-seal: #8aa585;
   --color-seal-ink: #fffaf1;
-  --color-gold: #ffd36a;
-  --color-washi: #ff8aa4;
-  --color-mint: #7ed0b0;
-  --color-sky: #8eb6ff;
+  --color-gold: #f3d3b4;
+  --color-washi: #eeb49c;
+  --color-mint: #bdd0b5;
+  --color-sage: #6f8b6c;
+  --color-sky: #c0d8d4;
+  --color-peach: #f3c8b0;
+  --color-duck: #c3dbd7;
+  --color-cream: #f7f0e2;
+  --color-accent: #c8826d;
 
   --radius-sm: 0.7rem;
   --radius-md: 1rem;
   --radius-lg: 1.25rem;
   --radius-xl: 1.6rem;
 
-  --shadow-paper: 4px 4px 0 var(--color-ink);
-  --shadow-paper-hover: 6px 6px 0 var(--color-ink);
-  --shadow-seal: 3px 3px 0 var(--color-ink);
+  --shadow-paper: var(--sh-md), var(--soft);
+  --shadow-paper-hover: var(--sh-lg), var(--soft-lift);
+  --shadow-seal: var(--sh-sm), var(--soft);
 
   --text-title: clamp(1.45rem, 1.2rem + 1vw, 2rem);
 }
 
-html[data-jacket="corkboard"] {
-  --color-paper: #e2a15a;
-  --color-paper-deep: #c9843e;
-  --color-card: #fff7e8;
-  --color-ink: #3a2718;
-  --color-muted: #6d4a30;
-  --color-faint: #a07858;
-  --color-seal: #e24b4b;
-  --color-seal-ink: #fffaf1;
-  --color-gold: #ffd36a;
-  --color-washi: #3d7ea6;
-  --color-mint: #3faf7a;
-  --color-sky: #5b7cff;
+/* ——— Structural tokens (storybook defaults) ——— */
+:root {
+  color-scheme: light;
+  --bw-k: 0.5; /* outline weight multiplier */
+  --sh-k: 0; /* hard offset-shadow multiplier */
+  --shadow-ink: transparent;
+  --soft: 0 1px 1px rgb(74 63 55 / 0.08), 0 8px 18px -10px rgb(74 63 55 / 0.38);
+  --soft-lift: 0 2px 3px rgb(74 63 55 / 0.1), 0 14px 24px -12px rgb(74 63 55 / 0.42);
+  --body-weight: 400;
+  --display-weight: 400;
+  --synthesis: none;
+  --radius-card: 0.55rem 0.8rem 0.6rem 0.75rem;
+  --radius-chip: 999px;
+  --headline-color: var(--color-sage);
+
+  --b1: calc(1.5px * var(--bw-k));
+  --b2: calc(2.5px * var(--bw-k));
+  --b3: calc(3.5px * var(--bw-k));
+  --b4: calc(4.5px * var(--bw-k));
+  --sh-sm: calc(2px * var(--sh-k)) calc(2px * var(--sh-k)) 0 var(--shadow-ink);
+  --sh-md: calc(3px * var(--sh-k)) calc(3px * var(--sh-k)) 0 var(--shadow-ink);
+  --sh-lg: calc(5px * var(--sh-k)) calc(5px * var(--sh-k)) 0 var(--shadow-ink);
+
+  /* Component tokens */
+  --tape-1: color-mix(in srgb, var(--color-washi) 82%, transparent);
+  --tape-2: color-mix(in srgb, var(--color-mint) 85%, transparent);
+  --tape-3: color-mix(in srgb, var(--color-sky) 85%, transparent);
+  --tape-border: 0 solid transparent;
+  --pin-1: #e9a891;
+  --pin-2: #9cc3bf;
+  --pin-3: #e2c08f;
+  --pin-4: #a9c2a0;
+  --spine: linear-gradient(90deg, #8ea88a 0%, #a3b99f 55%, #b5c8b0 100%);
+  --ring: radial-gradient(circle at 35% 35%, #fff8ea 0 30%, #d8c29c 31%);
+  --tab-1: var(--color-peach);
+  --tab-2: var(--color-mint);
+  --tab-3: var(--color-duck);
+  --tab-active: var(--color-seal);
+  --tab-active-ink: #fffaf1;
+  --banner-1: color-mix(in srgb, var(--color-washi) 70%, transparent);
+  --banner-2: color-mix(in srgb, var(--color-mint) 80%, transparent);
+  --banner-ink: var(--color-ink);
+  --plaque: var(--color-cream);
+  --cork: #d7b78c;
 }
 
-@layer base {
-  :root {
-    color-scheme: light;
-  }
+html[data-look="comic"] {
+  --font-sans: "Comic Neue", "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bangers", "Comic Neue", ui-sans-serif, system-ui, sans-serif;
+  --font-title: "Bangers", "Comic Neue", ui-sans-serif, system-ui, sans-serif;
+  --color-paper: #fff5e1;
+  --color-paper-deep: #ffe6ad;
+  --color-card: #ffffff;
+  --color-ink: #111111;
+  --color-muted: #2d2d2d;
+  --color-faint: #5a5a5a;
+  --color-line: #111111;
+  --color-seal: #ff2ecc;
+  --color-seal-ink: #ffffff;
+  --color-gold: #ffd600;
+  --color-washi: #ff2ecc;
+  --color-mint: #00aeef;
+  --color-sage: #111111;
+  --color-sky: #00aeef;
+  --color-peach: #ff7a00;
+  --color-duck: #00aeef;
+  --color-cream: #fff5e1;
+  --color-accent: #ff7a00;
 
+  --bw-k: 1;
+  --sh-k: 1.2;
+  --shadow-ink: #111111;
+  --soft: 0 0 0 transparent;
+  --soft-lift: 0 0 0 transparent;
+  --body-weight: 700;
+  --display-weight: 400;
+  --synthesis: none;
+  --radius-card: 0.3rem;
+  --radius-chip: 0.55rem;
+  --headline-color: var(--color-gold);
+
+  --tape-1: #ffd600;
+  --tape-2: #00aeef;
+  --tape-3: #ff2ecc;
+  --tape-border: var(--b2) solid #111;
+  --pin-1: #ff2ecc;
+  --pin-2: #00aeef;
+  --pin-3: #ffd600;
+  --pin-4: #ff7a00;
+  --spine: linear-gradient(90deg, #111 0 30%, #ff2ecc 30% 100%);
+  --ring: radial-gradient(circle at 35% 35%, #fff 0 25%, #ffd600 26%);
+  --tab-1: #ffd600;
+  --tab-2: #00aeef;
+  --tab-3: #ff7a00;
+  --tab-active: #111111;
+  --tab-active-ink: #ffd600;
+  --banner-1: #ffd600;
+  --banner-2: #00aeef;
+  --banner-ink: #111;
+  --plaque: #ffd600;
+  --cork: #c98f55;
+}
+
+html[data-look="riso"] {
+  --riso-a: #d9849a;
+  --riso-b: #23305e;
+  --riso-title: "Kaushan Script", cursive;
+  --riso-body: "Patrick Hand", "Comic Neue", cursive;
+  --riso-paper: #efe7d8;
+
+  --font-sans: var(--riso-body);
+  --font-display: var(--riso-body);
+  --font-title: var(--riso-title);
+  --color-paper: var(--riso-paper);
+  --color-paper-deep: color-mix(in srgb, var(--riso-a) 22%, var(--riso-paper));
+  --color-card: #f6efe2;
+  --color-ink: var(--riso-b);
+  --color-muted: color-mix(in srgb, var(--riso-b) 78%, var(--riso-paper));
+  --color-faint: color-mix(in srgb, var(--riso-b) 55%, var(--riso-paper));
+  --color-line: var(--riso-b);
+  --color-seal: var(--riso-b);
+  --color-seal-ink: #f6efe2;
+  --color-gold: color-mix(in srgb, var(--riso-a) 50%, #f6efe2);
+  --color-washi: var(--riso-a);
+  --color-mint: color-mix(in srgb, var(--riso-b) 22%, #f6efe2);
+  --color-sage: var(--riso-b);
+  --color-sky: color-mix(in srgb, var(--riso-b) 18%, #f6efe2);
+  --color-peach: color-mix(in srgb, var(--riso-a) 60%, #f6efe2);
+  --color-duck: color-mix(in srgb, var(--riso-b) 26%, #f6efe2);
+  --color-cream: #f6efe2;
+  --color-accent: var(--riso-a);
+
+  --bw-k: 0.6;
+  --sh-k: 1.15;
+  --shadow-ink: color-mix(in srgb, var(--riso-a) 88%, transparent);
+  --soft: 0 0 0 transparent;
+  --soft-lift: 0 0 0 transparent;
+  --body-weight: 400;
+  --display-weight: 400;
+  --synthesis: none;
+  --radius-card: 0.1rem;
+  --radius-chip: 0.35rem;
+  --headline-color: var(--riso-b);
+
+  --tape-1:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--riso-a) 55%, transparent) 0 4px, transparent 4px 8px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--riso-a) 55%, transparent) 0 4px, color-mix(in srgb, #fff 55%, transparent) 4px 8px);
+  --tape-2:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--riso-b) 50%, transparent) 0 4px, transparent 4px 8px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--riso-b) 50%, transparent) 0 4px, color-mix(in srgb, #fff 55%, transparent) 4px 8px);
+  --tape-3: color-mix(in srgb, var(--riso-a) 70%, transparent);
+  --tape-border: 0 solid transparent;
+  --pin-1: #b89452;
+  --pin-2: #b89452;
+  --pin-3: #b89452;
+  --pin-4: #b89452;
+  --spine: linear-gradient(90deg, color-mix(in srgb, var(--riso-b) 88%, #000) 0%, var(--riso-b) 100%);
+  --ring: radial-gradient(circle at 35% 35%, #f6efe2 0 30%, var(--riso-a) 31%);
+  --tab-1: var(--color-peach);
+  --tab-2: var(--color-duck);
+  --tab-3: #f6efe2;
+  --tab-active: var(--riso-b);
+  --tab-active-ink: #f6efe2;
+  --banner-1: var(--riso-b);
+  --banner-2: var(--riso-a);
+  --banner-ink: #f6efe2;
+  --plaque: #f6efe2;
+  --cork: #c9a06d;
+}
+
+/* ——— Base ——— */
+@layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    font-synthesis: var(--synthesis);
   }
 
   html,
@@ -63,26 +235,11 @@ html[data-jacket="corkboard"] {
 
   body {
     margin: 0;
-    background-color: var(--color-paper);
-    background-image:
-      linear-gradient(#9b2d4a, #9b2d4a),
-      radial-gradient(circle at 20% 10%, rgb(255 211 106 / 0.45), transparent 28%),
-      radial-gradient(circle at 90% 80%, rgb(126 208 176 / 0.35), transparent 26%);
-    background-size:
-      16px 100%,
-      auto,
-      auto;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-position: left top, center, center;
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-weight: 700;
+    font-weight: var(--body-weight);
+    font-size: 1.02rem;
     overflow-x: hidden;
-  }
-
-  html[data-jacket="corkboard"] body {
-    background-image: radial-gradient(circle, rgb(90 52 24 / 0.28) 1.3px, transparent 1.5px);
-    background-size: 16px 16px;
     background-color: var(--color-paper);
   }
 
@@ -112,242 +269,12 @@ html[data-jacket="corkboard"] {
   }
 }
 
-@layer components {
-  .scrap-card {
-    position: relative;
-    border: 3px solid var(--color-ink);
-    background: var(--color-card);
-    box-shadow: var(--shadow-paper);
-    border-radius: 1.1rem;
-  }
-
-  html[data-jacket="corkboard"] .scrap-card {
-    border-radius: 0.35rem 0.9rem 0.45rem 0.7rem;
-    background: #fff7e8;
-  }
-
-  .washi {
-    pointer-events: none;
-    position: absolute;
-    top: -0.55rem;
-    left: 1.1rem;
-    z-index: 2;
-    height: 1.15rem;
-    width: 4.6rem;
-    border: 2.5px solid var(--color-ink);
-    border-radius: 0.2rem;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--color-washi) 0 10px,
-      var(--color-gold) 10px 18px,
-      var(--color-mint) 18px 28px
-    );
-    transform: rotate(-6deg);
-    box-shadow: 2px 2px 0 var(--color-ink);
-  }
-
-  .washi.washi-b {
-    left: auto;
-    right: 1.2rem;
-    transform: rotate(5deg);
-    background: repeating-linear-gradient(
-      90deg,
-      var(--color-sky) 0 8px,
-      #fff 8px 12px,
-      var(--color-washi) 12px 22px
-    );
-  }
-
-  .pin {
-    pointer-events: none;
-    position: absolute;
-    top: -0.55rem;
-    left: 50%;
-    z-index: 2;
-    width: 1.15rem;
-    height: 1.15rem;
-    translate: -50% 0;
-    border: 2.5px solid var(--color-ink);
-    border-radius: 999px;
-    background: radial-gradient(circle at 35% 35%, #fff 0 18%, var(--color-seal) 19% 70%, #9c2424 71%);
-    box-shadow: 2px 3px 0 var(--color-ink);
-  }
-
-  .pin.pin-b {
-    left: 1.4rem;
-    translate: 0 0;
-    background: radial-gradient(circle at 35% 35%, #fff 0 18%, var(--color-sky) 19% 70%, #2a4e99 71%);
-  }
-
-  .pin.pin-c {
-    left: auto;
-    right: 1.2rem;
-    translate: 0 0;
-    background: radial-gradient(circle at 35% 35%, #fff 0 18%, var(--color-mint) 19% 70%, #1d7a52 71%);
-  }
-
-  .drawn-frame {
-    border: 3px solid var(--color-ink);
-    border-radius: 0.7rem;
-    background: var(--color-paper-deep);
-    box-shadow: inset 0 0 0 4px #fff;
-  }
-
-  .kind-sticker {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid var(--color-ink);
-    border-radius: 999px;
-    background: var(--color-gold);
-    color: var(--color-ink);
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    box-shadow: 2px 2px 0 var(--color-ink);
-    transform: rotate(-4deg);
-  }
-
-  .notebook-line {
-    width: 100%;
-    border: 3px solid var(--color-ink);
-    border-radius: 0.8rem;
-    background: #fff;
-    color: var(--color-ink);
-    box-shadow: 3px 3px 0 var(--color-ink);
-    padding: 0.65rem 0.8rem;
-    line-height: 1.45;
-  }
-
-  .notebook-line::placeholder {
-    color: var(--color-faint);
-    font-weight: 700;
-  }
-
-  .notebook-line:focus {
-    outline: none;
-    box-shadow: 3px 3px 0 var(--color-seal);
-  }
-
-  .sticker-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    min-height: 3rem;
-    border: 3px solid var(--color-ink);
-    border-radius: 999px;
-    background: var(--color-seal);
-    color: var(--color-seal-ink);
-    box-shadow: var(--shadow-seal);
-    font-family: var(--font-display);
-    font-weight: 600;
-    text-decoration: none;
-    padding: 0.35rem 1rem 0.4rem 0.45rem;
-    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .sticker-cta:hover {
-    transform: rotate(-2deg) translateY(-1px);
-  }
-
-  .sticker-cta:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--color-ink);
-  }
-
-  .sticker-cta:focus-visible {
-    outline: 3px solid var(--color-ink);
-    outline-offset: 3px;
-  }
-
-  .seal-face {
-    display: grid;
-    place-items: center;
-    width: 2.15rem;
-    height: 2.15rem;
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--color-seal-ink) 22%, var(--color-seal));
-    border: 2.5px solid var(--color-ink);
-    flex: none;
-  }
-
-  .kind-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.75rem;
-    border: 2.5px solid var(--color-ink);
-    border-radius: 999px;
-    background: #fff;
-    color: var(--color-ink);
-    padding: 0.2rem 0.75rem;
-    font-family: var(--font-display);
-    font-size: 0.92rem;
-    box-shadow: 2px 2px 0 var(--color-ink);
-  }
-
-  .kind-chip[aria-checked="true"],
-  .kind-chip[aria-selected="true"] {
-    background: var(--color-gold);
-  }
-
-  .filter-row {
-    scrollbar-width: none;
-  }
-
-  .filter-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  .look-swatch {
-    height: 5.5rem;
-    border: 3px solid var(--color-ink);
-    border-radius: 0.8rem;
-    box-shadow: 3px 3px 0 var(--color-ink);
-  }
-
-  .swatch-book {
-    background:
-      linear-gradient(#9b2d4a, #9b2d4a) 0 0 / 14px 100% no-repeat,
-      repeating-linear-gradient(#fff6e6, #fff6e6 16px, #f3d7b0 17px);
-  }
-
-  .swatch-cork {
-    background-color: #e2a15a;
-    background-image: radial-gradient(circle, rgb(90 52 24 / 0.35) 1.2px, transparent 1.4px);
-    background-size: 10px 10px;
-  }
-
-  .dialog-paper,
-  .jacket-dialog {
-    width: min(calc(100% - 2rem), 28rem);
-    border: 3px solid var(--color-ink);
-    box-shadow: 6px 6px 0 var(--color-ink);
-  }
-
-  .jacket-dialog {
-    width: min(calc(100% - 2rem), 36rem);
-  }
-
-  .search-open {
-    width: min(100%, 18rem);
-  }
-
-  .cal-cell {
-    min-height: 2.75rem;
-    border: 2px solid transparent;
-  }
-
-  .cal-cell:focus-visible {
-    outline: 3px solid var(--color-ink);
-    outline-offset: 1px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .sticker-cta,
-  .scrap-card {
-    transition: none !important;
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

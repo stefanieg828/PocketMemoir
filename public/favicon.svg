@@ -1,7 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="PocketMemoir">
-  <rect width="32" height="32" rx="7" fill="#fff3df"/>
-  <circle cx="16" cy="16.2" r="11" fill="#9b2d4a" stroke="#3a2430" stroke-width="2.4"/>
-  <circle cx="12.3" cy="14.6" r="1.45" fill="#fff3df"/>
-  <circle cx="19.7" cy="14.6" r="1.45" fill="#fff3df"/>
-  <path d="M11.4 18.5c1.55 2.45 7.65 2.45 9.2 0" fill="none" stroke="#fff3df" stroke-width="1.8" stroke-linecap="round"/>
+  <defs>
+    <radialGradient id="p" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#fffaf0"/><stop offset="100%" stop-color="#fff3df"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#p)"/>
+  <!-- open book -->
+  <path d="M5.5 8.5h9.2c.6 0 1 .4 1 1v14c0 .6-.4 1-1 1H5.5c-.6 0-1-.4-1-1v-14c0-.6.4-1 1-1z" fill="#fffcf6" stroke="#3a2430" stroke-width="1.35" stroke-linejoin="round"/>
+  <path d="M16.3 8.5h9.2c.6 0 1 .4 1 1v14c0 .6-.4 1-1 1h-9.2c-.6 0-1-.4-1-1v-14c0-.6.4-1 1-1z" fill="#f7ead2" stroke="#3a2430" stroke-width="1.35" stroke-linejoin="round"/>
+  <path d="M15.8 8.2v16.6" stroke="#3a2430" stroke-width="0.9" opacity="0.35" stroke-linecap="round"/>
+  <!-- washi -->
+  <rect x="8" y="12" width="12" height="2.2" rx="0.5" fill="#a8bfa6" stroke="#3a2430" stroke-width="0.85" transform="rotate(-10 14 13.1)"/>
+  <!-- flower -->
+  <g transform="translate(21.5 19.5)">
+    <path d="M0 4c.3-2 .5-3.5.2-5" fill="none" stroke="#5f7a5c" stroke-width="0.8" stroke-linecap="round"/>
+    <circle cx="0" cy="-1.2" r="2.1" fill="#e8a8b0" stroke="#3a2430" stroke-width="0.75"/>
+    <circle cx="0" cy="-1.2" r="0.7" fill="#f0d78a"/>
+  </g>
 </svg>

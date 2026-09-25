@@ -1,0 +1,523 @@
+/* ———————————————————————————————————————————————
+ * Soft Storybook — watercolor washes, peach / sage / duck-egg / cream,
+ * loose ink lines, pressed-flower doodles, gentle painted washi,
+ * serif title + handwritten notes.
+ * ——————————————————————————————————————————————— */
+@layer components {
+  html[data-look="storybook"] {
+    --doodle-heart: var(--img-heart);
+    --doodle-star: var(--img-sprig);
+    --seal-img: var(--img-flower);
+    --cover: linear-gradient(160deg, #9fb79a 0%, #8aa585 55%, #7b9776 100%);
+    /* Painted textures (scripts/render-watercolor.mjs) */
+    --wc-peach: url("./tex/wc-peach.webp");
+    --wc-peach-b: url("./tex/wc-peach-b.webp");
+    --wc-sage: url("./tex/wc-sage.webp");
+    --wc-sage-b: url("./tex/wc-sage-b.webp");
+    --wc-duck: url("./tex/wc-duck.webp");
+    --wc-duck-b: url("./tex/wc-duck-b.webp");
+    --wc-apricot: url("./tex/wc-apricot.webp");
+    --wc-rose: url("./tex/wc-rose.webp");
+    --wc-cream: url("./tex/wc-cream.webp");
+    --wc-paper: url("./tex/paper-tooth.webp");
+  }
+
+  /* Page surfaces */
+  html[data-look="storybook"][data-mode="scrapbook"] body {
+    background-color: #f6f0e4;
+    background-image:
+      var(--wc-peach), var(--wc-duck-b), var(--wc-sage-b), var(--wc-apricot),
+      var(--wc-paper),
+      radial-gradient(ellipse 70% 40% at 0% 0%, rgb(240 184 156 / 0.22), transparent 70%),
+      radial-gradient(ellipse 60% 35% at 100% 100%, rgb(169 194 160 / 0.25), transparent 70%);
+    background-size: 21rem 16rem, 17rem 13rem, 22rem 17rem, 15rem 11rem, 200px 200px, auto, auto;
+    background-position:
+      -6.5rem -4.5rem, calc(100% + 8rem) 20rem, -9rem calc(100% + 3rem), calc(100% + 6rem) 52rem,
+      0 0, 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, no-repeat, no-repeat;
+  }
+
+  html[data-look="storybook"][data-mode="corkboard"] body {
+    background-color: #dcc19b;
+    background-image:
+      radial-gradient(ellipse at 15% 5%, rgb(246 214 195 / 0.55), transparent 45%),
+      radial-gradient(ellipse at 95% 95%, rgb(189 208 181 / 0.5), transparent 45%),
+      var(--tex-cork-dark), var(--tex-cork-mid), var(--tex-cork-light);
+  }
+
+  /* Wordmark: serif title + sprig divider */
+  .wm-story {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* a loose peach bloom painted behind the title */
+  .wm-story::before {
+    content: "";
+    position: absolute;
+    inset: -1.1rem -2.6rem -0.9rem -1.6rem;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--wc-peach-b) center / 100% 100% no-repeat;
+    opacity: 0.8;
+    transform: rotate(-4deg);
+  }
+
+  .wm-story-text {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.5rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #6f8b6c;
+  }
+
+  .wm-story-sprig {
+    width: 11rem;
+    height: 1rem;
+    margin-top: 0.1rem;
+    color: #7f9a7b;
+  }
+
+  html[data-look="storybook"] .app-tagline {
+    font-size: 1rem;
+  }
+
+  /* Nav: soft rounded chip tray (like the reference bottom bar) */
+  html[data-look="storybook"] .app-nav {
+    display: inline-flex;
+    gap: 0.2rem;
+    padding: 0.25rem;
+    border: 1px solid rgb(106 86 70 / 0.28);
+    border-radius: 999px;
+    background: rgb(255 250 241 / 0.88);
+    box-shadow: var(--soft);
+  }
+
+  html[data-look="storybook"] .app-nav-link {
+    min-height: 2.4rem;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    font-size: 1.08rem;
+  }
+
+  html[data-look="storybook"] .app-nav-link.is-active {
+    background: #8aa585;
+    color: #fffaf1;
+  }
+
+  html[data-look="storybook"] .app-nav-link:nth-child(3) {
+    background: rgb(243 200 176 / 0.55);
+  }
+
+  /* ——— Painted paper recipe ———
+   * ::before = wobbly paper + watercolor tint + paper tooth + loose doubled ink line
+   * ::after  = a soft bloom that bleeds out behind the paper
+   * Per-element variety comes from tone (paper/tint) and .tear-N (bloom + offset). */
+  html[data-look="storybook"] :is(.scrap-card, .cork-mini-board) {
+    --sb-paper: var(--sb-card-0);
+    --sb-ink: var(--sb-ink-0);
+    --sb-tint: var(--wc-peach-b);
+    --sb-tint-at: 112% 115%;
+    --sb-bloom: var(--wc-sage);
+    --sb-bloom-shift: -5% 6%;
+    --sb-flower: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+  }
+
+  html[data-look="storybook"] :is(.scrap-card, .cork-mini-board)::before,
+  html[data-look="storybook"] :is(.scrap-card, .cork-mini-board)::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  html[data-look="storybook"] :is(.scrap-card, .cork-mini-board)::before {
+    inset: 0;
+    z-index: -1;
+    padding: 1.6%;
+    background:
+      var(--sb-flower) calc(100% - 0.3rem) calc(100% - 0.25rem) / 2.6rem 3rem no-repeat,
+      var(--sb-ink) center / 100% 100% no-repeat,
+      var(--sb-tint) var(--sb-tint-at) / min(74%, 13rem) min(58%, 9.5rem) no-repeat,
+      var(--wc-paper) 0 0 / 200px 200px repeat,
+      var(--sb-paper) center / 100% 100% no-repeat;
+    background-clip: border-box, border-box, content-box, content-box, border-box;
+    background-origin: border-box;
+  }
+
+  html[data-look="storybook"] :is(.scrap-card, .cork-mini-board)::after {
+    /* bleed scales with small scraps, capped so big sheets don't get a stain */
+    inset: max(-12%, -1.6rem) max(-14%, -1.8rem);
+    z-index: -2;
+    background: var(--sb-bloom) center / 100% 100% no-repeat;
+    opacity: 0.9;
+    translate: var(--sb-bloom-shift);
+  }
+
+  html[data-look="storybook"] .scrap-tone-1 { --sb-paper: var(--sb-card-1); --sb-ink: var(--sb-ink-1); --sb-tint: var(--wc-peach); --sb-tint-at: -14% 112%; }
+  html[data-look="storybook"] .scrap-tone-2 { --sb-paper: var(--sb-card-2); --sb-ink: var(--sb-ink-2); --sb-tint: var(--wc-sage); --sb-tint-at: 115% -12%; }
+  html[data-look="storybook"] .scrap-tone-3 { --sb-paper: var(--sb-card-3); --sb-ink: var(--sb-ink-3); --sb-tint: var(--wc-duck); --sb-tint-at: -12% -14%; }
+
+  html[data-look="storybook"] .tear-0 { --sb-bloom: var(--wc-sage); --sb-bloom-shift: -6% 5%; }
+  html[data-look="storybook"] .tear-1 { --sb-bloom: var(--wc-duck-b); --sb-bloom-shift: 7% -4%; }
+  html[data-look="storybook"] .tear-2 { --sb-bloom: var(--wc-apricot); --sb-bloom-shift: 4% 7%; --sb-flower: var(--img-pressed-viola); }
+  html[data-look="storybook"] .tear-3 { --sb-bloom: var(--wc-rose); --sb-bloom-shift: -7% -5%; }
+  html[data-look="storybook"] .tear-4 { --sb-bloom: var(--wc-sage-b); --sb-bloom-shift: 6% 6%; }
+  html[data-look="storybook"] .tear-5 { --sb-bloom: var(--wc-peach); --sb-bloom-shift: -4% 8%; --sb-flower: var(--img-pressed-fern); }
+  html[data-look="storybook"] .tear-6 { --sb-bloom: var(--wc-duck); --sb-bloom-shift: 8% 2%; }
+  html[data-look="storybook"] .tear-7 { --sb-bloom: var(--wc-cream); --sb-bloom-shift: -8% 3%; }
+  html[data-look="storybook"] .tear-8 { --sb-bloom: var(--wc-sage); --sb-bloom-shift: 3% -7%; --sb-flower: var(--img-pressed-daisy); }
+  html[data-look="storybook"] .tear-9 { --sb-bloom: var(--wc-peach-b); --sb-bloom-shift: -3% -6%; }
+  html[data-look="storybook"] .tear-10 { --sb-bloom: var(--wc-duck-b); --sb-bloom-shift: 5% 5%; }
+  html[data-look="storybook"] .tear-11 { --sb-bloom: var(--wc-rose); --sb-bloom-shift: -6% 7%; --sb-flower: var(--img-pressed-viola); }
+
+  html[data-look="storybook"] a.scrap-card:hover {
+    box-shadow: none;
+    filter: saturate(1.08);
+  }
+
+  html[data-look="storybook"] .scrap-title {
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  html[data-look="storybook"] .scrap-meta {
+    color: #6f8b6c;
+    font-size: 0.85rem;
+  }
+
+  html[data-look="storybook"] .scrap-meta::after {
+    content: "";
+    width: 0.8rem;
+    height: 0.8rem;
+    background: var(--img-heart) center / contain no-repeat;
+  }
+
+  html[data-look="storybook"] .drawn-frame {
+    border: 1.5px solid rgb(106 86 70 / 0.55);
+    border-radius: 0.2rem;
+    box-shadow: inset 0 0 0 5px #fffdf8;
+  }
+
+  /* Painted washi with torn ends */
+  html[data-look="storybook"] .washi,
+  html[data-look="storybook"] .washi-corner,
+  html[data-look="storybook"] .album-cover-washi,
+  html[data-look="storybook"] .cork-mini-washi {
+    box-shadow: none;
+    clip-path: polygon(3% 8%, 0 30%, 4% 52%, 1% 76%, 4% 100%, 97% 94%, 100% 72%, 96% 48%, 100% 24%, 96% 0);
+    mix-blend-mode: multiply;
+    opacity: 0.88;
+  }
+
+  html[data-look="storybook"] .doodle-star {
+    width: 1.3rem;
+    height: 2rem;
+  }
+
+  /* Kind sticker: watercolor blob label */
+  html[data-look="storybook"] .kind-sticker {
+    border: 0;
+    box-shadow: none;
+    -webkit-mask: var(--mask-blob-a) center / 100% 100% no-repeat;
+    mask: var(--mask-blob-a) center / 100% 100% no-repeat;
+    background-image: radial-gradient(ellipse at 40% 40%, rgb(255 255 255 / 0.45), transparent 65%);
+    font-size: 1.05rem;
+    padding-inline: 1.1rem;
+    transform: rotate(-3deg);
+  }
+
+  /* Buttons + chips */
+  html[data-look="storybook"] .sticker-cta {
+    border: 1px solid rgb(90 70 56 / 0.35);
+    background: linear-gradient(180deg, #98b193, #849f7f);
+    font-size: 1.2rem;
+    box-shadow: 0 2px 0 rgb(90 110 86 / 0.35), var(--soft);
+  }
+
+  html[data-look="storybook"] .seal-face {
+    border: 0;
+    background: rgb(255 250 241 / 0.3);
+  }
+
+  html[data-look="storybook"] .kind-chip,
+  html[data-look="storybook"] .status-chip,
+  html[data-look="storybook"] .flip-nav-btn,
+  html[data-look="storybook"] .cork-back-btn,
+  html[data-look="storybook"] .search-slip {
+    border: 1px solid rgb(106 86 70 / 0.4);
+  }
+
+  html[data-look="storybook"] .notebook-line {
+    border: 1px solid rgb(106 86 70 / 0.42);
+    background:
+      linear-gradient(transparent calc(100% - 1px), rgb(111 139 108 / 0.35) 0) 0 0 / 100% 1.6em,
+      #fffcf6;
+  }
+
+  /* Flip album */
+  html[data-look="storybook"] .flip-album::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 2.6rem -0.9rem 2.8rem;
+    z-index: 0;
+    background: var(--wc-sage) center / 100% 100% no-repeat;
+    opacity: 0.7;
+  }
+
+  html[data-look="storybook"] .flip-book {
+    border: 1.5px solid rgb(106 86 70 / 0.55);
+    border-radius: 0.3rem 0.9rem 0.9rem 0.3rem;
+  }
+
+  html[data-look="storybook"] .flip-spine,
+  html[data-look="storybook"] .album-spine,
+  html[data-look="storybook"] .album-cover-spine {
+    border-right: 1.5px solid rgb(106 86 70 / 0.45);
+    background:
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 5px),
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.04) 0 1px, transparent 1px 4px),
+      var(--spine);
+  }
+
+  html[data-look="storybook"] .flip-tab {
+    border: 1px solid rgb(106 86 70 / 0.4);
+    border-radius: 0.2rem;
+    clip-path: polygon(2% 6%, 98% 0, 100% 50%, 97% 100%, 1% 96%, 0 48%);
+    font-size: 0.95rem;
+  }
+
+  html[data-look="storybook"] .flip-page-banner-tape {
+    clip-path: polygon(2% 10%, 0 50%, 3% 90%, 98% 100%, 100% 60%, 97% 20%, 99% 0);
+    mix-blend-mode: multiply;
+  }
+
+  html[data-look="storybook"] .flip-page-title {
+    font-size: 1.2rem;
+  }
+
+  html[data-look="storybook"] .flip-keepsake-badge {
+    border: 0;
+    background: var(--img-heart) center / 80% no-repeat, #fff4ec;
+    font-size: 0;
+    box-shadow: var(--soft);
+  }
+
+  /* Storybook papers (one per preset, all cream-watercolor family) */
+  html[data-look="storybook"] .album-paper-cream-ruled {
+    background:
+      var(--wc-peach-b) -10% -10% / 55% 45% no-repeat,
+      repeating-linear-gradient(transparent 0 28px, rgb(111 139 108 / 0.12) 28px 29px),
+      #fbf5ea;
+  }
+  html[data-look="storybook"] .album-paper-blush-dots {
+    background: var(--wc-peach-b) 125% 118% / 52% 36% no-repeat, var(--wc-cream) -20% -10% / 60% 50% no-repeat, #fcf3ea;
+  }
+  html[data-look="storybook"] .album-paper-mint-grid {
+    background:
+      var(--wc-sage) 105% -5% / 60% 45% no-repeat,
+      linear-gradient(rgb(111 139 108 / 0.1) 1px, transparent 1px) 0 0 / 22px 22px,
+      linear-gradient(90deg, rgb(111 139 108 / 0.1) 1px, transparent 1px) 0 0 / 22px 22px,
+      #f7f5ec;
+  }
+  html[data-look="storybook"] .album-paper-kraft-flecks {
+    background: var(--img-pressed-daisy) 93% 97% / 2rem 2.4rem no-repeat, var(--wc-apricot) -10% 110% / 65% 50% no-repeat, var(--wc-paper) 0 0 / 200px, #f4ead8;
+  }
+  html[data-look="storybook"] .album-paper-lavender-dots {
+    background:
+      var(--img-pressed-viola) 5% 97% / 2rem 2.2rem no-repeat,
+      var(--wc-duck) 110% 110% / 70% 55% no-repeat,
+      radial-gradient(circle, rgb(111 150 146 / 0.18) 1.1px, transparent 1.4px) 0 0 / 18px 18px,
+      #f6f6ef;
+  }
+  html[data-look="storybook"] .album-paper-floral-washi {
+    background:
+      var(--img-pressed-fern) 94% 6% / 2.4rem 3.4rem no-repeat,
+      var(--img-flower) 6% 94% / 1.8rem no-repeat,
+      var(--wc-peach-b) 125% 118% / 50% 34% no-repeat,
+      #fbf5ea;
+  }
+
+  /* Album cover (Keep route) */
+  html[data-look="storybook"] .album-cover,
+  html[data-look="storybook"] .album-cover-face {
+    border-color: rgb(106 86 70 / 0.5);
+  }
+  html[data-look="storybook"] .album-cover-title-block,
+  html[data-look="storybook"] .album-cover-body {
+    border: 1px solid rgb(106 86 70 / 0.35);
+  }
+
+  /* Cork wall: pastel papers pinned to light cork */
+  html[data-look="storybook"] .cork-wall-intro {
+    position: relative;
+    padding: 0.9rem 1rem 0.95rem;
+    background:
+      var(--sb-ink-1) center / 100% 100% no-repeat,
+      var(--wc-sage-b) -2rem 120% / 70% 150% no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      var(--sb-board-3) center / 100% 100% no-repeat;
+    transform: rotate(-0.8deg);
+  }
+
+  html[data-look="storybook"] .cork-wall-intro::before {
+    content: "";
+    position: absolute;
+    top: -0.5rem;
+    right: 1.6rem;
+    width: 4.2rem;
+    height: 1.1rem;
+    background: var(--tape-2);
+    transform: rotate(6deg);
+    clip-path: polygon(3% 8%, 0 50%, 4% 100%, 97% 94%, 100% 48%, 96% 0);
+  }
+
+  html[data-look="storybook"] .cork-wall-kicker {
+    color: #6f8b6c;
+  }
+
+  html[data-look="storybook"] .cork-mini-board { --sb-paper: var(--sb-board-0); --sb-tint: var(--wc-peach); }
+  html[data-look="storybook"] .cork-mini-board.board-tone-1 { --sb-paper: var(--sb-board-1); --sb-ink: var(--sb-ink-2); --sb-tint: var(--wc-sage-b); }
+  html[data-look="storybook"] .cork-mini-board.board-tone-2 { --sb-paper: var(--sb-board-2); --sb-ink: var(--sb-ink-3); --sb-tint: var(--wc-duck-b); }
+  html[data-look="storybook"] .cork-mini-board.board-tone-3 { --sb-paper: var(--sb-board-3); --sb-ink: var(--sb-ink-1); --sb-tint: var(--wc-apricot); }
+  /* on cork the bloom behind reads as a stain: keep it tight + faint */
+  html[data-look="storybook"] .cork-mini-board::after { inset: -6% -7%; opacity: 0.6; }
+
+  html[data-look="storybook"] .cork-mini-board:hover {
+    box-shadow: none;
+  }
+
+  html[data-look="storybook"] .cork-mini-label-scrap,
+  html[data-look="storybook"] .cork-zoom-plaque {
+    --label-bg: #fffaf1;
+    clip-path: var(--strip, var(--clip-torn-strip));
+    filter: drop-shadow(0 1px 1px rgb(74 63 55 / 0.2));
+  }
+
+  html[data-look="storybook"] .cork-mini-label {
+    font-size: min(1.12rem, 11cqi);
+  }
+
+  html[data-look="storybook"] .cork-peek {
+    border: 1px solid rgb(106 86 70 / 0.35);
+    background: #fffcf5;
+  }
+
+  html[data-look="storybook"] .cork-mini-count {
+    border: 1px solid rgb(106 86 70 / 0.35);
+    background: #fff4ec;
+    color: #8a5d4f;
+  }
+
+  html[data-look="storybook"] .cork-zoom-board {
+    border: 7px solid #e7d6b8;
+    outline: 1px solid rgb(106 86 70 / 0.35);
+    outline-offset: -1px;
+    border-radius: 0.8rem;
+    background-color: #d9bd94;
+  }
+
+  html[data-look="storybook"] .cork-zoom-toolbar {
+    padding: 0.35rem 0.4rem;
+    border-radius: 1.4rem 1.1rem 1.5rem 1rem;
+    background:
+      var(--wc-peach-b) 50% 50% / 70% 220% no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      rgb(255 250 241 / 0.9);
+  }
+
+  html[data-look="storybook"][data-mode="corkboard"] .cork-sheet {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background:
+      var(--sb-ink-0) center / 100% 100% no-repeat,
+      var(--wc-sage-b) calc(100% + 1.5rem) -1.2rem / min(50%, 10rem) 5rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      var(--sb-card-0) center / 100% 100% no-repeat;
+  }
+
+  html[data-look="storybook"][data-mode="corkboard"] :is(.on-cork, .app-tagline, .shelf-lede, .app-footer) {
+    background:
+      var(--wc-paper) 0 0 / 200px,
+      rgb(255 250 241 / 0.92);
+    border-radius: 0.5rem 0.3rem 0.6rem 0.25rem;
+  }
+
+  /* Picker */
+  html[data-look="storybook"] .picker-dialog {
+    border: 1px solid rgb(106 86 70 / 0.35);
+    background:
+      var(--wc-peach) -4rem -3rem / 16rem 12rem no-repeat,
+      var(--wc-sage-b) calc(100% + 4rem) calc(100% + 3rem) / 17rem 13rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      #f8f2e6;
+  }
+
+  /* Backup / restore */
+  html[data-look="storybook"] .restore-dialog {
+    --restore-radius: 0.4rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background:
+      var(--wc-duck-b) calc(100% + 3rem) -2.5rem / 14rem 10rem no-repeat,
+      var(--wc-peach) -4rem calc(100% + 3rem) / 15rem 11rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      #fbf6ec;
+    box-shadow: 0 1px 0 rgb(90 70 56 / 0.25), 0 18px 40px -12px rgb(74 63 55 / 0.45);
+    outline: 1.3px solid rgb(90 70 56 / 0.5);
+    outline-offset: -6px;
+  }
+
+  html[data-look="storybook"] .restore-title {
+    font-weight: 600;
+    color: #6f8b6c;
+  }
+
+  html[data-look="storybook"] .restore-choice {
+    border: 1px solid rgb(106 86 70 / 0.4);
+    background: rgb(255 252 246 / 0.85);
+  }
+
+  html[data-look="storybook"] .restore-choice.is-selected {
+    outline-color: rgb(138 165 133 / 0.6);
+    background: rgb(233 241 228 / 0.9);
+  }
+
+  html[data-look="storybook"] .backup-step {
+    background: #f3c8b0;
+    color: #8a5d4f;
+  }
+
+  html[data-look="storybook"] .backup-nudge {
+    border: 1px solid rgb(106 86 70 / 0.35);
+    background:
+      var(--wc-peach-b) -2rem 50% / 9rem 7rem no-repeat,
+      var(--wc-paper) 0 0 / 200px,
+      rgb(255 250 241 / 0.94);
+  }
+
+html[data-look="storybook"] .categories-lock-card,
+  html[data-look="storybook"] .cat-row {
+    border-color: rgb(106 86 70 / 0.35);
+    background:
+      var(--wc-paper, none) 0 0 / 200px,
+      rgb(255 250 241 / 0.94);
+  }
+
+  html[data-look="storybook"] .cat-row-name {
+    color: #5a4638;
+  }
+
+  html[data-look="storybook"] .categories-unlock-btn {
+    background: linear-gradient(180deg, #98b193, #849f7f);
+  }
+}

@@ -1,73 +1,128 @@
-import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { FilterTabs } from "@/components/filter-tabs";
-import { KeepSeal } from "@/components/keep-seal";
-import { Polaroid, scrapIsWide } from "@/components/polaroid";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CorkWall } from "@/components/cork-wall";
+import { EmptyShelf } from "@/components/empty-shelf";
+import { FlipAlbum } from "@/components/flip-album";
 import { SearchSlip } from "@/components/search-slip";
-import { LOOK_META } from "@/lib/memoir/jackets";
 import { isStarterShelf, matchesQuery, useMemoir } from "@/lib/memoir/store";
-import type { EntryKind } from "@/lib/memoir/types";
-import { cn } from "@/lib/utils";
+function validateSearch(search: Record<string, unknown>): {
+  spread?: string;
+  flipIn?: boolean;
+} {
+  const spread = typeof search.spread === "string" && search.spread.trim() ? search.spread.trim() : undefined;
+  const raw = search.flipIn;
+  const flipIn = raw === true || raw === 1 || raw === "1" || raw === "true";
+  return {
+    spread,
+    flipIn: flipIn ? true : undefined,
+  };
+}
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  validateSearch,
+  component: Home,
+});
 
 function Home() {
+  const { spread, flipIn } = Route.useSearch();
+  const navigate = useNavigate();
   const entries = useMemoir((s) => s.entries);
-  const jacket = useMemoir((s) => s.jacket);
-  const look = LOOK_META[jacket];
-  const [filter, setFilter] = useState<"all" | EntryKind>("all");
+  const jacket = useMemoir((s) => s.mode);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
 
   const visible = useMemo(() => {
-    return entries.filter((entry) => {
-      if (filter !== "all" && entry.kind !== filter) return false;
-      return matchesQuery(entry, query);
+    return entries.filter((entry) => matchesQuery(entry, query));
+  }, [entries, query]);
+
+  const onBucketChange = useCallback(
+    (bucket: string) => {
+      void navigate({
+        to: "/",
+        search: { spread: bucket },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const onBackToWall = useCallback(() => {
+    void navigate({
+      to: "/",
+      search: {},
+      replace: true,
     });
-  }, [entries, filter, query]);
+  }, [navigate]);
+
+  // Drop flipIn from the URL after the open-from-cover / zoom-in animation plays once.
+  useEffect(() => {
+    if (!flipIn) return;
+    const t = window.setTimeout(() => {
+      void navigate({
+        to: "/",
+        search: spread ? { spread } : {},
+        replace: true,
+      });
+    }, 780);
+    return () => window.clearTimeout(t);
+  }, [flipIn, spread, navigate]);
 
   if (entries.length === 0) {
+    return <EmptyShelf />;
+  }
+
+  const searchTools = (
+    <div className="flex items-end justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        {jacket === "corkboard" ? (
+          isStarterShelf(entries) ? (
+            <p className="shelf-lede text-sm text-muted">
+              A few sample scraps are already pinned so you can peek around. Stick your own in whenever you’re ready.
+            </p>
+          ) : (
+            <p className="shelf-lede text-sm text-muted">Boards on the wall. Same sticky-note shelf as the book.</p>
+          )
+        ) : isStarterShelf(entries) ? (
+          <p className="shelf-lede text-sm text-muted">
+            A few sample scraps are already stuck in so you can flip around. Stick your own in whenever you’re ready.
+          </p>
+        ) : (
+          <p className="shelf-lede text-sm text-muted">Flip the spreads. Your shelf, one book.</p>
+        )}
+      </div>
+      <SearchSlip
+        value={query}
+        onChange={setQuery}
+        open={searchOpen || Boolean(query)}
+        onOpenChange={setSearchOpen}
+      />
+    </div>
+  );
+
+  if (jacket === "scrapbook") {
     return (
-      <section className="mx-auto flex max-w-md flex-col items-center py-10 text-center">
-        <h1 className="font-display text-title font-semibold">{look.emptyTitle}</h1>
-        <p className="mt-2 text-muted">{look.emptyBody}</p>
-        <div className="mt-8">
-          <KeepSeal toKeep size="lg" />
-        </div>
+      <section className="mx-auto max-w-3xl">
+        <div className="mb-4">{searchTools}</div>
+        <FlipAlbum
+          entries={visible}
+          initialBucket={spread}
+          flipIn={Boolean(flipIn)}
+          onBucketChange={onBucketChange}
+        />
       </section>
     );
   }
 
   return (
-    <section>
-      {isStarterShelf(entries) ? (
-        <p className="mb-4 text-sm text-muted">
-          Starter scraps, so the page isn’t shy. Let them go when you want it to yourself.
-        </p>
-      ) : null}
-      <div className="flex items-end justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <FilterTabs value={filter} onChange={setFilter} />
-        </div>
-        <SearchSlip
-          value={query}
-          onChange={setQuery}
-          open={searchOpen || Boolean(query)}
-          onOpenChange={setSearchOpen}
-        />
-      </div>
-
-      {visible.length === 0 ? (
-        <p className="py-12 text-center font-display text-xl">Nothing matches.</p>
-      ) : (
-        <ul className="mt-8 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 sm:gap-6">
-          {visible.map((entry) => (
-            <li key={entry.id} className={cn(scrapIsWide(entry) && "sm:col-span-2")}>
-              <Polaroid entry={entry} />
-            </li>
-          ))}
-        </ul>
-      )}
+    <section className="mx-auto max-w-4xl">
+      <div className="mb-4">{searchTools}</div>
+      <CorkWall
+        entries={visible}
+        activeBucket={spread}
+        zoomIn={Boolean(flipIn)}
+        onBucketChange={onBucketChange}
+        onBackToWall={onBackToWall}
+      />
     </section>
   );
 }
