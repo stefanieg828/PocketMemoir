@@ -171,8 +171,6 @@ type MemoirState = {
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
   corkWallTipDismissed: boolean;
-  /** Soft “look at this” marketing strip dismissed. */
-  lookAtThisDismissed: boolean;
   /** Decorative stickers stuck on the album page / cork wall. */
   pageStickers: PlacedSticker[];
   /**
@@ -186,7 +184,6 @@ type MemoirState = {
   setTourSeen: (seen: boolean) => void;
   dismissShelfLede: () => void;
   dismissCorkWallTip: () => void;
-  dismissLookAtThis: () => void;
   placeSticker: (stickerId: StickerMarkId) => void;
   removePageSticker: (id: string) => void;
   clearPageStickers: () => void;
@@ -352,7 +349,6 @@ export const useMemoir = create<MemoirState>()(
       tourSeen: false,
       shelfLedeDismissed: false,
       corkWallTipDismissed: false,
-      lookAtThisDismissed: false,
       pageStickers: [],
       suggestions: [],
       hasHydrated: false,
@@ -361,7 +357,6 @@ export const useMemoir = create<MemoirState>()(
       setTourSeen: (seen) => set({ tourSeen: seen }),
       dismissShelfLede: () => set({ shelfLedeDismissed: true }),
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
-      dismissLookAtThis: () => set({ lookAtThisDismissed: true }),
       placeSticker: (stickerId) => {
         const scatter = scatterPlacement(Date.now() ^ (get().pageStickers.length * 9973));
         const row: PlacedSticker = {
@@ -499,7 +494,6 @@ export const useMemoir = create<MemoirState>()(
         tourSeen: state.tourSeen,
         shelfLedeDismissed: state.shelfLedeDismissed,
         corkWallTipDismissed: state.corkWallTipDismissed,
-        lookAtThisDismissed: state.lookAtThisDismissed,
         pageStickers: state.pageStickers,
         suggestions: state.suggestions,
       }),
@@ -549,10 +543,6 @@ export const useMemoir = create<MemoirState>()(
             typeof incoming.corkWallTipDismissed === "boolean"
               ? incoming.corkWallTipDismissed
               : current.corkWallTipDismissed,
-          lookAtThisDismissed:
-            typeof incoming.lookAtThisDismissed === "boolean"
-              ? incoming.lookAtThisDismissed
-              : current.lookAtThisDismissed,
           pageStickers: Array.isArray(incoming.pageStickers)
             ? incoming.pageStickers
                 .map(normalizePlacedSticker)

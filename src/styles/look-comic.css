@@ -657,10 +657,8 @@ html[data-look="comic"] .categories-lock-card,
   }
 }
 
-/* Marketing strip + sticker tray stay soft lowercase even in Comic. */
+/* Sticker tray stays soft lowercase even in Comic. */
 html[data-look="comic"] :is(
-  .look-at-this-label,
-  .look-at-this-caption,
   .sticker-tray-label,
   .sticker-tray-meta,
   .sticker-tray-lede,

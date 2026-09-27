@@ -1,6 +1,5 @@
 import { AlbumPage } from "@/components/album-page";
 import { KeepSeal } from "@/components/keep-seal";
-import { LookAtThis } from "@/components/look-at-this";
 import { StickerLayer } from "@/components/sticker-layer";
 import { StickerTray } from "@/components/sticker-tray";
 import { MODE_META } from "@/lib/memoir/jackets";
@@ -13,7 +12,6 @@ export function EmptyShelf() {
   if (jacket === "corkboard") {
     return (
       <section className="mx-auto flex max-w-md flex-col items-center py-8 text-center">
-        <LookAtThis variant="empty" className="mb-6 w-full max-w-lg" />
         <div className="empty-cork relative" aria-hidden="true">
           <StickerLayer className="sticker-layer-empty-cork" />
           <div className="ghost-card">
@@ -38,7 +36,6 @@ export function EmptyShelf() {
 
   return (
     <section className="mx-auto max-w-2xl py-2">
-      <LookAtThis variant="empty" className="mb-5" />
       <AlbumPage empty seed="new-album">
         <div className="album-empty-scene relative">
           <StickerLayer />
