@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
@@ -46,6 +46,10 @@ export function CorkWall({
   const look = useMemoir((s) => s.look);
   const config = useMemoir((s) => s.categories);
   const mode = useMemoir((s) => s.mode);
+  const hasHydrated = useMemoir((s) => s.hasHydrated);
+  const corkWallTipDismissed = useMemoir((s) => s.corkWallTipDismissed);
+  const dismissCorkWallTip = useMemoir((s) => s.dismissCorkWallTip);
+  const showCorkWallTip = hasHydrated && !corkWallTipDismissed;
   const shelf = useShelfCategories();
   const shelfIds = shelf.map((c) => c.id);
 
@@ -101,9 +105,21 @@ export function CorkWall({
           <header className="cork-wall-intro">
             <p className="cork-wall-kicker font-display">{LOOK_SKINS[look].kicker}</p>
             <h1 className="cork-wall-title font-display">Wall of boards</h1>
-            <p className="cork-wall-sub">
-              Your boards — same sticky-note shelf as the scrapbook. Tap one to zoom in.
-            </p>
+            {showCorkWallTip ? (
+              <div className="cork-wall-sub-wrap">
+                <p className="cork-wall-sub">
+                  Your boards — same sticky-note shelf as the scrapbook. Tap one to zoom in.
+                </p>
+                <button
+                  type="button"
+                  className="tip-dismiss-x backup-nudge-x"
+                  aria-label="Dismiss tip"
+                  onClick={dismissCorkWallTip}
+                >
+                  <X className="size-4" strokeWidth={2.4} aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
           </header>
 
           <ul className="cork-wall-grid" role="list">

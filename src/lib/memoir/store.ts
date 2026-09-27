@@ -147,10 +147,16 @@ type MemoirState = {
    * Not part of BackupSettings — restore leaves tourSeen alone.
    */
   tourSeen: boolean;
+  /** Home shelf-lede tip scrap dismissed (all jacket / starter variants). */
+  shelfLedeDismissed: boolean;
+  /** Cork wall intro sub tip scrap dismissed. */
+  corkWallTipDismissed: boolean;
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
   setTourSeen: (seen: boolean) => void;
+  dismissShelfLede: () => void;
+  dismissCorkWallTip: () => void;
   setMode: (mode: ModeId) => void;
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
@@ -293,10 +299,14 @@ export const useMemoir = create<MemoirState>()(
       lastBackupAt: null,
       backupNudgeDismissedAt: null,
       tourSeen: false,
+      shelfLedeDismissed: false,
+      corkWallTipDismissed: false,
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setTourSeen: (seen) => set({ tourSeen: seen }),
+      dismissShelfLede: () => set({ shelfLedeDismissed: true }),
+      dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
       setMode: (mode) => set({ mode }),
       setLook: (look) => {
         // Unlock Looks (Comic / Riso) also unlock presets/customs/hide/reorder — same gate, no paywall yet.
@@ -374,6 +384,8 @@ export const useMemoir = create<MemoirState>()(
         lastBackupAt: state.lastBackupAt,
         backupNudgeDismissedAt: state.backupNudgeDismissedAt,
         tourSeen: state.tourSeen,
+        shelfLedeDismissed: state.shelfLedeDismissed,
+        corkWallTipDismissed: state.corkWallTipDismissed,
       }),
       merge: (persisted, current) => {
         // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
@@ -413,6 +425,14 @@ export const useMemoir = create<MemoirState>()(
               incoming.jacket != null;
             return legacy ? true : current.tourSeen;
           })(),
+          shelfLedeDismissed:
+            typeof incoming.shelfLedeDismissed === "boolean"
+              ? incoming.shelfLedeDismissed
+              : current.shelfLedeDismissed,
+          corkWallTipDismissed:
+            typeof incoming.corkWallTipDismissed === "boolean"
+              ? incoming.corkWallTipDismissed
+              : current.corkWallTipDismissed,
           entries,
         };
       },

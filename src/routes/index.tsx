@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CorkWall } from "@/components/cork-wall";
 import { EmptyShelf } from "@/components/empty-shelf";
@@ -28,8 +29,12 @@ function Home() {
   const navigate = useNavigate();
   const entries = useMemoir((s) => s.entries);
   const jacket = useMemoir((s) => s.mode);
+  const hasHydrated = useMemoir((s) => s.hasHydrated);
+  const shelfLedeDismissed = useMemoir((s) => s.shelfLedeDismissed);
+  const dismissShelfLede = useMemoir((s) => s.dismissShelfLede);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const showShelfLede = hasHydrated && !shelfLedeDismissed;
 
   const visible = useMemo(() => {
     return entries.filter((entry) => matchesQuery(entry, query));
@@ -71,24 +76,31 @@ function Home() {
     return <EmptyShelf />;
   }
 
+  const shelfLedeText =
+    jacket === "corkboard"
+      ? isStarterShelf(entries)
+        ? "A few sample scraps are already pinned so you can peek around. Stick your own in whenever you’re ready."
+        : "Boards on the wall. Same sticky-note shelf as the book."
+      : isStarterShelf(entries)
+        ? "A few sample scraps are already stuck in so you can flip around. Stick your own in whenever you’re ready."
+        : "Flip the spreads. Your shelf, one book.";
+
   const searchTools = (
     <div className="flex items-end justify-between gap-3">
       <div className="min-w-0 flex-1">
-        {jacket === "corkboard" ? (
-          isStarterShelf(entries) ? (
-            <p className="shelf-lede text-sm text-muted">
-              A few sample scraps are already pinned so you can peek around. Stick your own in whenever you’re ready.
-            </p>
-          ) : (
-            <p className="shelf-lede text-sm text-muted">Boards on the wall. Same sticky-note shelf as the book.</p>
-          )
-        ) : isStarterShelf(entries) ? (
-          <p className="shelf-lede text-sm text-muted">
-            A few sample scraps are already stuck in so you can flip around. Stick your own in whenever you’re ready.
-          </p>
-        ) : (
-          <p className="shelf-lede text-sm text-muted">Flip the spreads. Your shelf, one book.</p>
-        )}
+        {showShelfLede ? (
+          <div className="shelf-lede-wrap">
+            <p className="shelf-lede text-sm text-muted">{shelfLedeText}</p>
+            <button
+              type="button"
+              className="tip-dismiss-x backup-nudge-x"
+              aria-label="Dismiss tip"
+              onClick={dismissShelfLede}
+            >
+              <X className="size-4" strokeWidth={2.4} aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
       </div>
       <SearchSlip
         value={query}

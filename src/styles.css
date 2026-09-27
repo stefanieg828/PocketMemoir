@@ -278,3 +278,11 @@ html[data-look="riso"] {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Tip dismiss × sits in the scrap corner — after look ornament so padding wins. */
+@layer components {
+  .shelf-lede-wrap > .shelf-lede,
+  .cork-wall-sub-wrap > .cork-wall-sub {
+    padding-inline-end: 1.85rem;
+  }
+}

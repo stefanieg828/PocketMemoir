@@ -1320,6 +1320,30 @@
     max-width: 42ch;
   }
 
+  .shelf-lede-wrap,
+  .cork-wall-sub-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    padding-right: 0.15rem;
+  }
+
+  .cork-wall-sub-wrap .cork-wall-sub {
+    /* keep look margin-top; zero other sides so wrap hugs the scrap */
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+
+  .tip-dismiss-x {
+    position: absolute;
+    top: 0.05rem;
+    right: 0.05rem;
+    z-index: 1;
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
   .cork-wall-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
