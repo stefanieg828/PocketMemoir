@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, useEffect } from "react";
 import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
@@ -31,6 +31,13 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const look = useMemoir((s) => s.mode);
   const shelf = useShelfCategories();
   const fileRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Focus the title without scrolling the page down past categories.
+    titleInputRef.current?.focus({ preventScroll: true });
+  }, []);
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "note");
   const [bucket, setBucket] = useState<string>(
     initial?.category
@@ -189,11 +196,11 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         <input
           id="title"
           name="title"
+          ref={titleInputRef}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={meta.titleHint}
           required
-          autoFocus
           maxLength={80}
           autoComplete="off"
           className="notebook-line"

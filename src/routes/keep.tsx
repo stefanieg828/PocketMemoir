@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { AlbumCover } from "@/components/album-cover";
@@ -27,6 +28,10 @@ function KeepPage() {
   const jacket = useMemoir((s) => s.mode);
   const look = MODE_META[jacket];
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   function afterKeep(_entryId: string, entryKind: EntryKind, title: string) {
     if (useMemoir.getState().storageFull || storageFull) {
       toast("Stuck in memory, but this browser is too full for the photo.");
@@ -48,7 +53,7 @@ function KeepPage() {
           Back to the album
         </Link>
         <div className="mt-4">
-          <AlbumCover heading={look.addHeading} sub="Write first. The kind is just a sticker.">
+          <AlbumCover heading={look.addHeading} sub="Build your memoir here.">
             <KeepForm
               key={`${kind ?? "note"}-${date ?? ""}`}
               initial={{ kind: kind ?? "note", happenedOn: date }}
@@ -70,7 +75,7 @@ function KeepPage() {
           Back to the wall
         </Link>
         <h1 className="look-headline mt-2 font-display text-title">{look.addHeading}</h1>
-        <p className="mt-1 text-sm text-muted">Write first. The kind is just a sticker.</p>
+        <p className="mt-1 text-sm text-muted">Build your memoir here.</p>
       </div>
       <div className="scrap-card tear-3 relative mt-6 px-4 py-6 sm:px-6">
         <span className="pin" aria-hidden="true" />
