@@ -2939,6 +2939,8 @@
 @layer components {
   /* Decorative sticker tray */
   .sticker-tray {
+    position: relative;
+    z-index: 10;
     border: var(--b1) dashed color-mix(in srgb, var(--color-line) 45%, transparent);
     border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--color-card) 88%, transparent);
@@ -3024,6 +3026,33 @@
     transform: translateY(1px) scale(0.98);
   }
 
+  .sticker-tray-chip-armed {
+    border-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-line));
+    background: color-mix(in srgb, var(--color-card) 70%, #fff8e8);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .sticker-tray-armed-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.75rem;
+    margin: 0 0 0.45rem;
+  }
+
+  .sticker-tray-armed-action {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-transform: lowercase;
+  }
+
   .sticker-tray-chip .deco-sticker-mark {
     width: 1.85rem;
     height: 1.85rem;
@@ -3063,6 +3092,32 @@
     pointer-events: none;
   }
 
+  .sticker-layer-armed {
+    pointer-events: auto;
+    cursor: crosshair;
+    z-index: 8;
+  }
+
+  .sticker-layer-hint {
+    position: absolute;
+    left: 50%;
+    top: 0.45rem;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-card) 92%, transparent);
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 40%, transparent);
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: var(--soft);
+    z-index: 2;
+  }
+
   .sticker-layer-item {
     position: absolute;
     pointer-events: auto;
@@ -3073,6 +3128,17 @@
     background: transparent;
     cursor: pointer;
     filter: drop-shadow(0 1px 1px rgb(74 63 55 / 0.18));
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .sticker-layer-item-editable {
+    cursor: grab;
+  }
+
+  .sticker-layer-item-editable:active {
+    cursor: grabbing;
   }
 
   .sticker-layer-item:disabled {
@@ -3111,15 +3177,34 @@
   }
 
   .deco-sticker-washi-rose,
-  .deco-sticker-washi-mint {
-    width: 2.6rem;
-    height: 1.15rem;
+  .deco-sticker-washi-mint,
+  .deco-sticker-tiny-ticket {
+    width: 2.75rem;
+    height: 1.2rem;
   }
 
   .deco-sticker-washi-rose svg,
-  .deco-sticker-washi-mint svg {
+  .deco-sticker-washi-mint svg,
+  .deco-sticker-tiny-ticket svg {
     width: 100%;
     height: 100%;
+  }
+
+  .deco-sticker-postage-stamp {
+    width: 1.7rem;
+    height: 2rem;
+  }
+
+  .sticker-layer-item:has(.deco-sticker-washi-rose),
+  .sticker-layer-item:has(.deco-sticker-washi-mint),
+  .sticker-layer-item:has(.deco-sticker-tiny-ticket) {
+    width: 3.1rem;
+    height: 1.45rem;
+  }
+
+  .sticker-layer-item:has(.deco-sticker-postage-stamp) {
+    width: 2rem;
+    height: 2.35rem;
   }
 
   .keep-sticker-tray {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StickerMark } from "@/components/sticker-mark";
 import { FREE_STARTER_PACK, type StickerMarkId } from "@/lib/memoir/stickers";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
+import { useStickerUi } from "@/lib/memoir/sticker-ui";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,8 @@ type StickerTrayProps = {
 };
 
 /**
- * Soft “stickers” tray — free starter marks. Tap to stick one on the page / cork.
+ * Soft “stickers” tray — free starter marks.
+ * Tap a mark to arm place-mode, then tap the page/cork where you want it.
  */
 export function StickerTray({ compact = false, defaultOpen, className, onStuck }: StickerTrayProps) {
   const placeSticker = useMemoir((s) => s.placeSticker);
@@ -24,12 +26,16 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
   const count = useMemoir((s) => s.pageStickers.length);
   const unlocked = useMemoir((s) => s.unlocked);
   const peeking = useIsPeeking();
+  const armed = useStickerUi((s) => s.armed);
+  const toggleArm = useStickerUi((s) => s.toggleArm);
+  const disarm = useStickerUi((s) => s.disarm);
   const [open, setOpen] = useState(defaultOpen ?? !compact);
 
   if (peeking) return null;
 
-  function stick(id: StickerMarkId) {
-    placeSticker(id);
+  function stickRandom(id: StickerMarkId) {
+    placeSticker(id, "scatter");
+    disarm();
     onStuck?.(id);
   }
 
@@ -47,17 +53,38 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
       {open ? (
         <div className="sticker-tray-body">
           <p className="sticker-tray-lede">
-            free starter · tap to stick on the page
+            {armed
+              ? "tap the page to stick it · or stick randomly"
+              : "free starter · pick one, then tap the page"}
             {count > 0 ? ` · ${count} stuck` : ""}
           </p>
+          {armed ? (
+            <div className="sticker-tray-armed-bar">
+              <button
+                type="button"
+                className="sticker-tray-armed-action"
+                onClick={() => stickRandom(armed)}
+              >
+                stick randomly
+              </button>
+              <button type="button" className="sticker-tray-armed-action" onClick={() => disarm()}>
+                cancel
+              </button>
+            </div>
+          ) : null}
           <ul className="sticker-tray-grid" role="list">
             {FREE_STARTER_PACK.stickers.map((s) => (
               <li key={s.id}>
                 <button
                   type="button"
-                  className="sticker-tray-chip"
-                  aria-label={`Stick ${s.name}`}
-                  onClick={() => stick(s.id)}
+                  className={cn("sticker-tray-chip", armed === s.id && "sticker-tray-chip-armed")}
+                  aria-label={
+                    armed === s.id
+                      ? `Cancel placing ${s.name}`
+                      : `Choose ${s.name}, then tap the page`
+                  }
+                  aria-pressed={armed === s.id}
+                  onClick={() => toggleArm(s.id)}
                 >
                   <StickerMark mark={s.mark} />
                   <span className="sticker-tray-chip-name">{s.name}</span>
@@ -71,10 +98,10 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
             </button>
           ) : null}
           <p className="sticker-tray-hint">
-            more packs later · {unlocked ? (
+            drag to move · tap to peel off · {unlocked ? (
               <>ideas → <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a></>
             ) : (
-              "a little idea inbox for sticker & scrap ideas"
+              "more packs later"
             )}
           </p>
         </div>

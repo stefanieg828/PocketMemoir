@@ -25,8 +25,10 @@ import {
 } from "./categories";
 import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
 import {
-  normalizePlacedSticker,
+  clampStickerCoord,
+  normalizePageStickers,
   PAGE_STICKER_CAP,
+  placementAt,
   scatterPlacement,
   type PlacedSticker,
   type StickerMarkId,
@@ -188,7 +190,11 @@ type MemoirState = {
   dismissShelfLede: () => void;
   dismissCorkWallTip: () => void;
   dismissA2hsTip: () => void;
-  placeSticker: (stickerId: StickerMarkId) => void;
+  placeSticker: (
+    stickerId: StickerMarkId,
+    at?: Pick<PlacedSticker, "x" | "y"> | "scatter",
+  ) => void;
+  movePageSticker: (id: string, x: number, y: number) => void;
   removePageSticker: (id: string) => void;
   clearPageStickers: () => void;
   setMode: (mode: ModeId) => void;
@@ -363,15 +369,31 @@ export const useMemoir = create<MemoirState>()(
       dismissShelfLede: () => set({ shelfLedeDismissed: true }),
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
       dismissA2hsTip: () => set({ a2hsTipDismissed: true }),
-      placeSticker: (stickerId) => {
-        const scatter = scatterPlacement(Date.now() ^ (get().pageStickers.length * 9973));
+      placeSticker: (stickerId, at) => {
+        const seed = Date.now() ^ (get().pageStickers.length * 9973);
+        const spot =
+          at && at !== "scatter" && typeof at.x === "number" && typeof at.y === "number"
+            ? placementAt(at.x, at.y, seed)
+            : scatterPlacement(seed);
         const row: PlacedSticker = {
           id: createId(),
           stickerId,
-          ...scatter,
+          ...spot,
         };
         set({ pageStickers: [...get().pageStickers, row].slice(-PAGE_STICKER_CAP) });
       },
+      movePageSticker: (id, x, y) =>
+        set({
+          pageStickers: get().pageStickers.map((s) =>
+            s.id === id
+              ? {
+                  ...s,
+                  x: clampStickerCoord(x, 4, 96),
+                  y: clampStickerCoord(y, 6, 94),
+                }
+              : s,
+          ),
+        }),
       removePageSticker: (id) =>
         set({ pageStickers: get().pageStickers.filter((s) => s.id !== id) }),
       clearPageStickers: () => set({ pageStickers: [] }),
@@ -421,6 +443,9 @@ export const useMemoir = create<MemoirState>()(
                 categories: settings.categories
                   ? normalizeCategoryConfig(settings.categories)
                   : get().categories,
+                ...(settings.pageStickers !== undefined
+                  ? { pageStickers: normalizePageStickers(settings.pageStickers) }
+                  : {}),
               }
             : { entries },
         ),
@@ -554,10 +579,7 @@ export const useMemoir = create<MemoirState>()(
               ? incoming.a2hsTipDismissed
               : current.a2hsTipDismissed,
           pageStickers: Array.isArray(incoming.pageStickers)
-            ? incoming.pageStickers
-                .map(normalizePlacedSticker)
-                .filter((s): s is PlacedSticker => Boolean(s))
-                .slice(0, PAGE_STICKER_CAP)
+            ? normalizePageStickers(incoming.pageStickers)
             : current.pageStickers,
           suggestions: Array.isArray(incoming.suggestions)
             ? incoming.suggestions

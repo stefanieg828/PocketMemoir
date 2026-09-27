@@ -9,6 +9,7 @@ import {
   type CategoryConfig,
 } from "./categories.ts";
 import { normalizeRiso } from "./looks.ts";
+import { normalizePageStickers, type PlacedSticker } from "./stickers.ts";
 import type { LookId, MemoirEntry, ModeId, RisoPrefs } from "./types.ts";
 import { normalizeLook, normalizeMode } from "./types.ts";
 
@@ -33,6 +34,8 @@ export type PeekFile = {
   categories: CategoryConfig;
   entries: MemoirEntry[];
   counts: { scraps: number; photos: number };
+  /** Optional decorative stickers (v1+ optional; older peeks omit). */
+  pageStickers?: PlacedSticker[];
 };
 
 export type ParsedPeek =
@@ -46,6 +49,7 @@ export type ParsedPeek =
       entries: MemoirEntry[];
       photos: number;
       skipped: number;
+      pageStickers: PlacedSticker[];
     }
   | { ok: false; reason: PeekError; message: string };
 
@@ -80,10 +84,12 @@ export function createPeek(
     look: LookId;
     riso: RisoPrefs;
     categories?: CategoryConfig;
+    pageStickers?: readonly PlacedSticker[];
   },
   now: Date = new Date(),
 ): PeekFile {
   const entries = data.entries.map((e) => ({ ...e }));
+  const pageStickers = normalizePageStickers(data.pageStickers);
   return {
     kind: PEEK_KIND,
     version: PEEK_VERSION,
@@ -95,6 +101,7 @@ export function createPeek(
     categories: normalizeCategoryConfig(data.categories),
     entries,
     counts: { scraps: entries.length, photos: countPeekPhotos(entries) },
+    ...(pageStickers.length ? { pageStickers } : {}),
   };
 }
 
@@ -160,6 +167,7 @@ export function parsePeek(text: string, normalizeEntry: EntryNormalizer): Parsed
     entries,
     photos: countPeekPhotos(entries),
     skipped,
+    pageStickers: normalizePageStickers(file.pageStickers),
   };
 }
 

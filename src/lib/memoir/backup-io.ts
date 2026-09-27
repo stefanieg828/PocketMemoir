@@ -21,8 +21,8 @@ export type ShareBackupOutcome =
   | ({ outcome: "downloaded" } & BackupSaveResult);
 
 export function buildBackupText(now = new Date()) {
-  const { entries, mode, look, riso, unlocked, categories } = useMemoir.getState();
-  const backup = createBackup({ entries, mode, look, riso, unlocked, categories }, now);
+  const { entries, mode, look, riso, unlocked, categories, pageStickers } = useMemoir.getState();
+  const backup = createBackup({ entries, mode, look, riso, unlocked, categories, pageStickers }, now);
   return { text: serializeBackup(backup), name: backupFileName(now), backup };
 }
 

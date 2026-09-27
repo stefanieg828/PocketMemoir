@@ -27,8 +27,8 @@ export type SharePeekOutcome =
   | ({ outcome: "downloaded" } & PeekSaveResult);
 
 export function buildPeekText(now = new Date()) {
-  const { entries, mode, look, riso, categories } = useMemoir.getState();
-  const peek = createPeek({ entries, mode, look, riso, categories }, now);
+  const { entries, mode, look, riso, categories, pageStickers } = useMemoir.getState();
+  const peek = createPeek({ entries, mode, look, riso, categories, pageStickers }, now);
   return { text: serializePeek(peek), name: peekFileName(now), peek };
 }
 

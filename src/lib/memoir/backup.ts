@@ -9,6 +9,7 @@ import {
   type CategoryConfig,
 } from "./categories.ts";
 import { normalizeRiso } from "./looks.ts";
+import { normalizePageStickers, type PlacedSticker } from "./stickers.ts";
 import type { LookId, MemoirEntry, ModeId, RisoPrefs } from "./types.ts";
 import { normalizeLook, normalizeMode } from "./types.ts";
 
@@ -24,6 +25,8 @@ export type BackupSettings = {
   /** Same gate as Comic / Riso. Older backups omit this → left as-is on restore. */
   unlocked?: boolean;
   categories?: CategoryConfig;
+  /** Decorative page/cork stickers. Older backups omit → left as-is on restore. */
+  pageStickers?: PlacedSticker[];
 };
 
 export type BackupFile = {
@@ -34,6 +37,8 @@ export type BackupFile = {
   counts: { scraps: number; photos: number };
   settings: BackupSettings;
   entries: MemoirEntry[];
+  /** Top-level stickers (also mirrored under settings for clarity). */
+  pageStickers?: PlacedSticker[];
 };
 
 export type RestoreStrategy = "merge" | "replace";
@@ -47,6 +52,7 @@ export type ParsedBackup =
       photos: number;
       /** Rows in the file we couldn't read (kept out, never fatal). */
       skipped: number;
+      pageStickers: PlacedSticker[];
     }
   | { ok: false; reason: BackupError; message: string };
 
@@ -80,10 +86,12 @@ export function createBackup(
     riso: RisoPrefs;
     unlocked?: boolean;
     categories?: CategoryConfig;
+    pageStickers?: readonly PlacedSticker[];
   },
   now: Date = new Date(),
 ): BackupFile {
   const entries = data.entries.map((e) => ({ ...e }));
+  const pageStickers = normalizePageStickers(data.pageStickers);
   return {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
@@ -96,8 +104,10 @@ export function createBackup(
       riso: { ...data.riso },
       unlocked: Boolean(data.unlocked),
       categories: normalizeCategoryConfig(data.categories),
+      ...(pageStickers.length ? { pageStickers } : {}),
     },
     entries,
+    ...(pageStickers.length ? { pageStickers } : {}),
   };
 }
 
@@ -148,12 +158,15 @@ export function parseBackup(text: string, normalizeEntry: EntryNormalizer): Pars
   if (file.entries.length > 0 && entries.length === 0) return fail("broken");
 
   const s = (file.settings ?? {}) as Record<string, unknown>;
+  const stickersRaw = file.pageStickers ?? s.pageStickers;
+  const pageStickers = normalizePageStickers(stickersRaw);
   const settings: BackupSettings = {
     mode: normalizeMode(s.mode),
     look: normalizeLook(s.look),
     riso: normalizeRiso(s.riso),
     unlocked: typeof s.unlocked === "boolean" ? s.unlocked : undefined,
     categories: s.categories !== undefined ? normalizeCategoryConfig(s.categories) : undefined,
+    ...(pageStickers.length ? { pageStickers } : {}),
   };
   const when = typeof file.exportedAt === "string" ? new Date(file.exportedAt) : null;
   return {
@@ -163,6 +176,7 @@ export function parseBackup(text: string, normalizeEntry: EntryNormalizer): Pars
     entries,
     photos: countPhotos(entries),
     skipped,
+    pageStickers,
   };
 }
 

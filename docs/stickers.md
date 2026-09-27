@@ -26,12 +26,33 @@ Stickers sit as decorative overlays on:
 They do **not** replace entry kinds, shelf boards, or the Keep form “sticker”
 chips (those are category labels).
 
-## Free starter pack (~10 basics)
+### Place mode (primary)
 
-Cartoon flat, thick outline, Saturday-morning. No photoreal.
+1. Tap a mark in the tray → place-mode arms (“tap the page to stick it”).
+2. Tap the scrapbook page or cork where you want it → sticker lands at that
+   percent point (of the sticker-layer box), with a light random tilt/scale.
+3. Cancel via the tray, or tap the same chip again.
+4. Fallback: **stick randomly** still scatters if you prefer.
 
-Hearts, stars, washi bits, smile wax, tiny doodles (flower, spark, bow, pin
-dot, leaf, cloud). See `src/lib/memoir/stickers.ts` → `FREE_STARTER_PACK`.
+### Drag + peel
+
+- Drag a placed sticker to move it (pointer + touch; `touch-action: none`).
+- Short tap (no drag) peels it off. Drag does not remove.
+- Peek mode: stickers from the peek file show read-only; tray / place / drag /
+  remove stay off.
+
+Cap: `PAGE_STICKER_CAP = 24`.
+
+## Free starter pack (~12–16 marks)
+
+Soft scrapbook / washi look — layered fills, soft highlights, slight imperfect
+strokes, paper grain. Still cute, not photoreal. Fits Soft Storybook / Comic /
+Riso.
+
+Hearts, stars, washi bits, smile wax, flower, leaf, bow, pin, cloud, plus
+postage stamp, foil star, tiny ticket, pressed flower. See
+`src/lib/memoir/stickers.ts` → `FREE_STARTER_PACK` and
+`src/components/sticker-mark.tsx`.
 
 ## Cadence
 
@@ -45,8 +66,7 @@ dot, leaf, cloud). See `src/lib/memoir/stickers.ts` → `FREE_STARTER_PACK`.
 People can email sticker and scrap ideas to the creator. Same inbox as “Got an
 idea?” — no in-app social feed.
 
-## Persistence (v1)
+## Persistence
 
-Placed stickers persist in the local memoir store (`pageStickers`). Cap the
-count so the page does not fill up forever. Backup / restore of stickers can
-follow in a later pass.
+Placed stickers live in the local memoir store (`pageStickers`) and travel in
+backup / peek files when present (optional field; older files omit them safely).

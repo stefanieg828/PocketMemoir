@@ -8,6 +8,7 @@ import type { CategoryConfig } from "./categories";
 import { DEFAULT_CATEGORY_CONFIG } from "./categories";
 import { DEFAULT_RISO } from "./looks";
 import type { ParsedPeek } from "./peek";
+import type { PlacedSticker } from "./stickers";
 import type { LookId, MemoirEntry, ModeId, RisoPrefs } from "./types";
 
 export type PeekSessionState = {
@@ -18,6 +19,8 @@ export type PeekSessionState = {
   riso: RisoPrefs;
   categories: CategoryConfig;
   entries: MemoirEntry[];
+  /** Decorative stickers from the peek file (read-only). */
+  pageStickers: PlacedSticker[];
   /** Start a peek from a successfully parsed file. */
   startPeek: (parsed: Extract<ParsedPeek, { ok: true }>) => void;
   /** Clear session and return to the owner's album. */
@@ -39,6 +42,7 @@ export const usePeekSession = create<PeekSessionState>((set) => ({
   riso: { ...DEFAULT_RISO },
   categories: emptyCategories(),
   entries: [],
+  pageStickers: [],
   startPeek: (parsed) =>
     set({
       active: true,
@@ -48,6 +52,7 @@ export const usePeekSession = create<PeekSessionState>((set) => ({
       riso: { ...parsed.riso },
       categories: parsed.categories,
       entries: parsed.entries.map((e) => ({ ...e })),
+      pageStickers: (parsed.pageStickers ?? []).map((s) => ({ ...s })),
     }),
   endPeek: () =>
     set({
@@ -58,6 +63,7 @@ export const usePeekSession = create<PeekSessionState>((set) => ({
       riso: { ...DEFAULT_RISO },
       categories: emptyCategories(),
       entries: [],
+      pageStickers: [],
     }),
 }));
 
