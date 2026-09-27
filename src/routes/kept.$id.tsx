@@ -17,11 +17,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { KIND_META } from "@/lib/memoir/copy";
 import { formatHappenedOn } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { useMemoir } from "@/lib/memoir/store";
-import { categoryForEntry } from "@/lib/memoir/categories";
+import { categoryForEntry, stickerLabelForEntry } from "@/lib/memoir/categories";
 import { cn, hashSeed } from "@/lib/utils";
 
 export const Route = createFileRoute("/kept/$id")({
@@ -35,6 +34,7 @@ function KeptPage() {
   const jacket = useMemoir((s) => s.mode);
   const look = MODE_META[jacket];
   const entry = useMemoir((s) => s.entries.find((item) => item.id === id));
+  const categories = useMemoir((s) => s.categories);
   const updateEntry = useMemoir((s) => s.updateEntry);
   const removeEntry = useMemoir((s) => s.removeEntry);
   const [changing, setChanging] = useState(false);
@@ -55,7 +55,7 @@ function KeptPage() {
     );
   }
 
-  const meta = KIND_META[entry.kind];
+  const stickerLabel = stickerLabelForEntry(entry, categories);
 
   if (changing) {
     return (
@@ -103,10 +103,10 @@ function KeptPage() {
             <img src={entry.photo} alt="" className="aspect-[4/3] w-full object-cover" />
           </span>
         ) : (
-          <KindMark kind={entry.kind} size="lg" className="mb-4" />
+          <KindMark kind={entry.kind} label={stickerLabel} size="lg" className="mb-4" />
         )}
         <p className="font-display text-3xl leading-snug font-semibold">{entry.title}</p>
-        <p className="mt-1 font-display text-sm text-muted">{meta.label}</p>
+        <p className="mt-1 font-display text-sm text-muted">{stickerLabel}</p>
         <StatusMover
           entryId={entry.id}
           status={entry.status ?? "fresh"}

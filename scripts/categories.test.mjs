@@ -1,5 +1,6 @@
 /**
- * Category config: presets, customs, rename (starters + presets), hidden-with-scraps.
+ * Category config: presets, customs, rename (starters + presets), hidden-with-scraps,
+ * kindExtras sticker chips.
  *   node --test scripts/categories.test.mjs
  */
 import { after, before, describe, it } from "node:test";
@@ -113,4 +114,80 @@ describe("categories", () => {
     assert.equal(m.categoryForEntry({ kind: "person" }), "people");
     assert.equal(m.categoryForEntry({ kind: "note", category: "books-to-read" }), "books-to-read");
   });
+
+  it("migrates old saves without kindExtras", () => {
+    const cfg = m.normalizeCategoryConfig({
+      order: [...m.STARTER_IDS],
+      names: {},
+      customs: [],
+    });
+    assert.deepEqual(cfg.kindExtras, {});
+  });
+
+  it("kindsForBucket free = fixed builtins; unlocked applies renames/hide/customs", () => {
+    let cfg = m.DEFAULT_CATEGORY_CONFIG;
+    cfg = m.renameKind(cfg, "scraps", "note", "Scribbles");
+    cfg = m.hideKind(cfg, "scraps", "quote");
+    const { config, id } = m.addCustomKind(cfg, "scraps", "Voice memo");
+    cfg = config;
+    assert.ok(id.startsWith("custom-kind-"));
+
+    const locked = m.kindsForBucket(cfg, "scraps", false);
+    assert.deepEqual(
+      locked.map((c) => c.id),
+      ["note", "idea", "list", "quote", "song"],
+    );
+    assert.equal(locked.find((c) => c.id === "note").label, "Note");
+
+    const open = m.kindsForBucket(cfg, "scraps", true);
+    const ids = open.map((c) => c.id);
+    assert.ok(ids.includes("note"));
+    assert.ok(!ids.includes("quote"));
+    assert.ok(ids.includes(id));
+    assert.equal(open.find((c) => c.id === "note").label, "Scribbles");
+    assert.equal(open.find((c) => c.id === id).label, "Voice memo");
+    assert.equal(open.find((c) => c.id === id).builtinKind, "note");
+  });
+
+  it("resetKindName restores KIND_META label; removeCustomKind drops chip", () => {
+    let cfg = m.renameKind(m.DEFAULT_CATEGORY_CONFIG, "dreams", "dream", "Night visions");
+    assert.equal(m.kindsForBucket(cfg, "dreams", true).find((c) => c.id === "dream").label, "Night visions");
+    cfg = m.resetKindName(cfg, "dreams", "dream");
+    assert.equal(m.kindsForBucket(cfg, "dreams", true).find((c) => c.id === "dream").label, "Dreams");
+
+    const added = m.addCustomKind(cfg, "dreams", "Moonshot");
+    cfg = added.config;
+    assert.ok(m.kindsForBucket(cfg, "dreams", true).some((c) => c.id === added.id));
+    cfg = m.removeCustomKind(cfg, "dreams", added.id);
+    assert.ok(!m.kindsForBucket(cfg, "dreams", true).some((c) => c.id === added.id));
+  });
+
+  it("stickerLabelForEntry uses custom label; orphan falls back to kind", () => {
+    let cfg = m.DEFAULT_CATEGORY_CONFIG;
+    const { config, id } = m.addCustomKind(cfg, "scraps", "Voice memo");
+    cfg = config;
+    assert.equal(
+      m.stickerLabelForEntry({ kind: "note", stickerId: id, category: "scraps" }, cfg),
+      "Voice memo",
+    );
+    assert.equal(
+      m.stickerLabelForEntry({ kind: "note", stickerId: "custom-kind-gone", category: "scraps" }, cfg),
+      "Note",
+    );
+  });
+
+  it("showKind unhides a builtin; selectionFromSticker sets stickerId for customs", () => {
+    let cfg = m.hideKind(m.DEFAULT_CATEGORY_CONFIG, "people", "pet");
+    assert.deepEqual(m.hiddenKindsForBucket(cfg, "people"), ["pet"]);
+    cfg = m.showKind(cfg, "people", "pet");
+    assert.deepEqual(m.hiddenKindsForBucket(cfg, "people"), []);
+
+    const chips = m.kindsForBucket(cfg, "people", true);
+    const person = chips.find((c) => c.id === "person");
+    assert.deepEqual(m.selectionFromSticker(person), { kind: "person", stickerId: undefined });
+    const { config, id } = m.addCustomKind(cfg, "people", "Neighbor");
+    const custom = m.kindsForBucket(config, "people", true).find((c) => c.id === id);
+    assert.deepEqual(m.selectionFromSticker(custom), { kind: "person", stickerId: id });
+  });
+
 });

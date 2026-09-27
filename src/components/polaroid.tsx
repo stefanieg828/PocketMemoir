@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { KIND_META } from "@/lib/memoir/copy";
+import { stickerLabelForEntry } from "@/lib/memoir/categories";
 import { formatHappenedOn } from "@/lib/memoir/dates";
 import { useMemoir } from "@/lib/memoir/store";
 import type { MemoirEntry } from "@/lib/memoir/types";
@@ -29,7 +29,8 @@ function scrapSizeClass(entry: MemoirEntry) {
 
 export function Polaroid({ entry, className }: PolaroidProps) {
   const look = useMemoir((s) => s.mode);
-  const meta = KIND_META[entry.kind];
+  const categories = useMemoir((s) => s.categories);
+  const stickerLabel = stickerLabelForEntry(entry, categories);
   const tilt = tiltFor(entry.id);
   const seed = hashSeed(entry.id);
   const tapeOptions = [
@@ -98,12 +99,12 @@ export function Polaroid({ entry, className }: PolaroidProps) {
           <img src={entry.photo} alt="" className="aspect-[4/3] w-full object-cover" />
         </span>
       ) : (
-        <KindMark kind={entry.kind} className="mb-3" />
+        <KindMark kind={entry.kind} label={stickerLabel} className="mb-3" />
       )}
       <p className="scrap-title font-display text-xl font-semibold leading-snug">{entry.title}</p>
       {caption ? <p className="scrap-caption mt-1 text-sm leading-relaxed text-muted">{caption}</p> : null}
       <p className="scrap-meta mt-2 text-xs font-display text-faint">
-        {meta.label}
+        {stickerLabel}
         {when ? ` · ${when}` : ""}
       </p>
       <div className="mt-3" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>

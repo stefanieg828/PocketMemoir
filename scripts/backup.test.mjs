@@ -185,4 +185,38 @@ describe("backup includes categories", () => {
     assert.equal(parsed.settings.categories.names.scraps, "Bits & bobs");
     assert.ok(parsed.settings.categories.customs.some((c) => c.name === "Songs stuck in my head"));
   });
+
+  it("round-trips kindExtras stickers + entry stickerId", () => {
+    const categories = {
+      order: ["scraps", "people", "out", "everyday", "proud", "dreams"],
+      names: {},
+      customs: [],
+      kindExtras: {
+        scraps: {
+          renames: { note: "Scribbles" },
+          hidden: ["quote"],
+          customs: [{ id: "custom-kind-abc12345", label: "Voice memo" }],
+        },
+      },
+    };
+    const file = m.createBackup(
+      {
+        entries: [entry("a", { stickerId: "custom-kind-abc12345" })],
+        mode: "scrapbook",
+        look: "storybook",
+        riso: settings.riso,
+        unlocked: true,
+        categories,
+      },
+      new Date(2026, 8, 26),
+    );
+    assert.equal(file.settings.categories.kindExtras.scraps.renames.note, "Scribbles");
+    assert.deepEqual(file.settings.categories.kindExtras.scraps.hidden, ["quote"]);
+    assert.equal(file.entries[0].stickerId, "custom-kind-abc12345");
+    const parsed = m.parseBackup(m.serializeBackup(file), m.normalizeStoredEntry);
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.settings.categories.kindExtras.scraps.customs[0].label, "Voice memo");
+    assert.equal(parsed.entries[0].stickerId, "custom-kind-abc12345");
+  });
+
 });

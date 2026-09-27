@@ -2446,6 +2446,100 @@
     gap: 0.35rem;
   }
 
+  .stickers-panel {
+    margin-top: 1.1rem;
+    padding-top: 0.85rem;
+    border-top: 1.5px dashed color-mix(in srgb, var(--color-line) 40%, transparent);
+  }
+
+  .stickers-panel-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.15rem;
+    border: 0;
+    background: none;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  .stickers-panel-body {
+    margin-top: 0.35rem;
+  }
+
+  .stickers-board-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0.75rem;
+  }
+
+  .stickers-kind-list {
+    margin-bottom: 0.75rem;
+  }
+
+  .stickers-add-row {
+    margin-top: 0.5rem;
+  }
+
+  .suggestions-panel {
+    margin-top: 1.1rem;
+    padding-top: 0.85rem;
+    border-top: 1.5px dashed color-mix(in srgb, var(--color-line) 40%, transparent);
+  }
+
+  .suggestions-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .suggestions-input {
+    width: 100%;
+    min-height: 3.2rem;
+    padding: 0.5rem 0.7rem;
+    border: var(--b1) solid var(--color-line);
+    border-radius: 0.55rem;
+    background: #fffef9;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--color-ink);
+    resize: vertical;
+  }
+
+  .suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .suggestions-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.55rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 40%, transparent);
+    border-radius: 0.6rem;
+    background: color-mix(in srgb, var(--color-card) 94%, transparent);
+  }
+
+  .suggestions-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
   /* Soft paper vibes for chips / rows */
   .cat-vibe-peach { background-color: color-mix(in srgb, #f3c4a8 55%, #fffef8); }
   .cat-vibe-sage { background-color: color-mix(in srgb, #b9c9a8 55%, #fffef8); }

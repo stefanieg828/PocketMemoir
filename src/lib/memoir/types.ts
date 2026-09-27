@@ -97,6 +97,12 @@ export type MemoirEntry = {
   happenedOn?: string;
   /** Shelf category id (starter / preset / custom). Falls back to kind→bucket. */
   category?: string;
+  /**
+   * Sticker chip id when it differs from `kind` (custom-kind-*) or when a
+   * renamed builtin chip was selected. Custom stickers keep a builtin `kind`
+   * for storage/compat and point here for display + chip selection.
+   */
+  stickerId?: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -112,6 +118,7 @@ export type MemoirDraft = {
   happenedOn?: string;
   status?: EntryStatus;
   category?: string;
+  stickerId?: string;
 };
 
 const KIND_SET = new Set<string>(ENTRY_KINDS);

@@ -4,13 +4,19 @@ import type { BackupSettings } from "./backup";
 import {
   DEFAULT_CATEGORY_CONFIG,
   addCustom,
+  addCustomKind,
   hideCategory,
+  hideKind,
   moveCategory,
   normalizeCategoryConfig,
   removeCustom,
+  removeCustomKind,
   renameCategory,
+  renameKind,
   resetCategoryName,
+  resetKindName,
   showCategory,
+  showKind,
   togglePreset,
   type CategoryConfig,
   type CategoryVibe,
@@ -123,6 +129,12 @@ const SEEDS: MemoirEntry[] = [
   },
 ];
 
+export type MemoirSuggestion = {
+  id: string;
+  text: string;
+  createdAt: number;
+};
+
 type MemoirState = {
   entries: MemoirEntry[];
   /** Layout engine: flip album vs wall of boards. */
@@ -151,6 +163,11 @@ type MemoirState = {
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
   corkWallTipDismissed: boolean;
+  /**
+   * Unlock perk: tiny local-only "Got an idea?" notes. Cap ~20. Not required
+   * in backups for v1 (still persisted in localStorage).
+   */
+  suggestions: MemoirSuggestion[];
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
@@ -178,7 +195,17 @@ type MemoirState = {
   showCategory: (id: string) => void;
   removeCategory: (id: string) => void;
   moveCategory: (id: string, dir: -1 | 1) => void;
+  renameKind: (bucket: string, kindId: string, label: string) => void;
+  resetKindName: (bucket: string, kindId: string) => void;
+  hideKind: (bucket: string, kindId: string) => void;
+  showKind: (bucket: string, kindId: string) => void;
+  addCustomKind: (bucket: string, label: string) => string;
+  removeCustomKind: (bucket: string, kindId: string) => void;
+  addSuggestion: (text: string) => void;
+  removeSuggestion: (id: string) => void;
 };
+
+const SUGGESTION_CAP = 20;
 
 function createId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -248,6 +275,10 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
     photo: draft.photo,
     happenedOn: draft.happenedOn?.trim() || undefined,
     category: draft.category?.trim() || base?.category,
+    stickerId:
+      typeof draft.stickerId === "string" && draft.stickerId.trim()
+        ? draft.stickerId.trim()
+        : undefined,
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
   };
@@ -282,6 +313,9 @@ export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     category: typeof entry.category === "string" && entry.category.trim()
       ? entry.category.trim()
       : undefined,
+    stickerId: typeof entry.stickerId === "string" && entry.stickerId.trim()
+      ? entry.stickerId.trim()
+      : undefined,
     createdAt: typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
     updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : Date.now(),
   };
@@ -301,6 +335,7 @@ export const useMemoir = create<MemoirState>()(
       tourSeen: false,
       shelfLedeDismissed: false,
       corkWallTipDismissed: false,
+      suggestions: [],
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
@@ -369,6 +404,48 @@ export const useMemoir = create<MemoirState>()(
       showCategory: (id) => set({ categories: showCategory(get().categories, id) }),
       removeCategory: (id) => set({ categories: removeCustom(get().categories, id) }),
       moveCategory: (id, dir) => set({ categories: moveCategory(get().categories, id, dir) }),
+      renameKind: (bucket, kindId, label) => {
+        if (!get().unlocked) return;
+        set({ categories: renameKind(get().categories, bucket, kindId, label) });
+      },
+      resetKindName: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: resetKindName(get().categories, bucket, kindId) });
+      },
+      hideKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: hideKind(get().categories, bucket, kindId) });
+      },
+      showKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: showKind(get().categories, bucket, kindId) });
+      },
+      addCustomKind: (bucket, label) => {
+        if (!get().unlocked) return "";
+        const { config, id } = addCustomKind(get().categories, bucket, label);
+        set({ categories: config });
+        return id;
+      },
+      removeCustomKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: removeCustomKind(get().categories, bucket, kindId) });
+      },
+      addSuggestion: (text) => {
+        if (!get().unlocked) return;
+        const cleaned = text.trim().replace(/\s+/g, " ").slice(0, 280);
+        if (!cleaned) return;
+        const row: MemoirSuggestion = {
+          id: createId(),
+          text: cleaned,
+          createdAt: Date.now(),
+        };
+        const next = [row, ...get().suggestions].slice(0, SUGGESTION_CAP);
+        set({ suggestions: next });
+      },
+      removeSuggestion: (id) => {
+        if (!get().unlocked) return;
+        set({ suggestions: get().suggestions.filter((s) => s.id !== id) });
+      },
     }),
     {
       name: STORAGE_KEY,
@@ -386,6 +463,7 @@ export const useMemoir = create<MemoirState>()(
         tourSeen: state.tourSeen,
         shelfLedeDismissed: state.shelfLedeDismissed,
         corkWallTipDismissed: state.corkWallTipDismissed,
+        suggestions: state.suggestions,
       }),
       merge: (persisted, current) => {
         // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
@@ -433,6 +511,24 @@ export const useMemoir = create<MemoirState>()(
             typeof incoming.corkWallTipDismissed === "boolean"
               ? incoming.corkWallTipDismissed
               : current.corkWallTipDismissed,
+          suggestions: Array.isArray(incoming.suggestions)
+            ? incoming.suggestions
+                .filter(
+                  (s): s is MemoirSuggestion =>
+                    Boolean(s) &&
+                    typeof s === "object" &&
+                    typeof (s as MemoirSuggestion).id === "string" &&
+                    typeof (s as MemoirSuggestion).text === "string" &&
+                    typeof (s as MemoirSuggestion).createdAt === "number",
+                )
+                .map((s) => ({
+                  id: s.id,
+                  text: String(s.text).trim().slice(0, 280),
+                  createdAt: s.createdAt,
+                }))
+                .filter((s) => s.text)
+                .slice(0, SUGGESTION_CAP)
+            : current.suggestions,
           entries,
         };
       },

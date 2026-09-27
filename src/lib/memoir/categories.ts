@@ -2,12 +2,16 @@
  * Shelf categories = scrapbook spreads = cork boards.
  *
  * Free taste: the 6 starters (always available; rename allowed). Behind unlock:
- * extra presets, custom categories, hide / reorder. Hidden categories that still
- * hold scraps stay on the shelf (tucked at the end) so nothing gets lost.
+ * extra presets, custom categories, hide / reorder, and editable sticker chips
+ * (kindExtras). Hidden categories that still hold scraps stay on the shelf
+ * (tucked at the end) so nothing gets lost.
  */
+import { KIND_META } from "./copy";
 import {
+  BUCKET_KINDS,
   ENTRY_BUCKETS,
   bucketForKind,
+  isEntryKind,
   type EntryBucket,
   type EntryKind,
   type ModeId,
@@ -46,12 +50,36 @@ export type CustomCategory = {
   vibe: CategoryVibe;
 };
 
+/** Per-starter sticker chip overrides (unlocked). */
+export type KindExtrasBucket = {
+  /** Display labels for builtin kinds or custom ids. */
+  renames?: Record<string, string>;
+  /** Builtin kinds hidden from chips (not hard-deleted). */
+  hidden?: string[];
+  /** User-added sticker chips for this board. */
+  customs?: { id: string; label: string }[];
+};
+
 export type CategoryConfig = {
   /** Visible categories, in shelf order. */
   order: string[];
   /** Display-name overrides. */
   names: Record<string, string>;
   customs: CustomCategory[];
+  /**
+   * Sticker chip edits keyed by starter bucket id. Omitted / empty for free
+   * users and older saves. normalize fills an empty object.
+   */
+  kindExtras?: Record<string, KindExtrasBucket>;
+};
+
+/** One chip on the keep-form kind row. */
+export type StickerChip = {
+  id: string;
+  label: string;
+  custom: boolean;
+  /** Builtin EntryKind used when saving (customs fall back to a board default). */
+  builtinKind: EntryKind;
 };
 
 export type CategoryKind = "starter" | "preset" | "custom";
@@ -92,6 +120,7 @@ export const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
   order: [...STARTER_IDS],
   names: {},
   customs: [],
+  kindExtras: {},
 };
 
 const STARTER_SET = new Set<string>(STARTER_IDS);
@@ -108,6 +137,18 @@ export function isPresetId(id: string): id is PresetId {
 
 export function isCustomId(id: string): boolean {
   return /^custom-[a-z0-9-]+$/i.test(id);
+}
+
+/** Custom sticker chip ids (not board customs). */
+export function isCustomKindId(id: string): boolean {
+  return /^custom-kind-[a-z0-9-]+$/i.test(id);
+}
+
+export function makeCustomKindId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `custom-kind-${crypto.randomUUID().slice(0, 8)}`;
+  }
+  return `custom-kind-${Date.now().toString(36)}`;
 }
 
 export function categoryKindOf(id: string): CategoryKind | null {
@@ -149,12 +190,62 @@ export function makeCustomId(): string {
   return `custom-${Date.now().toString(36)}`;
 }
 
+function normalizeKindExtras(raw: unknown): Record<string, KindExtrasBucket> {
+  const out: Record<string, KindExtrasBucket> = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [bucket, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isStarterId(bucket) || !value || typeof value !== "object") continue;
+    const row = value as KindExtrasBucket;
+    const builtins = new Set<string>(BUCKET_KINDS[bucket] ?? []);
+    const renames: Record<string, string> = {};
+    if (row.renames && typeof row.renames === "object") {
+      for (const [kid, label] of Object.entries(row.renames)) {
+        if (typeof label !== "string") continue;
+        const cleaned = cleanName(label, "");
+        if (!cleaned) continue;
+        if (builtins.has(kid) || isCustomKindId(kid)) renames[kid] = cleaned;
+      }
+    }
+    const hidden: string[] = [];
+    const seenHidden = new Set<string>();
+    if (Array.isArray(row.hidden)) {
+      for (const kid of row.hidden) {
+        if (typeof kid !== "string" || !builtins.has(kid) || seenHidden.has(kid)) continue;
+        seenHidden.add(kid);
+        hidden.push(kid);
+      }
+    }
+    const customs: { id: string; label: string }[] = [];
+    const seenCustomKind = new Set<string>();
+    if (Array.isArray(row.customs)) {
+      for (const c of row.customs) {
+        if (!c || typeof c !== "object") continue;
+        const id = typeof (c as { id?: unknown }).id === "string" ? (c as { id: string }).id : "";
+        if (!isCustomKindId(id) || seenCustomKind.has(id)) continue;
+        seenCustomKind.add(id);
+        customs.push({
+          id,
+          label: cleanName((c as { label?: unknown }).label, "Sticker"),
+        });
+      }
+    }
+    if (Object.keys(renames).length === 0 && hidden.length === 0 && customs.length === 0) continue;
+    const bucketExtras: KindExtrasBucket = {};
+    if (Object.keys(renames).length) bucketExtras.renames = renames;
+    if (hidden.length) bucketExtras.hidden = hidden;
+    if (customs.length) bucketExtras.customs = customs;
+    out[bucket] = bucketExtras;
+  }
+  return out;
+}
+
 /** Validate + coerce anything from storage / a backup into a safe config. */
 export function normalizeCategoryConfig(raw: unknown): CategoryConfig {
   const empty = (): CategoryConfig => ({
     order: [...STARTER_IDS],
     names: {},
     customs: [],
+    kindExtras: {},
   });
   if (!raw || typeof raw !== "object") return empty();
 
@@ -206,8 +297,10 @@ export function normalizeCategoryConfig(raw: unknown): CategoryConfig {
     }
   }
 
-  if (order.length === 0) return { order: [...STARTER_IDS], names, customs };
-  return { order, names, customs };
+  const kindExtras = normalizeKindExtras(incoming.kindExtras);
+
+  if (order.length === 0) return { order: [...STARTER_IDS], names, customs, kindExtras };
+  return { order, names, customs, kindExtras };
 }
 
 export function categoryLabel(
@@ -367,6 +460,7 @@ export function removeCustom(config: CategoryConfig, id: string): CategoryConfig
   const names = { ...config.names };
   delete names[id];
   return {
+    ...config,
     order: config.order.filter((x) => x !== id),
     names,
     customs: config.customs.filter((c) => c.id !== id),
@@ -400,7 +494,7 @@ export function setCustomVibe(
 /** Sensible default kind when sticking a scrap onto a category. */
 export function defaultKindForCategory(id: string): EntryKind {
   if (isStarterId(id)) {
-    return (BUCKET_KINDS_SAFE[id]?.[0] ?? "note") as EntryKind;
+    return (BUCKET_KINDS[id]?.[0] ?? "note") as EntryKind;
   }
   if (id === "recipes-to-try") return "recipe";
   if (id === "places-to-go") return "place";
@@ -410,12 +504,214 @@ export function defaultKindForCategory(id: string): EntryKind {
   return "note";
 }
 
-// Local copy of starter→kinds head so we don't re-export the whole map.
-const BUCKET_KINDS_SAFE: Record<string, readonly EntryKind[]> = {
-  scraps: ["note", "idea", "list", "quote", "song"],
-  people: ["person", "pet"],
-  out: ["place", "trip", "ticket", "event", "moment"],
-  everyday: ["thing", "food", "recipe", "work", "money", "health"],
-  proud: ["win", "lesson"],
-  dreams: ["dream", "year-1", "year-5"],
-};
+function kindExtrasFor(config: CategoryConfig, bucket: string): KindExtrasBucket {
+  return config.kindExtras?.[bucket] ?? {};
+}
+
+function setKindExtras(
+  config: CategoryConfig,
+  bucket: string,
+  next: KindExtrasBucket | null,
+): CategoryConfig {
+  const kindExtras = { ...(config.kindExtras ?? {}) };
+  if (!next || (!next.renames && !next.hidden?.length && !next.customs?.length)) {
+    delete kindExtras[bucket];
+  } else {
+    const cleaned: KindExtrasBucket = {};
+    if (next.renames && Object.keys(next.renames).length) cleaned.renames = next.renames;
+    if (next.hidden?.length) cleaned.hidden = next.hidden;
+    if (next.customs?.length) cleaned.customs = next.customs;
+    if (!cleaned.renames && !cleaned.hidden && !cleaned.customs) delete kindExtras[bucket];
+    else kindExtras[bucket] = cleaned;
+  }
+  return { ...config, kindExtras };
+}
+
+function pruneExtras(extras: KindExtrasBucket): KindExtrasBucket | null {
+  const cleaned: KindExtrasBucket = {};
+  if (extras.renames && Object.keys(extras.renames).length) cleaned.renames = extras.renames;
+  if (extras.hidden?.length) cleaned.hidden = extras.hidden;
+  if (extras.customs?.length) cleaned.customs = extras.customs;
+  return cleaned.renames || cleaned.hidden || cleaned.customs ? cleaned : null;
+}
+
+/**
+ * Ordered sticker chips for a board.
+ * Free (locked): fixed BUCKET_KINDS. Unlocked: builtins minus hidden + customs,
+ * with renames applied.
+ */
+export function kindsForBucket(
+  config: CategoryConfig,
+  bucket: string,
+  unlocked: boolean,
+): StickerChip[] {
+  if (!isStarterId(bucket)) {
+    const k = defaultKindForCategory(bucket);
+    return [{ id: k, label: KIND_META[k].label, custom: false, builtinKind: k }];
+  }
+  const builtins = BUCKET_KINDS[bucket];
+  if (!unlocked) {
+    return builtins.map((k) => ({
+      id: k,
+      label: KIND_META[k].label,
+      custom: false,
+      builtinKind: k,
+    }));
+  }
+  const extras = kindExtrasFor(config, bucket);
+  const hidden = new Set(extras.hidden ?? []);
+  const renames = extras.renames ?? {};
+  const chips: StickerChip[] = [];
+  for (const k of builtins) {
+    if (hidden.has(k)) continue;
+    chips.push({
+      id: k,
+      label: renames[k] ?? KIND_META[k].label,
+      custom: false,
+      builtinKind: k,
+    });
+  }
+  for (const c of extras.customs ?? []) {
+    chips.push({
+      id: c.id,
+      label: renames[c.id] ?? c.label,
+      custom: true,
+      builtinKind: (builtins[0] ?? "note") as EntryKind,
+    });
+  }
+  return chips;
+}
+
+/** Builtin kinds hidden on a starter (for the stickers editor "show again" list). */
+export function hiddenKindsForBucket(config: CategoryConfig, bucket: string): EntryKind[] {
+  if (!isStarterId(bucket)) return [];
+  const hidden = kindExtrasFor(config, bucket).hidden ?? [];
+  const builtins = new Set<string>(BUCKET_KINDS[bucket]);
+  return hidden.filter((k): k is EntryKind => builtins.has(k) && isEntryKind(k));
+}
+
+export function renameKind(
+  config: CategoryConfig,
+  bucket: string,
+  kindId: string,
+  label: string,
+): CategoryConfig {
+  if (!isStarterId(bucket)) return config;
+  const builtins = new Set<string>(BUCKET_KINDS[bucket]);
+  const extras = { ...kindExtrasFor(config, bucket) };
+  const isCustom = (extras.customs ?? []).some((c) => c.id === kindId);
+  if (!builtins.has(kindId) && !isCustom) return config;
+
+  const fallback = isCustom
+    ? (extras.customs!.find((c) => c.id === kindId)?.label ?? "Sticker")
+    : KIND_META[kindId as EntryKind].label;
+  const cleaned = cleanName(label, fallback);
+  const renames = { ...(extras.renames ?? {}) };
+  if (isCustom) {
+    extras.customs = (extras.customs ?? []).map((c) =>
+      c.id === kindId ? { ...c, label: cleaned } : c,
+    );
+    delete renames[kindId];
+  } else if (cleaned === fallback) {
+    delete renames[kindId];
+  } else {
+    renames[kindId] = cleaned;
+  }
+  extras.renames = Object.keys(renames).length ? renames : undefined;
+  return setKindExtras(config, bucket, pruneExtras(extras));
+}
+
+/** Drop a rename so the chip shows KIND_META / custom base label again. */
+export function resetKindName(config: CategoryConfig, bucket: string, kindId: string): CategoryConfig {
+  if (!isStarterId(bucket)) return config;
+  const extras = { ...kindExtrasFor(config, bucket) };
+  if (!extras.renames?.[kindId]) return config;
+  const renames = { ...extras.renames };
+  delete renames[kindId];
+  extras.renames = Object.keys(renames).length ? renames : undefined;
+  return setKindExtras(config, bucket, pruneExtras(extras));
+}
+
+export function hideKind(config: CategoryConfig, bucket: string, kindId: string): CategoryConfig {
+  if (!isStarterId(bucket)) return config;
+  const builtins = new Set<string>(BUCKET_KINDS[bucket]);
+  if (!builtins.has(kindId)) return config;
+  const extras = { ...kindExtrasFor(config, bucket) };
+  const hidden = [...(extras.hidden ?? [])];
+  if (!hidden.includes(kindId)) hidden.push(kindId);
+  extras.hidden = hidden;
+  return setKindExtras(config, bucket, pruneExtras(extras));
+}
+
+export function showKind(config: CategoryConfig, bucket: string, kindId: string): CategoryConfig {
+  if (!isStarterId(bucket)) return config;
+  const extras = { ...kindExtrasFor(config, bucket) };
+  if (!extras.hidden?.includes(kindId)) return config;
+  extras.hidden = extras.hidden.filter((k) => k !== kindId);
+  if (!extras.hidden.length) extras.hidden = undefined;
+  return setKindExtras(config, bucket, pruneExtras(extras));
+}
+
+export function addCustomKind(
+  config: CategoryConfig,
+  bucket: string,
+  label: string,
+  id?: string,
+): { config: CategoryConfig; id: string } {
+  if (!isStarterId(bucket)) return { config, id: "" };
+  const kindId = id && isCustomKindId(id) ? id : makeCustomKindId();
+  const extras = { ...kindExtrasFor(config, bucket) };
+  const customs = [...(extras.customs ?? []).filter((c) => c.id !== kindId)];
+  customs.push({ id: kindId, label: cleanName(label, "Sticker") });
+  extras.customs = customs;
+  return { config: setKindExtras(config, bucket, pruneExtras(extras)), id: kindId };
+}
+
+export function removeCustomKind(
+  config: CategoryConfig,
+  bucket: string,
+  kindId: string,
+): CategoryConfig {
+  if (!isStarterId(bucket) || !isCustomKindId(kindId)) return config;
+  const extras = { ...kindExtrasFor(config, bucket) };
+  extras.customs = (extras.customs ?? []).filter((c) => c.id !== kindId);
+  if (!extras.customs.length) extras.customs = undefined;
+  if (extras.renames?.[kindId]) {
+    const renames = { ...extras.renames };
+    delete renames[kindId];
+    extras.renames = Object.keys(renames).length ? renames : undefined;
+  }
+  return setKindExtras(config, bucket, pruneExtras(extras));
+}
+
+/**
+ * Display label for a scrap's sticker. Custom stickerId -> custom label (or
+ * orphan -> builtin kind label). Renamed builtins use kindExtras renames.
+ */
+export function stickerLabelForEntry(
+  entry: { kind: EntryKind; stickerId?: string; category?: string },
+  config: CategoryConfig,
+): string {
+  const sid = typeof entry.stickerId === "string" ? entry.stickerId.trim() : "";
+  if (sid && isCustomKindId(sid)) {
+    for (const extras of Object.values(config.kindExtras ?? {})) {
+      const custom = extras.customs?.find((c) => c.id === sid);
+      if (custom) return extras.renames?.[sid] ?? custom.label;
+    }
+    return KIND_META[entry.kind]?.label ?? "Note";
+  }
+  const kindKey = sid && isEntryKind(sid) ? sid : entry.kind;
+  const bucket =
+    (typeof entry.category === "string" && isStarterId(entry.category)
+      ? entry.category
+      : bucketForKind(kindKey)) as EntryBucket;
+  const rename = config.kindExtras?.[bucket]?.renames?.[kindKey];
+  if (rename) return rename;
+  return KIND_META[kindKey]?.label ?? KIND_META[entry.kind].label;
+}
+
+/** Resolve keep-form selection into kind + stickerId for storage. */
+export function selectionFromSticker(chip: StickerChip): { kind: EntryKind; stickerId?: string } {
+  if (chip.custom) return { kind: chip.builtinKind, stickerId: chip.id };
+  return { kind: chip.builtinKind, stickerId: undefined };
+}
