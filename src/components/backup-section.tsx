@@ -19,6 +19,8 @@ import {
   saveBackup,
   savedToast,
   shareBackup,
+  shareCanceledToast,
+  shareFallbackToast,
 } from "@/lib/memoir/backup-io";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
@@ -60,9 +62,16 @@ export function BackupSection() {
     setError(null);
     try {
       const res = await shareBackup();
-      if (res) savedToast(res);
+      if (res.outcome === "shared") savedToast(res);
+      else if (res.outcome === "canceled") shareCanceledToast();
+      else shareFallbackToast(res);
     } catch {
-      setError("Sharing didn't work here. Use Save a backup instead.");
+      // Last resort if even the download path blew up — still no dead-end "use Save".
+      try {
+        shareFallbackToast(saveBackup());
+      } catch {
+        setError("couldn't make the file just now. try again in a moment.");
+      }
     }
   };
 
