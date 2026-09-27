@@ -7,17 +7,22 @@ export function GotAnIdeaSection() {
   if (!unlocked) return null;
 
   return (
-    <section className="picker-section" aria-labelledby="got-an-idea-title">
-      <div className="suggestions-panel" id="got-an-idea">
-        <h4 className="picker-sub" id="got-an-idea-title">
-          Got an idea?
-        </h4>
-        <p className="categories-hint">
-          Email the creator at{" "}
-          <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a>{" "}
-          and maybe your ideas will come to fruition!
-        </p>
-      </div>
+    <section
+      className="picker-section suggestions-panel"
+      id="got-an-idea"
+      aria-labelledby="got-an-idea-title"
+    >
+      <h3 className="picker-section-title" id="got-an-idea-title">
+        <span className="picker-step ideas-step" aria-hidden="true">
+          ✎
+        </span>
+        Got an idea?
+      </h3>
+      <p className="backup-lede">
+        Email the creator at{" "}
+        <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a> and maybe your ideas
+        will come to fruition.
+      </p>
     </section>
   );
 }

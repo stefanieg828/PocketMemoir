@@ -2058,11 +2058,25 @@
     line-height: 1;
   }
 
+  .ideas-step {
+    background: var(--color-seal);
+    color: var(--color-seal-ink);
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
   .backup-lede {
     margin: 0 0 0.7rem;
     font-size: 0.98rem;
     line-height: 1.45;
     color: var(--color-ink);
+  }
+
+  .backup-lede a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.15em;
   }
 
   .backup-actions {
