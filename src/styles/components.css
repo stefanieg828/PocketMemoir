@@ -2645,12 +2645,25 @@
     gap: 0.75rem;
   }
 
-  .tour-next {
-    min-width: 7.5rem;
+  .tour-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
   }
 
-  .tour-skip {
+  .tour-next {
+    min-width: 8.5rem;
+  }
+
+  .tour-skip,
+  .tour-back {
     font-size: 0.95rem;
+  }
+
+  .tour-marks .tour-mark {
+    cursor: pointer;
+    appearance: none;
+    padding: 0;
   }
 
   .tour-replay-section {

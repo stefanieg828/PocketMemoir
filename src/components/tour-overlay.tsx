@@ -22,18 +22,18 @@ const STEPS: TourStep[] = [
   {
     kicker: "Your scraps",
     title: "Stick one in when you’re ready",
-    body: "Tap Stick it in (or Pin it on the cork wall). A few sample scraps are already here so the shelf isn’t empty.",
+    body: "Tap Stick it in on the scrapbook or Pin it on the corkboard. A few sample scraps are already here to show how it works.",
   },
   {
     kicker: "You’re in",
     title: "Peek around, then make it yours",
-    body: "Flip, search, or open Look whenever you want a different paper. Skip was always fine — nothing is locked behind this.",
+    body: "Flip, search, or open Look whenever you want a different scrap. Click a scrap to zoom in and see details.",
   },
 ];
 
 /**
  * Soft first-visit scrapbook slip. Skip and Done both set tourSeen so return
- * visits stay quiet. Escape = Skip. Light focus trap inside the card.
+ * visits stay quiet. Escape = Skip. Back / page dots rewind. Light focus trap.
  */
 export function TourOverlay() {
   const hasHydrated = useMemoir((s) => s.hasHydrated);
@@ -88,6 +88,7 @@ export function TourOverlay() {
     if (last) finish();
     else setStep((s) => s + 1);
   };
+  const back = () => setStep((s) => Math.max(0, s - 1));
 
   return (
     <div className="tour-layer" role="presentation">
@@ -107,20 +108,30 @@ export function TourOverlay() {
 
         <div className="tour-marks" aria-label={`Page ${step + 1} of ${STEPS.length}`}>
           {STEPS.map((_, i) => (
-            <span
+            <button
               key={i}
+              type="button"
               className={i === step ? "tour-mark is-on" : "tour-mark"}
+              aria-label={`Go to page ${i + 1}`}
               aria-current={i === step ? "step" : undefined}
+              onClick={() => setStep(i)}
             />
           ))}
         </div>
 
         <div className="tour-actions">
-          <button type="button" className="tour-skip footer-link" onClick={finish}>
-            Skip
-          </button>
+          <div className="tour-actions-left">
+            <button type="button" className="tour-skip footer-link" onClick={finish}>
+              Skip
+            </button>
+            {step > 0 ? (
+              <button type="button" className="tour-back footer-link" onClick={back}>
+                Back
+              </button>
+            ) : null}
+          </div>
           <button type="button" className="kind-chip tour-next" onClick={next}>
-            {last ? "Start peeking" : "Next"}
+            {last ? "Start scrapping" : "Next"}
           </button>
         </div>
       </div>
