@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { stickerLabelForEntry } from "@/lib/memoir/categories";
 import { formatHappenedOn } from "@/lib/memoir/dates";
-import { useMemoir } from "@/lib/memoir/store";
+import { useViewCategories, useViewMode } from "@/lib/memoir/use-view";
 import type { MemoirEntry } from "@/lib/memoir/types";
 import { cn, hashSeed, tiltFor } from "@/lib/utils";
 import { KindMark } from "@/components/kind-mark";
@@ -28,8 +28,8 @@ function scrapSizeClass(entry: MemoirEntry) {
 }
 
 export function Polaroid({ entry, className }: PolaroidProps) {
-  const look = useMemoir((s) => s.mode);
-  const categories = useMemoir((s) => s.categories);
+  const look = useViewMode();
+  const categories = useViewCategories();
   const stickerLabel = stickerLabelForEntry(entry, categories);
   const tilt = tiltFor(entry.id);
   const seed = hashSeed(entry.id);

@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { scrapsSinceBackup, shouldNudgeBackup } from "@/lib/memoir/backup";
 import { saveBackup, savedToast } from "@/lib/memoir/backup-io";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 
 /** Small, dismissible slip after BACKUP_NUDGE_AFTER new scraps since the last backup. */
@@ -12,8 +13,9 @@ export function BackupNudge() {
   const dismissedAt = useMemoir((s) => s.backupNudgeDismissedAt);
   const dismiss = useMemoir((s) => s.dismissBackupNudge);
   const openPickerAt = usePickerUi((s) => s.openAt);
+  const peeking = useIsPeeking();
 
-  if (!hasHydrated || !shouldNudgeBackup(entries, lastBackupAt, dismissedAt)) return null;
+  if (peeking || !hasHydrated || !shouldNudgeBackup(entries, lastBackupAt, dismissedAt)) return null;
   const n = scrapsSinceBackup(entries, lastBackupAt);
 
   return (

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 
 type TourStep = {
@@ -39,10 +40,11 @@ export function TourOverlay() {
   const hasHydrated = useMemoir((s) => s.hasHydrated);
   const tourSeen = useMemoir((s) => s.tourSeen);
   const setTourSeen = useMemoir((s) => s.setTourSeen);
+  const peeking = useIsPeeking();
   const [step, setStep] = useState(0);
   const titleId = useId();
   const cardRef = useRef<HTMLDivElement>(null);
-  const open = hasHydrated && !tourSeen;
+  const open = hasHydrated && !tourSeen && !peeking;
 
   useEffect(() => {
     if (!open) return;

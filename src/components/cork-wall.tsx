@@ -6,7 +6,9 @@ import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
+import { useViewCategories, useViewLook, useViewMode } from "@/lib/memoir/use-view";
 import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
 import type { MemoirEntry } from "@/lib/memoir/types";
 import { cn, hashSeed } from "@/lib/utils";
@@ -45,13 +47,14 @@ export function CorkWall({
     zoomIn && activeBucket ? "zoom-in" : "idle",
   );
   const [tuckedOpen, setTuckedOpen] = useState(false);
-  const look = useMemoir((s) => s.look);
-  const config = useMemoir((s) => s.categories);
-  const mode = useMemoir((s) => s.mode);
+  const look = useViewLook();
+  const config = useViewCategories();
+  const mode = useViewMode();
   const hasHydrated = useMemoir((s) => s.hasHydrated);
   const corkWallTipDismissed = useMemoir((s) => s.corkWallTipDismissed);
   const dismissCorkWallTip = useMemoir((s) => s.dismissCorkWallTip);
-  const showCorkWallTip = hasHydrated && !corkWallTipDismissed;
+  const peeking = useIsPeeking();
+  const showCorkWallTip = hasHydrated && !corkWallTipDismissed && !peeking;
   const shelf = useShelfCategories();
   const shelfIds = shelf.map((c) => c.id);
 

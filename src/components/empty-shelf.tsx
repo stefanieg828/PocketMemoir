@@ -3,11 +3,13 @@ import { KeepSeal } from "@/components/keep-seal";
 import { StickerLayer } from "@/components/sticker-layer";
 import { StickerTray } from "@/components/sticker-tray";
 import { MODE_META } from "@/lib/memoir/jackets";
-import { useMemoir } from "@/lib/memoir/store";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
+import { useViewMode } from "@/lib/memoir/use-view";
 
 export function EmptyShelf() {
-  const jacket = useMemoir((s) => s.mode);
+  const jacket = useViewMode();
   const look = MODE_META[jacket];
+  const peeking = useIsPeeking();
 
   if (jacket === "corkboard") {
     return (
@@ -28,7 +30,7 @@ export function EmptyShelf() {
           <StickerTray compact defaultOpen />
         </div>
         <div className="mt-7">
-          <KeepSeal toKeep size="lg" />
+          {!peeking ? <KeepSeal toKeep size="lg" /> : null}
         </div>
       </section>
     );
@@ -56,7 +58,7 @@ export function EmptyShelf() {
             <StickerTray compact defaultOpen />
           </div>
           <div className="mt-8">
-            <KeepSeal toKeep size="lg" />
+            {!peeking ? <KeepSeal toKeep size="lg" /> : null}
           </div>
         </div>
       </AlbumPage>

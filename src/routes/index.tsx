@@ -5,6 +5,7 @@ import { CorkWall } from "@/components/cork-wall";
 import { EmptyShelf } from "@/components/empty-shelf";
 import { FlipAlbum } from "@/components/flip-album";
 import { SearchSlip } from "@/components/search-slip";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { isStarterShelf, matchesQuery, useMemoir } from "@/lib/memoir/store";
 function validateSearch(search: Record<string, unknown>): {
   spread?: string;
@@ -27,14 +28,19 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { spread, flipIn } = Route.useSearch();
   const navigate = useNavigate();
-  const entries = useMemoir((s) => s.entries);
-  const jacket = useMemoir((s) => s.mode);
+  const peeking = useIsPeeking();
+  const ownEntries = useMemoir((s) => s.entries);
+  const peekEntries = usePeekSession((s) => s.entries);
+  const entries = peeking ? peekEntries : ownEntries;
+  const ownMode = useMemoir((s) => s.mode);
+  const peekMode = usePeekSession((s) => s.mode);
+  const jacket = peeking ? peekMode : ownMode;
   const hasHydrated = useMemoir((s) => s.hasHydrated);
   const shelfLedeDismissed = useMemoir((s) => s.shelfLedeDismissed);
   const dismissShelfLede = useMemoir((s) => s.dismissShelfLede);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const showShelfLede = hasHydrated && !shelfLedeDismissed;
+  const showShelfLede = hasHydrated && !shelfLedeDismissed && !peeking;
 
   const visible = useMemo(() => {
     return entries.filter((entry) => matchesQuery(entry, query));

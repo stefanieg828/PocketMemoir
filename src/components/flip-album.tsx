@@ -13,7 +13,7 @@ import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
 import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
-import { useMemoir } from "@/lib/memoir/store";
+import { useViewCategories, useViewMode } from "@/lib/memoir/use-view";
 import type { MemoirEntry } from "@/lib/memoir/types";
 import { paperClassName, paperFor, type ScrapbookPaper } from "@/lib/scrapbook-paper";
 import { cn } from "@/lib/utils";
@@ -75,8 +75,8 @@ export function FlipAlbum({
 }: FlipAlbumProps) {
   const shelf = useShelfCategories();
   const shelfIds = useMemo(() => shelf.map((c) => c.id), [shelf]);
-  const config = useMemoir((s) => s.categories);
-  const mode = useMemoir((s) => s.mode);
+  const config = useViewCategories();
+  const mode = useViewMode();
 
   const startIndex = useMemo(() => {
     if (initialBucket && shelfIds.includes(initialBucket)) return categoryIndex(shelfIds, initialBucket);

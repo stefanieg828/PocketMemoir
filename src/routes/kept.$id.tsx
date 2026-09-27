@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatHappenedOn } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { categoryForEntry, stickerLabelForEntry } from "@/lib/memoir/categories";
 import { cn, hashSeed } from "@/lib/utils";
@@ -31,10 +32,17 @@ function KeptPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const hasHydrated = useMemoir((s) => s.hasHydrated);
-  const jacket = useMemoir((s) => s.mode);
+  const peeking = useIsPeeking();
+  const ownMode = useMemoir((s) => s.mode);
+  const peekMode = usePeekSession((s) => s.mode);
+  const jacket = peeking ? peekMode : ownMode;
   const look = MODE_META[jacket];
-  const entry = useMemoir((s) => s.entries.find((item) => item.id === id));
-  const categories = useMemoir((s) => s.categories);
+  const ownEntry = useMemoir((s) => s.entries.find((item) => item.id === id));
+  const peekEntry = usePeekSession((s) => s.entries.find((item) => item.id === id));
+  const entry = peeking ? peekEntry : ownEntry;
+  const ownCategories = useMemoir((s) => s.categories);
+  const peekCategories = usePeekSession((s) => s.categories);
+  const categories = peeking ? peekCategories : ownCategories;
   const updateEntry = useMemoir((s) => s.updateEntry);
   const removeEntry = useMemoir((s) => s.removeEntry);
   const [changing, setChanging] = useState(false);
@@ -57,7 +65,7 @@ function KeptPage() {
 
   const stickerLabel = stickerLabelForEntry(entry, categories);
 
-  if (changing) {
+  if (changing && !peeking) {
     return (
       <section className="mx-auto max-w-lg">
         <button
@@ -130,38 +138,42 @@ function KeptPage() {
           kept {format(entry.createdAt, "d MMMM yyyy")}
         </time>
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Button type="button" variant="tape" onClick={() => setChanging(true)}>
-            Change
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" variant="danger">
-                Let it go
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Let this one go?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {entry.title} leaves the {look.name.toLowerCase()}. You can keep it if you’d rather.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep it</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    removeEntry(entry.id);
-                    toast("Let go.");
-                    void navigate({ to: "/" });
-                  }}
-                >
+        {!peeking ? (
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Button type="button" variant="tape" onClick={() => setChanging(true)}>
+              Change
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="danger">
                   Let it go
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Let this one go?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {entry.title} leaves the {look.name.toLowerCase()}. You can keep it if you’d rather.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep it</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      removeEntry(entry.id);
+                      toast("Let go.");
+                      void navigate({ to: "/" });
+                    }}
+                  >
+                    Let it go
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        ) : (
+          <p className="mt-8 text-sm text-muted">read only · scraps stay with them</p>
+        )}
       </div>
     </section>
   );

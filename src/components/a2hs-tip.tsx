@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import { usePwaInstall } from "@/lib/memoir/use-pwa-install";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 
 /**
@@ -13,6 +14,7 @@ export function A2hsTip() {
   const tourSeen = useMemoir((s) => s.tourSeen);
   const dismissed = useMemoir((s) => s.a2hsTipDismissed);
   const dismiss = useMemoir((s) => s.dismissA2hsTip);
+  const peeking = useIsPeeking();
   const { standalone, ios, canPrompt, choice, promptInstall } = usePwaInstall();
 
   // Once they install (or accept the prompt), tuck the tip away for good.
@@ -20,7 +22,7 @@ export function A2hsTip() {
     if (standalone || choice === "accepted") dismiss();
   }, [standalone, choice, dismiss]);
 
-  if (!hasHydrated || !tourSeen || dismissed || standalone) return null;
+  if (!hasHydrated || !tourSeen || dismissed || standalone || peeking) return null;
 
   // iOS always gets Share steps. Chromium gets Install when BIP is ready.
   // Soft menu hint only on touch-ish phones — skip quiet desktop nags.

@@ -7,9 +7,11 @@ import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
 import { UnlockSheet } from "@/components/unlock-sheet";
 import { KeepSeal } from "@/components/keep-seal";
+import { PeekBanner } from "@/components/peek-banner";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
 import { applyThemeToDocument } from "@/lib/memoir/looks";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
 import {
@@ -26,6 +28,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const mode = useMemoir((s) => s.mode);
   const look = useMemoir((s) => s.look);
   const riso = useMemoir((s) => s.riso);
+  const peeking = useIsPeeking();
+  const peekMode = usePeekSession((s) => s.mode);
+  const peekLook = usePeekSession((s) => s.look);
+  const peekRiso = usePeekSession((s) => s.riso);
   const hasHydrated = useMemoir((s) => s.hasHydrated);
   const unlocked = useMemoir((s) => s.unlocked);
   const setUnlocked = useMemoir((s) => s.setUnlocked);
@@ -51,8 +57,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [setHasHydrated]);
 
   useEffect(() => {
-    applyThemeToDocument(mode, look, riso);
-  }, [mode, look, riso]);
+    if (peeking) applyThemeToDocument(peekMode, peekLook, peekRiso);
+    else applyThemeToDocument(mode, look, riso);
+  }, [peeking, peekMode, peekLook, peekRiso, mode, look, riso]);
 
   // Stripe success URL (or manual ?unlocked=1) — no webhook needed yet.
   useEffect(() => {
@@ -68,7 +75,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [hasHydrated, unlocked, setUnlocked]);
 
   return (
-    <div className="app-frame relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-32 pt-5 sm:px-6 sm:pb-16 sm:pt-7">
+    <div
+      className={cn(
+        "app-frame relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-32 pt-5 sm:px-6 sm:pb-16 sm:pt-7",
+        peeking && "is-peeking",
+      )}
+    >
+      <PeekBanner />
       <header className="app-header flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Wordmark />
@@ -83,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <LookPicker />
           </nav>
         </div>
-        {!onKeep ? (
+        {!onKeep && !peeking ? (
           <div className="hidden pt-1 sm:block">
             <KeepSeal toKeep size="md" />
           </div>
@@ -91,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex-1 pt-7">
-        {pathname === "/" ? (
+        {pathname === "/" && !peeking ? (
           <>
             <A2hsTip />
             <BackupNudge />
@@ -107,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </button>
       </footer>
 
-      {!onKeep ? (
+      {!onKeep && !peeking ? (
         <div className="pointer-events-none fixed right-4 bottom-5 z-30 sm:hidden">
           <div className="pointer-events-auto">
             <KeepSeal toKeep size="lg" />
@@ -115,8 +128,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       ) : null}
 
-      <TourOverlay />
-      <UnlockSheet />
+      {!peeking ? <TourOverlay /> : null}
+      {!peeking ? <UnlockSheet /> : null}
 
       <Toaster
         position="bottom-center"

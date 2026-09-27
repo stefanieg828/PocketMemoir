@@ -1,4 +1,5 @@
 import { StickerMark } from "@/components/sticker-mark";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +13,9 @@ type StickerLayerProps = {
 export function StickerLayer({ className, removable = true }: StickerLayerProps) {
   const stickers = useMemoir((s) => s.pageStickers);
   const removeSticker = useMemoir((s) => s.removePageSticker);
-
-  if (stickers.length === 0) return null;
+  const peeking = useIsPeeking();
+  // Owner's stickers stay off the friend's peek canvas — peek doesn't include them.
+  if (peeking || stickers.length === 0) return null;
 
   return (
     <div className={cn("sticker-layer", className)} aria-hidden={removable ? undefined : true}>

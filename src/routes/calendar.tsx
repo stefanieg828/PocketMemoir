@@ -4,6 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
 import { daysMarkedInMonth, entriesOnDay, toDayKey } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -14,8 +15,13 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 type CalCell = { day: null } | { day: number; date: Date };
 
 function CalendarPage() {
-  const entries = useMemoir((s) => s.entries);
-  const look = MODE_META[useMemoir((s) => s.mode)];
+  const peeking = useIsPeeking();
+  const ownEntries = useMemoir((s) => s.entries);
+  const peekEntries = usePeekSession((s) => s.entries);
+  const entries = peeking ? peekEntries : ownEntries;
+  const ownMode = useMemoir((s) => s.mode);
+  const peekMode = usePeekSession((s) => s.mode);
+  const look = MODE_META[peeking ? peekMode : ownMode];
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selected, setSelected] = useState<Date | null>(null);
 
@@ -119,22 +125,24 @@ function CalendarPage() {
       {selected ? (
         <div className="mt-8">
           <h2 className="font-display text-xl font-semibold">{format(selected, "d MMMM yyyy")}</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              to="/keep"
-              search={{ kind: "moment", date: selectedKey }}
-              className="kind-chip no-underline"
-            >
-              {look.dayMoment}
-            </Link>
-            <Link
-              to="/keep"
-              search={{ kind: "event", date: selectedKey }}
-              className="kind-chip bg-gold no-underline"
-            >
-              {look.dayEvent}
-            </Link>
-          </div>
+          {!peeking ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                to="/keep"
+                search={{ kind: "moment", date: selectedKey }}
+                className="kind-chip no-underline"
+              >
+                {look.dayMoment}
+              </Link>
+              <Link
+                to="/keep"
+                search={{ kind: "event", date: selectedKey }}
+                className="kind-chip bg-gold no-underline"
+              >
+                {look.dayEvent}
+              </Link>
+            </div>
+          ) : null}
           {selectedEntries.length === 0 ? (
             <p className="on-cork mt-5 text-sm text-muted">{look.emptyBody}</p>
           ) : (

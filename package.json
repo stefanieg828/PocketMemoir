@@ -21,6 +21,7 @@
     "format": "prettier --write .",
     "build:pages": "GITHUB_PAGES=true VITE_BASE=/ node scripts/with-app-env.mjs vite build && node scripts/pages-dist.mjs && npm run db:migrate",
     "test:backup": "node --test scripts/backup.test.mjs",
+    "test:peek": "node --test scripts/peek.test.mjs",
     "test:backup:e2e": "node scripts/backup-roundtrip.mjs"
   },
   "dependencies": {

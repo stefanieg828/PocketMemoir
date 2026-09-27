@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { STATUS_META, statusLabel } from "@/lib/memoir/copy";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
+import { useViewMode } from "@/lib/memoir/use-view";
 import { ENTRY_STATUSES, type EntryStatus } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +20,9 @@ export function StatusMover({
   size = "detail",
   className,
 }: StatusMoverProps) {
-  const jacket = useMemoir((s) => s.mode);
+  const jacket = useViewMode();
   const setEntryStatus = useMemoir((s) => s.setEntryStatus);
+  const peeking = useIsPeeking();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -53,8 +56,11 @@ export function StatusMover({
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
+          if (peeking) return;
           setOpen((v) => !v);
         }}
+        aria-disabled={peeking || undefined}
+        disabled={peeking}
         className={cn(
           "status-chip",
           size === "card" && "status-chip-card",
@@ -65,7 +71,7 @@ export function StatusMover({
       >
         {size === "card" ? STATUS_META[status].chip : statusLabel(status, jacket)}
       </button>
-      {open ? (
+      {open && !peeking ? (
         <div
           id={menuId}
           role="menu"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Download, FolderOpen, Share2 } from "lucide-react";
+import { Download, Eye, FolderOpen, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Title as AlertTitle } from "@radix-ui/react-alert-dialog";
 import {
@@ -22,6 +22,16 @@ import {
   shareCanceledToast,
   shareFallbackToast,
 } from "@/lib/memoir/backup-io";
+import {
+  canSharePeekFile,
+  openPeekFromFile,
+  peekFallbackToast,
+  peekSavedToast,
+  peekSharedToast,
+  savePeek,
+  sharePeek,
+} from "@/lib/memoir/peek-io";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { MODE_META } from "@/lib/memoir/jackets";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
@@ -42,12 +52,20 @@ export function BackupSection() {
   const mode = useMemoir((s) => s.mode);
   const entries = useMemoir((s) => s.entries);
   const lastBackupAt = useMemoir((s) => s.lastBackupAt);
+  const peeking = useIsPeeking();
+  const endPeek = usePeekSession((s) => s.endPeek);
   const fileRef = useRef<HTMLInputElement>(null);
+  const peekFileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ReadyBackup | null>(null);
   const [canShare, setCanShare] = useState(false);
+  const [canSharePeek, setCanSharePeek] = useState(false);
+  const setPickerOpen = usePickerUi((s) => s.setOpen);
 
-  useEffect(() => setCanShare(canShareBackupFile()), []);
+  useEffect(() => {
+    setCanShare(canShareBackupFile());
+    setCanSharePeek(canSharePeekFile());
+  }, []);
 
   const onSave = () => {
     setError(null);
@@ -66,7 +84,6 @@ export function BackupSection() {
       else if (res.outcome === "canceled") shareCanceledToast();
       else shareFallbackToast(res);
     } catch {
-      // Last resort if even the download path blew up — still no dead-end "use Save".
       try {
         shareFallbackToast(saveBackup());
       } catch {
@@ -75,9 +92,38 @@ export function BackupSection() {
     }
   };
 
+  const onSavePeek = () => {
+    setError(null);
+    try {
+      peekSavedToast(savePeek());
+    } catch {
+      setError("couldn't make the peek just now. try again in a moment.");
+    }
+  };
+
+  const onSharePeek = async () => {
+    setError(null);
+    try {
+      const res = await sharePeek();
+      if (res.outcome === "shared") peekSharedToast(res);
+      else if (res.outcome === "canceled") shareCanceledToast();
+      else peekFallbackToast(res);
+    } catch {
+      try {
+        peekFallbackToast(savePeek());
+      } catch {
+        setError("couldn't make the peek just now. try again in a moment.");
+      }
+    }
+  };
+
   const onPick = async (file: File | undefined) => {
     setError(null);
     if (!file) return;
+    if (peeking) {
+      setError("done peeking first — restore would change your own album.");
+      return;
+    }
     if (file.size > MAX_BACKUP_BYTES) {
       setError("That file is too big to be a PocketMemoir backup.");
       return;
@@ -88,6 +134,24 @@ export function BackupSection() {
       else setError(parsed.message);
     } catch {
       setError("Couldn't open that file. Try picking it again.");
+    }
+  };
+
+  const onPickPeek = async (file: File | undefined) => {
+    setError(null);
+    if (!file) return;
+    try {
+      const res = await openPeekFromFile(file);
+      if (!res.ok) {
+        setError(res.message);
+        return;
+      }
+      setPickerOpen(false);
+      toast.success("you’re peeking", {
+        description: `${plural(res.scraps, "scrap")} · read only · scraps stay with them`,
+      });
+    } catch {
+      setError("couldn't open that peek. try picking it again.");
     }
   };
 
@@ -106,17 +170,22 @@ export function BackupSection() {
           : "Tuck a copy of the whole album away now and then, and you can bring it all back anywhere."}
       </p>
       <div className="backup-actions">
-        <button type="button" className="sticker-cta backup-save" onClick={onSave}>
+        <button type="button" className="sticker-cta backup-save" onClick={onSave} disabled={peeking}>
           <Download className="size-4" strokeWidth={2.4} aria-hidden="true" />
           Save a backup
         </button>
         {canShare ? (
-          <button type="button" className="kind-chip backup-share" onClick={onShare}>
+          <button type="button" className="kind-chip backup-share" onClick={onShare} disabled={peeking}>
             <Share2 className="size-4" strokeWidth={2.2} aria-hidden="true" />
             Share
           </button>
         ) : null}
-        <button type="button" className="kind-chip backup-restore" onClick={() => fileRef.current?.click()}>
+        <button
+          type="button"
+          className="kind-chip backup-restore"
+          onClick={() => fileRef.current?.click()}
+          disabled={peeking}
+        >
           <FolderOpen className="size-4" strokeWidth={2.2} aria-hidden="true" />
           Restore from a file
         </button>
@@ -134,6 +203,50 @@ export function BackupSection() {
           }}
         />
       </div>
+
+      <p className="backup-peek-lede">want a friend to look — not edit, not merge?</p>
+      <div className="backup-actions backup-peek-actions">
+        {canSharePeek ? (
+          <button type="button" className="kind-chip backup-peek-share" onClick={onSharePeek} disabled={peeking}>
+            <Share2 className="size-4" strokeWidth={2.2} aria-hidden="true" />
+            share a peek
+          </button>
+        ) : null}
+        <button type="button" className="kind-chip backup-peek-download" onClick={onSavePeek} disabled={peeking}>
+          <Download className="size-4" strokeWidth={2.2} aria-hidden="true" />
+          download peek
+        </button>
+        <button
+          type="button"
+          className="kind-chip backup-peek-open"
+          onClick={() => peekFileRef.current?.click()}
+        >
+          <Eye className="size-4" strokeWidth={2.2} aria-hidden="true" />
+          open a peek
+        </button>
+        <input
+          ref={peekFileRef}
+          type="file"
+          accept="application/json,.json"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+          data-testid="peek-file"
+          onChange={(e) => {
+            void onPickPeek(e.target.files?.[0]);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {peeking ? (
+        <p className="backup-peek-active">
+          you’re peeking right now.{" "}
+          <button type="button" className="footer-link" onClick={() => endPeek()}>
+            done peeking
+          </button>
+        </p>
+      ) : null}
+
       <p className="backup-status">
         {lastBackupAt
           ? `Last saved ${shortDate(new Date(lastBackupAt))}. ${plural(entries.length, "scrap")} here now.`
@@ -159,6 +272,7 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
   const markBackedUp = useMemoir((s) => s.markBackedUp);
   const lastBackupAt = useMemoir((s) => s.lastBackupAt);
   const setPickerOpen = usePickerUi((s) => s.setOpen);
+  const peeking = useIsPeeking();
   const starterOnly = entries.length === 0 || isStarterShelf(entries);
   const [strategy, setStrategy] = useState<RestoreStrategy>("merge");
 
@@ -174,6 +288,10 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
   const title = `Restore ${plural(count, "scrap")}${pending.exportedAt ? ` from ${shortDate(pending.exportedAt)}` : ""}?`;
 
   const onRestore = () => {
+    if (peeking) {
+      toast("done peeking first — restore would change your own album.");
+      return;
+    }
     const plan = planRestore(entries, pending.entries, strategy);
     applyRestore(plan.entries, strategy === "replace" ? pending.settings : undefined);
     const stamp = pending.exportedAt?.getTime() ?? 0;
@@ -257,6 +375,7 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
             type="button"
             className={cn("sticker-cta restore-go", strategy === "replace" && "is-replace")}
             onClick={onRestore}
+            disabled={peeking}
           >
             {strategy === "replace"
               ? `Replace with ${plural(count, "scrap")}`

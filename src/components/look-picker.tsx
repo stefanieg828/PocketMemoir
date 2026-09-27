@@ -13,6 +13,7 @@ import {
   risoCssVars,
 } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
+import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { PLAN_FREE_NAME, PLAN_PAID_NAME, UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
@@ -24,18 +25,29 @@ import { cn } from "@/lib/utils";
  * riso adds ink + type options. comic / riso open the unlock sheet when gated.
  */
 export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const mode = useMemoir((s) => s.mode);
-  const look = useMemoir((s) => s.look);
+  const ownMode = useMemoir((s) => s.mode);
+  const ownLook = useMemoir((s) => s.look);
   const setMode = useMemoir((s) => s.setMode);
   const setLook = useMemoir((s) => s.setLook);
   const unlocked = useMemoir((s) => s.unlocked);
   const setTourSeen = useMemoir((s) => s.setTourSeen);
+  const peeking = useIsPeeking();
+  const peekMode = usePeekSession((s) => s.mode);
+  const peekLook = usePeekSession((s) => s.look);
+  const mode = peeking ? peekMode : ownMode;
+  const look = peeking ? peekLook : ownLook;
   const open = usePickerUi((s) => s.open);
   const focus = usePickerUi((s) => s.focus);
   const setOpen = usePickerUi((s) => s.setOpen);
   const openUnlock = useUnlockUi((s) => s.setOpen);
 
+  const pickMode = (id: ModeId) => {
+    if (peeking) return;
+    setMode(id);
+  };
+
   const pickLook = (id: LookId) => {
+    if (peeking) return;
     if (LOOK_SKINS[id]?.unlock && !unlocked) {
       openUnlock(true);
       return;
@@ -76,10 +88,16 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
             choose layout, look, and shelf boards.
           </Dialog.Description>
 
+          {peeking ? (
+            <p className="picker-peek-note" role="note">
+              you’re peeking — layout & look are theirs. done peeking to change yours.
+            </p>
+          ) : null}
+
           <PickerSection step="1" title="layout">
             <div role="radiogroup" aria-label="layout" className="picker-grid picker-grid-2">
               {MODES.map((id) => (
-                <ModeCard key={id} id={id} selected={id === mode} onPick={() => setMode(id)} />
+                <ModeCard key={id} id={id} selected={id === mode} onPick={() => pickMode(id)} />
               ))}
             </div>
           </PickerSection>
@@ -98,26 +116,28 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
             </div>
           </PickerSection>
 
-          {look === "riso" ? <RisoOptions /> : null}
+          {!peeking && look === "riso" ? <RisoOptions /> : null}
 
-          <CategoriesSection />
+          {!peeking ? <CategoriesSection /> : null}
 
           <BackupSection />
 
-          <GotAnIdeaSection />
+          {!peeking ? <GotAnIdeaSection /> : null}
 
-          <section className="picker-section tour-replay-section" aria-label="tour">
-            <button
-              type="button"
-              className="tour-replay"
-              onClick={() => {
-                setOpen(false);
-                setTourSeen(false);
-              }}
-            >
-              show the tour again
-            </button>
-          </section>
+          {!peeking ? (
+            <section className="picker-section tour-replay-section" aria-label="tour">
+              <button
+                type="button"
+                className="tour-replay"
+                onClick={() => {
+                  setOpen(false);
+                  setTourSeen(false);
+                }}
+              >
+                show the tour again
+              </button>
+            </section>
+          ) : null}
 
           <div className="picker-footer">
             <p className="picker-using">

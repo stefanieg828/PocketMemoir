@@ -2733,6 +2733,69 @@
     font-size: 0.9rem;
   }
 
+  .backup-peek-lede {
+    margin: 0.85rem 0 0.45rem;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+
+  .backup-peek-actions {
+    margin-top: 0.15rem;
+  }
+
+  .backup-peek-active {
+    margin: 0.55rem 0 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+  }
+
+  .picker-peek-note {
+    margin: 0 0 0.85rem;
+    padding: 0.55rem 0.75rem;
+    border: var(--b1) dashed color-mix(in srgb, var(--color-line) 45%, transparent);
+    border-radius: 0.65rem;
+    background: color-mix(in srgb, var(--color-seal) 10%, var(--color-card));
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  /* ——— Peek session banner ——— */
+  .peek-banner {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem 0.85rem;
+    margin: -0.35rem 0 0.85rem;
+    padding: 0.55rem 0.8rem;
+    border: var(--b2) solid color-mix(in srgb, var(--color-line) 55%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--color-seal) 14%, var(--color-card));
+    box-shadow: 0 2px 0 color-mix(in srgb, var(--color-line) 18%, transparent);
+  }
+
+  .peek-banner-text {
+    margin: 0;
+    flex: 1 1 12rem;
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+
+  .peek-banner-done {
+    min-height: 2.4rem;
+  }
+
+  .app-frame.is-peeking {
+    padding-top: 0.85rem;
+  }
+
   .backup-restore-unlock {
     margin: 0.45rem 0 0;
     font-size: 0.88rem;

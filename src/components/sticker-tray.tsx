@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StickerMark } from "@/components/sticker-mark";
 import { FREE_STARTER_PACK, type StickerMarkId } from "@/lib/memoir/stickers";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,10 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
   const clearPageStickers = useMemoir((s) => s.clearPageStickers);
   const count = useMemoir((s) => s.pageStickers.length);
   const unlocked = useMemoir((s) => s.unlocked);
+  const peeking = useIsPeeking();
   const [open, setOpen] = useState(defaultOpen ?? !compact);
+
+  if (peeking) return null;
 
   function stick(id: StickerMarkId) {
     placeSticker(id);

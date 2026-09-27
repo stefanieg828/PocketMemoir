@@ -5,6 +5,7 @@ import { AlbumCover } from "@/components/album-cover";
 import { KeepForm } from "@/components/keep-form";
 import { hasDayDate } from "@/lib/memoir/dates";
 import { MODE_META } from "@/lib/memoir/jackets";
+import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
 import { categoryForEntry } from "@/lib/memoir/categories";
 import { isEntryKind, type EntryKind } from "@/lib/memoir/types";
@@ -27,10 +28,17 @@ function KeepPage() {
   const storageFull = useMemoir((s) => s.storageFull);
   const jacket = useMemoir((s) => s.mode);
   const look = MODE_META[jacket];
+  const peeking = useIsPeeking();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (peeking) void navigate({ to: "/", search: {}, replace: true });
+  }, [peeking, navigate]);
+
+  if (peeking) return null;
 
   function afterKeep(_entryId: string, entryKind: EntryKind, title: string) {
     if (useMemoir.getState().storageFull || storageFull) {
