@@ -525,7 +525,9 @@ export function CategoriesSection() {
           <div className="suggestions-panel" id="got-an-idea">
             <h4 className="picker-sub">Got an idea?</h4>
             <p className="categories-hint">
-              A pocket notepad for app wishes — stays on this device for now. No forum, no send.
+              Email the creator at{" "}
+              <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a>{" "}
+              and maybe your ideas will come to fruition!
             </p>
             <div className="suggestions-form">
               <textarea

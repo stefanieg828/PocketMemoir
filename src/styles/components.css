@@ -2261,6 +2261,13 @@
     color: var(--color-muted);
   }
 
+  .categories-hint a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.15em;
+  }
+
   .categories-lock-card {
     padding: 0.85rem 0.9rem 1rem;
     border: var(--b1) solid color-mix(in srgb, var(--color-line) 50%, transparent);
