@@ -40,6 +40,7 @@ export function CategoriesSection() {
   const showCategory = useMemoir((s) => s.showCategory);
   const removeCategory = useMemoir((s) => s.removeCategory);
   const moveCategory = useMemoir((s) => s.moveCategory);
+  const setCategoryVibe = useMemoir((s) => s.setCategoryVibe);
   const renameKind = useMemoir((s) => s.renameKind);
   const resetKindName = useMemoir((s) => s.resetKindName);
   const hideKind = useMemoir((s) => s.hideKind);
@@ -199,7 +200,10 @@ export function CategoriesSection() {
             Free: six plain starter boards you can rename. Unlock adds more boards (Books, Movies, Gift ideas, and ones
             you invent), editable stickers on each board, hide &amp; reorder, and a tiny “Got an idea?” notepad.
           </p>
-          <p className="categories-hint">Tap a name to make it yours. Reset brings the default back.</p>
+          <p className="categories-hint">
+            Tap a name to make it yours. Pick a color for any board — starters, presets, and yours.
+            Reset brings the default name back.
+          </p>
           <ul className="categories-on-list" aria-label="Starter categories">
             {freeStarters.map((row) => (
               <li key={row.id} className={cn("cat-row", `cat-vibe-${row.vibe}`)}>
@@ -228,7 +232,10 @@ export function CategoriesSection() {
         </div>
       ) : (
         <>
-          <p className="categories-hint">Tap a name to make it yours. Reset brings the default back.</p>
+          <p className="categories-hint">
+            Tap a name to make it yours. Pick a color for any board — starters, presets, and yours.
+            Reset brings the default name back.
+          </p>
           <ul className="categories-on-list" aria-label="Categories on your shelf">
             {onShelf.map((row, i) => (
               <li key={row.id} className={cn("cat-row", `cat-vibe-${row.vibe}`)}>
@@ -271,6 +278,19 @@ export function CategoriesSection() {
                   >
                     <X className="size-4" />
                   </button>
+                </div>
+                <div className="cat-vibe-row cat-row-vibes" role="radiogroup" aria-label={`Color for ${row.name}`}>
+                  {CATEGORY_VIBES.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      role="radio"
+                      aria-checked={row.vibe === v}
+                      aria-label={v}
+                      className={cn("cat-vibe-dot", `cat-vibe-${v}`, row.vibe === v && "is-selected")}
+                      onClick={() => setCategoryVibe(row.id, v)}
+                    />
+                  ))}
                 </div>
               </li>
             ))}

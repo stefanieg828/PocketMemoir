@@ -15,6 +15,7 @@ import {
   renameKind,
   resetCategoryName,
   resetKindName,
+  setCategoryVibe,
   showCategory,
   showKind,
   togglePreset,
@@ -195,6 +196,7 @@ type MemoirState = {
   showCategory: (id: string) => void;
   removeCategory: (id: string) => void;
   moveCategory: (id: string, dir: -1 | 1) => void;
+  setCategoryVibe: (id: string, vibe: CategoryVibe) => void;
   renameKind: (bucket: string, kindId: string, label: string) => void;
   resetKindName: (bucket: string, kindId: string) => void;
   hideKind: (bucket: string, kindId: string) => void;
@@ -404,6 +406,10 @@ export const useMemoir = create<MemoirState>()(
       showCategory: (id) => set({ categories: showCategory(get().categories, id) }),
       removeCategory: (id) => set({ categories: removeCustom(get().categories, id) }),
       moveCategory: (id, dir) => set({ categories: moveCategory(get().categories, id, dir) }),
+      setCategoryVibe: (id, vibe) => {
+        if (!get().unlocked) return;
+        set({ categories: setCategoryVibe(get().categories, id, vibe) });
+      },
       renameKind: (bucket, kindId, label) => {
         if (!get().unlocked) return;
         set({ categories: renameKind(get().categories, bucket, kindId, label) });

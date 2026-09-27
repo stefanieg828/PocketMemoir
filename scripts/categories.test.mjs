@@ -76,6 +76,22 @@ describe("categories", () => {
     assert.ok(ids.includes("bucket-list"));
   });
 
+  it("recolors starters and presets (and customs)", () => {
+    let cfg = m.togglePreset(m.DEFAULT_CATEGORY_CONFIG, "books-to-read", true);
+    assert.equal(m.categoryVibe(cfg, "books-to-read"), "mustard");
+    cfg = m.setCategoryVibe(cfg, "books-to-read", "sky");
+    assert.equal(m.categoryVibe(cfg, "books-to-read"), "sky");
+    assert.equal(m.resolveShelf(cfg, { unlocked: true }).find((c) => c.id === "books-to-read").vibe, "sky");
+    cfg = m.setCategoryVibe(cfg, "scraps", "ink");
+    assert.equal(m.categoryVibe(cfg, "scraps"), "ink");
+    // Resetting to default drops the override key
+    cfg = m.setCategoryVibe(cfg, "books-to-read", "mustard");
+    assert.equal(cfg.vibes?.["books-to-read"], undefined);
+    const { config: withCustom, id } = m.addCustom(cfg, { name: "Songs", vibe: "peach" });
+    cfg = m.setCategoryVibe(withCustom, id, "sage");
+    assert.equal(m.categoryVibe(cfg, id), "sage");
+  });
+
   it("renames starters and presets (display only) and can reset", () => {
     let cfg = m.togglePreset(m.DEFAULT_CATEGORY_CONFIG, "books-to-read", true);
     cfg = m.renameCategory(cfg, "scraps", "Bits & bobs");

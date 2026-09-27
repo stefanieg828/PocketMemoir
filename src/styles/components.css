@@ -2433,6 +2433,16 @@
     gap: 0.4rem;
   }
 
+  .cat-row-vibes {
+    flex: 1 1 100%;
+    margin-top: 0.15rem;
+  }
+
+  .cat-row-vibes .cat-vibe-dot {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
   .cat-vibe-dot {
     width: 1.55rem;
     height: 1.55rem;

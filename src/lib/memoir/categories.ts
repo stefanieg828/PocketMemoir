@@ -65,6 +65,11 @@ export type CategoryConfig = {
   order: string[];
   /** Display-name overrides. */
   names: Record<string, string>;
+  /**
+   * Color overrides for starters + presets (customs store vibe on the row).
+   * Omitted keys keep the built-in default. Older saves omit this field.
+   */
+  vibes?: Record<string, CategoryVibe>;
   customs: CustomCategory[];
   /**
    * Sticker chip edits keyed by starter bucket id. Omitted / empty for free
@@ -119,6 +124,7 @@ const PRESET_DEFAULTS: Record<PresetId, { name: string; vibe: CategoryVibe }> = 
 export const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
   order: [...STARTER_IDS],
   names: {},
+  vibes: {},
   customs: [],
   kindExtras: {},
 };
@@ -244,6 +250,7 @@ export function normalizeCategoryConfig(raw: unknown): CategoryConfig {
   const empty = (): CategoryConfig => ({
     order: [...STARTER_IDS],
     names: {},
+    vibes: {},
     customs: [],
     kindExtras: {},
   });
@@ -280,6 +287,19 @@ export function normalizeCategoryConfig(raw: unknown): CategoryConfig {
     }
   }
 
+
+  const vibes: Record<string, CategoryVibe> = {};
+  if (incoming.vibes && typeof incoming.vibes === "object") {
+    for (const [id, value] of Object.entries(incoming.vibes)) {
+      // Starters + presets only — customs keep vibe on the custom row.
+      if (!isStarterId(id) && !isPresetId(id)) continue;
+      if (typeof value !== "string" || !VIBE_SET.has(value)) continue;
+      const cleaned = value as CategoryVibe;
+      if (cleaned === defaultCategoryVibe(id)) continue;
+      vibes[id] = cleaned;
+    }
+  }
+
   const known = (id: string) => isStarterId(id) || isPresetId(id) || customIds.has(id);
   const order: string[] = [];
   const seen = new Set<string>();
@@ -299,8 +319,8 @@ export function normalizeCategoryConfig(raw: unknown): CategoryConfig {
 
   const kindExtras = normalizeKindExtras(incoming.kindExtras);
 
-  if (order.length === 0) return { order: [...STARTER_IDS], names, customs, kindExtras };
-  return { order, names, customs, kindExtras };
+  if (order.length === 0) return { order: [...STARTER_IDS], names, vibes, customs, kindExtras };
+  return { order, names, vibes, customs, kindExtras };
 }
 
 export function categoryLabel(
@@ -317,6 +337,8 @@ export function categoryLabel(
 export function categoryVibe(config: CategoryConfig, id: string): CategoryVibe {
   const custom = config.customs.find((c) => c.id === id);
   if (custom) return custom.vibe;
+  const override = config.vibes?.[id];
+  if (override && VIBE_SET.has(override)) return override;
   return defaultCategoryVibe(id);
 }
 
@@ -359,7 +381,9 @@ export function resolveShelf(
       kind === "custom" ? (customsById.get(id)?.name ?? "My board") : defaultCategoryName(id, mode);
     const name = config.names[id] ?? defaultName;
     const vibe =
-      kind === "custom" ? (customsById.get(id)?.vibe ?? "cream") : defaultCategoryVibe(id);
+      kind === "custom"
+        ? (customsById.get(id)?.vibe ?? "cream")
+        : categoryVibe(config, id);
     return { id, kind, name, defaultName, vibe, tuckedAway };
   };
 
@@ -478,17 +502,24 @@ export function moveCategory(config: CategoryConfig, id: string, dir: -1 | 1): C
   return { ...config, order };
 }
 
-export function setCustomVibe(
+/** Set color for a starter, preset, or custom board. */
+export function setCategoryVibe(
   config: CategoryConfig,
   id: string,
   vibe: CategoryVibe,
 ): CategoryConfig {
-  return {
-    ...config,
-    customs: config.customs.map((c) =>
-      c.id === id ? { ...c, vibe: cleanVibe(vibe, c.vibe) } : c,
-    ),
-  };
+  const cleaned = cleanVibe(vibe);
+  if (isCustomId(id)) {
+    return {
+      ...config,
+      customs: config.customs.map((c) => (c.id === id ? { ...c, vibe: cleaned } : c)),
+    };
+  }
+  if (!isStarterId(id) && !isPresetId(id)) return config;
+  const vibes = { ...(config.vibes ?? {}) };
+  if (cleaned === defaultCategoryVibe(id)) delete vibes[id];
+  else vibes[id] = cleaned;
+  return { ...config, vibes };
 }
 
 /** Sensible default kind when sticking a scrap onto a category. */
