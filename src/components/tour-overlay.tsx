@@ -17,7 +17,7 @@ const STEPS: TourStep[] = [
   {
     kicker: "Two ways to look",
     title: "Flip the album or peek the wall",
-    body: "Scrapbook turns pages. Corkboard pins boards on a wall. Switch Mode anytime under Look → Make it yours.",
+    body: "Scrapbook turns pages. Corkboard pins boards on a wall. Switch Layout anytime under Look → Make it yours.",
   },
   {
     kicker: "Your scraps",

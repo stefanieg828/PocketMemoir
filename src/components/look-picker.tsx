@@ -17,7 +17,7 @@ import { LOOK_IDS, MODES, type LookId, type ModeId } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 /**
- * Two separate settings: Mode (layout engine) and Look (skin).
+ * Two separate settings: Layout (scrapbook vs corkboard) and Look (skin).
  * Riso adds ink + type options. Comic / Riso carry a cosmetic "Unlock" badge only.
  */
 export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
@@ -59,12 +59,12 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
         <Dialog.Overlay className="picker-overlay fixed inset-0 z-50" />
         <Dialog.Content className="picker-dialog fixed top-1/2 left-1/2 z-50 max-h-[min(92dvh,46rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
           <Dialog.Title className="picker-title">Make it yours</Dialog.Title>
-          <Dialog.Description className="picker-desc">
-            Mode is the layout. Look is the paper. Same scraps either way.
+          <Dialog.Description className="sr-only">
+            Choose layout, look, and shelf boards.
           </Dialog.Description>
 
-          <PickerSection step="1" title="Mode">
-            <div role="radiogroup" aria-label="Mode" className="picker-grid picker-grid-2">
+          <PickerSection step="1" title="Layout">
+            <div role="radiogroup" aria-label="Layout" className="picker-grid picker-grid-2">
               {MODES.map((id) => (
                 <ModeCard key={id} id={id} selected={id === mode} onPick={() => setMode(id)} />
               ))}

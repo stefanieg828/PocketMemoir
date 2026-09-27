@@ -197,12 +197,6 @@ export function CategoriesSection() {
         </span>
         Your shelf
       </h3>
-      <p className="categories-lede">
-        {mode === "corkboard"
-          ? "Boards on the wall — same sticky-note brain as the scrapbook."
-          : "Spreads in the book — same sticky-note brain as the cork wall."}
-      </p>
-
       {!unlocked ? (
         <div className="categories-lock-card">
           <p className="categories-lock-line">
@@ -238,7 +232,6 @@ export function CategoriesSection() {
         </div>
       ) : (
         <>
-          <h4 className="picker-sub">On the shelf</h4>
           <p className="categories-hint">Tap a name to make it yours. Reset brings the default back.</p>
           <ul className="categories-on-list" aria-label="Categories on your shelf">
             {onShelf.map((row, i) => (
