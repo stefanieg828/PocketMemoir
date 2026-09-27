@@ -198,7 +198,7 @@ export function CategoriesSection() {
         <div className="categories-lock-card">
           <p className="categories-lock-line">
             Free: six plain starter boards you can rename. Unlock adds more boards (Books, Movies, Gift ideas, and ones
-            you invent), editable stickers on each board, hide &amp; reorder, and a tiny “Got an idea?” notepad.
+            you invent), editable stickers on each board, hide &amp; reorder, and a “Got an idea?” email to scraps@.
           </p>
           <p className="categories-hint">
             Tap a name to make it yours. Pick a color for any board — starters, presets, and yours.
