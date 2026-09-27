@@ -199,11 +199,12 @@ export function CategoriesSection() {
       {!unlocked ? (
         <div className="categories-lock-card">
           <p className="categories-lock-line">
-            Free: six plain starter boards you can rename. Unlock adds more boards (Books, Movies, Gift ideas, and ones
-            you invent), editable stickers on each board, hide &amp; reorder, and a “Got an idea?” email to scraps@.
+            Free: six starter boards you can rename. Unlock adds more boards (Books, Movies, Gift ideas, and ones you
+            customize), weekly new sticker packs, hide &amp; reorder, and a “Got an idea?” email to
+            scraps@pocketmemoir.fun.
           </p>
           <p className="categories-hint">
-            Tap a name to make it yours. Reset brings the default name back.
+            Tap a name to customize it. Reset brings the default name back.
           </p>
           <ul className="categories-on-list" aria-label="Starter categories">
             {freeStarters.map((row) => (
