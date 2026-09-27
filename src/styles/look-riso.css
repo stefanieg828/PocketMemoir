@@ -13,6 +13,12 @@
     --mis: 4px; /* off-register distance */
   }
 
+  /* Chefanie soft case — zine stays lowercase; Comic is the all-caps Look. */
+  html[data-look="riso"],
+  html[data-look="riso"] :where(*) {
+    text-transform: lowercase !important;
+  }
+
   /* Page surfaces */
   html[data-look="riso"][data-mode="scrapbook"] body {
     background-color: var(--riso-paper);

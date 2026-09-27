@@ -81,6 +81,16 @@
     color: #7f9a7b;
   }
 
+  /* Chefanie soft case — all lowercase like ilovepbj; Comic keeps its caps Look. */
+  html[data-look="storybook"],
+  html[data-look="storybook"] :where(*) {
+    text-transform: lowercase;
+  }
+
+  html[data-look="storybook"] :is(.album-cover-wordmark, .cork-wall-kicker, .tour-kicker, .picker-sub, .cat-row-kind) {
+    letter-spacing: 0.02em;
+  }
+
   html[data-look="storybook"] .app-tagline {
     font-size: 1rem;
   }
