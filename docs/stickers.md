@@ -42,7 +42,7 @@ dot, leaf, cloud). See `src/lib/memoir/stickers.ts` → `FREE_STARTER_PACK`.
 
 ## Suggestions inbox
 
-People can email ideas to **scraps@pocketmemoir.fun**. Same inbox as “Got an
+People can email sticker and scrap ideas to the creator. Same inbox as “Got an
 idea?” — no in-app social feed.
 
 ## Persistence (v1)

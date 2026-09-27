@@ -200,8 +200,8 @@ export function CategoriesSection() {
         <div className="categories-lock-card">
           <p className="categories-lock-line">
             {PLAN_FREE_NAME}: six starter boards you can rename. {PLAN_PAID_NAME} adds more boards (books, movies, gift
-            ideas, and ones you customize), weekly new sticker packs, hide &amp; reorder, and a “got an idea?” email to
-            scraps@pocketmemoir.fun.
+            ideas, and ones you customize), weekly new sticker packs, hide &amp; reorder, and a little idea inbox for
+            sticker &amp; scrap ideas.
           </p>
           <p className="categories-hint">
             tap a name to customize it. reset brings the default name back.

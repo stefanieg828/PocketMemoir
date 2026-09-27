@@ -21,6 +21,7 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
   const placeSticker = useMemoir((s) => s.placeSticker);
   const clearPageStickers = useMemoir((s) => s.clearPageStickers);
   const count = useMemoir((s) => s.pageStickers.length);
+  const unlocked = useMemoir((s) => s.unlocked);
   const [open, setOpen] = useState(defaultOpen ?? !compact);
 
   function stick(id: StickerMarkId) {
@@ -66,7 +67,11 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
             </button>
           ) : null}
           <p className="sticker-tray-hint">
-            more packs later · ideas → scraps@pocketmemoir.fun
+            more packs later · {unlocked ? (
+              <>ideas → <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a></>
+            ) : (
+              "a little idea inbox for sticker & scrap ideas"
+            )}
           </p>
         </div>
       ) : null}

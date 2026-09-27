@@ -15,7 +15,7 @@ Play Billing stays separate for Android later.
 - comic + risograph looks
 - more boards / presets / customs
 - hide, reorder, vibe colors
-- got an idea? email to scraps@
+- a little idea inbox for sticker & scrap ideas
 - future sticker packs (same gate)
 
 ## How unlock turns on (today)

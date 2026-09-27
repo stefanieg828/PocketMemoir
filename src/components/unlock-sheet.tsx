@@ -63,14 +63,14 @@ export function UnlockSheet() {
           <Dialog.Description className="unlock-sheet-body">
             one-time {UNLOCK_PRICE_LABEL}. {PLAN_FREE_NAME} keeps soft storybook free — {PLAN_PAID_NAME} unlocks
             comic &amp; riso looks, more boards you can customize, colors, hide &amp; reorder, weekly new sticker
-            packs, and a little idea email to scraps@pocketmemoir.fun.
+            packs, and a little idea inbox for sticker &amp; scrap ideas.
           </Dialog.Description>
 
           <ul className="unlock-sheet-perks" aria-label="What you get">
             <li>comic &amp; risograph looks</li>
             <li>more boards, presets &amp; customs</li>
             <li>hide, reorder &amp; vibe colors</li>
-            <li>got an idea? → scraps@pocketmemoir.fun.</li>
+            <li>a little idea inbox for sticker &amp; scrap ideas</li>
           </ul>
 
           <div className="unlock-sheet-actions">

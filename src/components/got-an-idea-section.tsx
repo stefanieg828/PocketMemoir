@@ -1,6 +1,6 @@
 import { useMemoir } from "@/lib/memoir/store";
 
-/** Unlock perk: invite to email scraps@ with ideas. */
+/** Unlock perk: invite to email the creator with ideas. */
 export function GotAnIdeaSection() {
   const unlocked = useMemoir((s) => s.unlocked);
 
