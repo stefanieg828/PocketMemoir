@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Lock } from "lucide-react";
 import { BackupSection } from "@/components/backup-section";
 import { CategoriesSection } from "@/components/categories-section";
+import { GotAnIdeaSection } from "@/components/got-an-idea-section";
 import { MODE_META } from "@/lib/memoir/jackets";
 import {
   LOOK_SKINS,
@@ -84,6 +85,8 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           <CategoriesSection />
 
           <BackupSection />
+
+          <GotAnIdeaSection />
 
           <section className="picker-section tour-replay-section" aria-label="Tour">
             <button

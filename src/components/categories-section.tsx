@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
  * Sticky-note shelf manager in the Look sheet.
  * Free: six starters you can rename + Unlock tease for more boards.
  * Unlocked: presets on/off, customs, rename anything (starters + presets +
- * customs), hide, reorder, editable stickers per board, and a tiny idea notepad.
+ * customs), hide, reorder, and editable stickers per board.
  * Renames are display-only; Reset restores the built-in name for starters/presets.
  */
 export function CategoriesSection() {
@@ -46,9 +46,6 @@ export function CategoriesSection() {
   const showKind = useMemoir((s) => s.showKind);
   const addCustomKind = useMemoir((s) => s.addCustomKind);
   const removeCustomKind = useMemoir((s) => s.removeCustomKind);
-  const suggestions = useMemoir((s) => s.suggestions);
-  const addSuggestion = useMemoir((s) => s.addSuggestion);
-  const removeSuggestion = useMemoir((s) => s.removeSuggestion);
   const focus = usePickerUi((s) => s.focus);
 
   const [newName, setNewName] = useState("");
@@ -60,7 +57,6 @@ export function CategoriesSection() {
   const [editingKind, setEditingKind] = useState<string | null>(null);
   const [editKindValue, setEditKindValue] = useState("");
   const [newSticker, setNewSticker] = useState("");
-  const [ideaText, setIdeaText] = useState("");
 
   useEffect(() => {
     if (focus !== "categories") return;
@@ -522,52 +518,6 @@ export function CategoriesSection() {
             ) : null}
           </div>
 
-          <div className="suggestions-panel" id="got-an-idea">
-            <h4 className="picker-sub">Got an idea?</h4>
-            <p className="categories-hint">
-              Email the creator at{" "}
-              <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a>{" "}
-              and maybe your ideas will come to fruition!
-            </p>
-            <div className="suggestions-form">
-              <textarea
-                className="suggestions-input"
-                rows={2}
-                maxLength={280}
-                placeholder="e.g. a sticker for recipes I invent…"
-                value={ideaText}
-                onChange={(e) => setIdeaText(e.target.value)}
-                aria-label="Suggestion"
-              />
-              <button
-                type="button"
-                className="sticker-cta categories-add-btn"
-                onClick={() => {
-                  addSuggestion(ideaText);
-                  setIdeaText("");
-                }}
-              >
-                Save
-              </button>
-            </div>
-            {suggestions.length > 0 ? (
-              <ul className="suggestions-list" aria-label="Saved ideas">
-                {suggestions.map((s) => (
-                  <li key={s.id} className="suggestions-row">
-                    <span className="suggestions-text">{s.text}</span>
-                    <button
-                      type="button"
-                      className="cat-icon-btn"
-                      aria-label="Remove idea"
-                      onClick={() => removeSuggestion(s.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
         </>
       )}
     </section>
