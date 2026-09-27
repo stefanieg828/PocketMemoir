@@ -8,6 +8,8 @@ import {
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Polaroid } from "@/components/polaroid";
+import { StickerLayer } from "@/components/sticker-layer";
+import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
 import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
@@ -245,8 +247,11 @@ export function FlipAlbum({
 
           <div className="flip-curl" aria-hidden="true" />
           <div className="flip-turn-sheet" aria-hidden="true" />
+          <StickerLayer className="sticker-layer-flip" />
         </div>
       </div>
+
+      <StickerTray compact className="mt-3" />
 
       <div className="flip-controls">
         <button

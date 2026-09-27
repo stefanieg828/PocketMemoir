@@ -656,3 +656,19 @@ html[data-look="comic"] .categories-lock-card,
     box-shadow: 4px 4px 0 #ff2ecc;
   }
 }
+
+/* Marketing strip + sticker tray stay soft lowercase even in Comic. */
+html[data-look="comic"] :is(
+  .look-at-this-label,
+  .look-at-this-caption,
+  .sticker-tray-label,
+  .sticker-tray-meta,
+  .sticker-tray-lede,
+  .sticker-tray-hint,
+  .sticker-tray-chip-name
+) {
+  text-transform: lowercase;
+  font-family: var(--font-display);
+  font-style: normal;
+  letter-spacing: 0.01em;
+}

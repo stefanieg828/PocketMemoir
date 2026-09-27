@@ -5,6 +5,7 @@ import { BackupNudge } from "@/components/backup-nudge";
 import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
 import { KeepSeal } from "@/components/keep-seal";
+import { LookAtThis } from "@/components/look-at-this";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
 import { applyThemeToDocument } from "@/lib/memoir/looks";
@@ -50,6 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="min-w-0">
           <Wordmark />
           <p className="app-tagline mt-1 max-w-sm text-sm leading-relaxed">{TAGLINE}</p>
+          <LookAtThis variant="header" className="mt-3" />
           <nav className="app-nav mt-3" aria-label="Main">
             <NavLink to="/" active={pathname === "/"}>
               Shelf

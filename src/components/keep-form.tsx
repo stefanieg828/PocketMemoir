@@ -2,6 +2,7 @@ import { useRef, useState, type FormEvent, useEffect, useMemo } from "react";
 import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
+import { StickerTray } from "@/components/sticker-tray";
 import { Button } from "@/components/ui/button";
 import { KIND_META } from "@/lib/memoir/copy";
 import {
@@ -292,6 +293,8 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
           would buy again
         </button>
       ) : null}
+
+      <StickerTray compact className="keep-sticker-tray" />
 
       <div className="flex items-center justify-between gap-4 pt-2">
         {onCancel ? (

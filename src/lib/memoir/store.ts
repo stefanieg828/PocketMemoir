@@ -24,6 +24,13 @@ import {
   type PresetId,
 } from "./categories";
 import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
+import {
+  normalizePlacedSticker,
+  PAGE_STICKER_CAP,
+  scatterPlacement,
+  type PlacedSticker,
+  type StickerMarkId,
+} from "./stickers";
 import type {
   EntryStatus,
   LookId,
@@ -164,6 +171,10 @@ type MemoirState = {
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
   corkWallTipDismissed: boolean;
+  /** Soft “look at this” marketing strip dismissed. */
+  lookAtThisDismissed: boolean;
+  /** Decorative stickers stuck on the album page / cork wall. */
+  pageStickers: PlacedSticker[];
   /**
    * Unlock perk: tiny local-only "Got an idea?" notes. Cap ~20. Not required
    * in backups for v1 (still persisted in localStorage).
@@ -175,6 +186,10 @@ type MemoirState = {
   setTourSeen: (seen: boolean) => void;
   dismissShelfLede: () => void;
   dismissCorkWallTip: () => void;
+  dismissLookAtThis: () => void;
+  placeSticker: (stickerId: StickerMarkId) => void;
+  removePageSticker: (id: string) => void;
+  clearPageStickers: () => void;
   setMode: (mode: ModeId) => void;
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
@@ -337,6 +352,8 @@ export const useMemoir = create<MemoirState>()(
       tourSeen: false,
       shelfLedeDismissed: false,
       corkWallTipDismissed: false,
+      lookAtThisDismissed: false,
+      pageStickers: [],
       suggestions: [],
       hasHydrated: false,
       storageFull: false,
@@ -344,6 +361,19 @@ export const useMemoir = create<MemoirState>()(
       setTourSeen: (seen) => set({ tourSeen: seen }),
       dismissShelfLede: () => set({ shelfLedeDismissed: true }),
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
+      dismissLookAtThis: () => set({ lookAtThisDismissed: true }),
+      placeSticker: (stickerId) => {
+        const scatter = scatterPlacement(Date.now() ^ (get().pageStickers.length * 9973));
+        const row: PlacedSticker = {
+          id: createId(),
+          stickerId,
+          ...scatter,
+        };
+        set({ pageStickers: [...get().pageStickers, row].slice(-PAGE_STICKER_CAP) });
+      },
+      removePageSticker: (id) =>
+        set({ pageStickers: get().pageStickers.filter((s) => s.id !== id) }),
+      clearPageStickers: () => set({ pageStickers: [] }),
       setMode: (mode) => set({ mode }),
       setLook: (look) => {
         // Unlock Looks (Comic / Riso) also unlock presets/customs/hide/reorder — same gate, no paywall yet.
@@ -469,6 +499,8 @@ export const useMemoir = create<MemoirState>()(
         tourSeen: state.tourSeen,
         shelfLedeDismissed: state.shelfLedeDismissed,
         corkWallTipDismissed: state.corkWallTipDismissed,
+        lookAtThisDismissed: state.lookAtThisDismissed,
+        pageStickers: state.pageStickers,
         suggestions: state.suggestions,
       }),
       merge: (persisted, current) => {
@@ -517,6 +549,16 @@ export const useMemoir = create<MemoirState>()(
             typeof incoming.corkWallTipDismissed === "boolean"
               ? incoming.corkWallTipDismissed
               : current.corkWallTipDismissed,
+          lookAtThisDismissed:
+            typeof incoming.lookAtThisDismissed === "boolean"
+              ? incoming.lookAtThisDismissed
+              : current.lookAtThisDismissed,
+          pageStickers: Array.isArray(incoming.pageStickers)
+            ? incoming.pageStickers
+                .map(normalizePlacedSticker)
+                .filter((s): s is PlacedSticker => Boolean(s))
+                .slice(0, PAGE_STICKER_CAP)
+            : current.pageStickers,
           suggestions: Array.isArray(incoming.suggestions)
             ? incoming.suggestions
                 .filter(

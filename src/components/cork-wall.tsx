@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, X } from "lucide-react";
 import { Polaroid, scrapIsWide } from "@/components/polaroid";
+import { StickerLayer } from "@/components/sticker-layer";
+import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
@@ -97,11 +99,12 @@ export function CorkWall({
 
   return (
     <section
-      className={cn("cork-wall", zoomed && "is-zoomed", `is-${anim}`, className)}
+      className={cn("cork-wall relative", zoomed && "is-zoomed", `is-${anim}`, className)}
       aria-label="Corkboard wall"
     >
       {!zoomed ? (
         <>
+          <StickerLayer className="sticker-layer-cork" />
           <header className="cork-wall-intro">
             <p className="cork-wall-kicker font-display">{LOOK_SKINS[look].kicker}</p>
             <h1 className="cork-wall-title font-display">Wall of boards</h1>
@@ -190,7 +193,8 @@ export function CorkWall({
             </span>
           </div>
 
-          <div className="cork-zoom-board">
+          <div className="cork-zoom-board relative">
+            <StickerLayer className="sticker-layer-cork" />
             <span
               className="pin pin-center"
               style={{ ["--pin" as string]: PIN_VARS[Math.max(0, shelfIds.indexOf(activeBucket!)) % PIN_VARS.length] }}
@@ -250,6 +254,7 @@ export function CorkWall({
           ) : null}
         </section>
       ) : null}
+      <StickerTray compact className="mt-4" />
     </section>
   );
 }

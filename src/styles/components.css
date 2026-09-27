@@ -2721,3 +2721,335 @@
   .tour-replay:hover {
     color: var(--color-ink);
   }
+
+/* ——— look at this (marketing strip) + decorative stickers ——— */
+@layer components {
+  .look-at-this {
+    position: relative;
+    max-width: 28rem;
+  }
+
+  .look-at-this-empty {
+    max-width: none;
+  }
+
+  .look-at-this-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .look-at-this-label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--color-muted);
+    letter-spacing: 0.01em;
+    text-transform: lowercase;
+  }
+
+  .look-at-this-x {
+    flex-shrink: 0;
+  }
+
+  .look-at-this-row {
+    display: flex;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0.15rem 0.1rem 0.35rem;
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .look-at-this-row::-webkit-scrollbar {
+    height: 0;
+  }
+
+  @media (min-width: 640px) {
+    .look-at-this-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+  }
+
+  .look-at-this-card {
+    flex: 0 0 auto;
+    width: min(42vw, 8.6rem);
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 640px) {
+    .look-at-this-card {
+      width: auto;
+    }
+  }
+
+  .look-at-this-panel {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+  }
+
+  .look-at-this-frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border: var(--b2) solid var(--color-line);
+    border-radius: 0.35rem 0.55rem 0.4rem 0.5rem;
+    background: var(--color-card);
+    box-shadow: var(--sh-sm), var(--soft);
+    transform: rotate(-1.2deg);
+  }
+
+  .look-card-2 .look-at-this-frame {
+    transform: rotate(1.1deg);
+  }
+
+  .look-card-3 .look-at-this-frame {
+    transform: rotate(-0.6deg);
+  }
+
+  .look-at-this-panel:hover .look-at-this-frame {
+    transform: rotate(0deg) translateY(-1px);
+  }
+
+  .look-at-this-panel:focus-visible {
+    outline: none;
+  }
+
+  .look-at-this-panel:focus-visible .look-at-this-frame {
+    outline: 2px solid var(--color-seal);
+    outline-offset: 2px;
+  }
+
+  .look-at-this-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    pointer-events: none;
+  }
+
+  .look-at-this-caption {
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    line-height: 1.2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .look-at-this-frame,
+    .look-card-2 .look-at-this-frame,
+    .look-card-3 .look-at-this-frame,
+    .look-at-this-panel:hover .look-at-this-frame {
+      transform: none;
+    }
+  }
+
+  /* Decorative sticker tray */
+  .sticker-tray {
+    border: var(--b1) dashed color-mix(in srgb, var(--color-line) 45%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-card) 88%, transparent);
+    padding: 0.45rem 0.65rem 0.65rem;
+    box-shadow: var(--soft);
+  }
+
+  .sticker-tray-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-display);
+    color: var(--color-ink);
+  }
+
+  .sticker-tray-label {
+    font-size: 1.05rem;
+    text-transform: lowercase;
+  }
+
+  .sticker-tray-meta {
+    font-size: 0.85rem;
+    color: var(--color-faint);
+    text-transform: lowercase;
+  }
+
+  .sticker-tray-lede,
+  .sticker-tray-hint {
+    margin: 0.25rem 0 0.5rem;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+  }
+
+  .sticker-tray-hint {
+    margin-top: 0.55rem;
+    margin-bottom: 0;
+    color: var(--color-faint);
+  }
+
+  .sticker-tray-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 480px) {
+    .sticker-tray-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  .sticker-tray-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0.35rem 0.2rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 35%, transparent);
+    border-radius: 0.65rem;
+    background: #fffef9;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    transition: transform 140ms ease;
+  }
+
+  .sticker-tray-chip:hover {
+    transform: translateY(-1px);
+  }
+
+  .sticker-tray-chip:active {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .sticker-tray-chip .deco-sticker-mark {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .sticker-tray-chip-name {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .sticker-tray-clear {
+    margin-top: 0.4rem;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sticker-tray-chip,
+    .sticker-tray-chip:hover,
+    .sticker-tray-chip:active {
+      transition: none;
+      transform: none;
+    }
+  }
+
+  /* Placed stickers overlay */
+  .sticker-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .sticker-layer-item {
+    position: absolute;
+    pointer-events: auto;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 1px rgb(74 63 55 / 0.18));
+  }
+
+  .sticker-layer-item:disabled {
+    cursor: default;
+  }
+
+  .sticker-layer-item .deco-sticker-mark {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .sticker-layer-flip {
+    inset: 0.6rem 0.8rem 0.9rem 1.6rem;
+  }
+
+  .sticker-layer-cork {
+    inset: 0;
+    z-index: 4;
+  }
+
+  .sticker-layer-empty-cork {
+    inset: -0.4rem;
+  }
+
+  .deco-sticker-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+
+  .deco-sticker-mark svg {
+    display: block;
+    overflow: visible;
+  }
+
+  .deco-sticker-washi-rose,
+  .deco-sticker-washi-mint {
+    width: 2.6rem;
+    height: 1.15rem;
+  }
+
+  .deco-sticker-washi-rose svg,
+  .deco-sticker-washi-mint svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .keep-sticker-tray {
+    margin-top: 0.25rem;
+  }
+}
