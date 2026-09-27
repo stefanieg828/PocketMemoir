@@ -24,6 +24,7 @@ import { MODE_META } from "@/lib/memoir/jackets";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { isStarterShelf, normalizeStoredEntry, useMemoir } from "@/lib/memoir/store";
+import { A2hsSettingsHint } from "@/components/a2hs-tip";
 import { cn } from "@/lib/utils";
 
 type ReadyBackup = Extract<ParsedBackup, { ok: true }>;
@@ -132,6 +133,7 @@ export function BackupSection() {
       <p className="backup-restore-unlock">
         Already unlocked on another device? Restore a backup.
       </p>
+      <A2hsSettingsHint />
       {error ? (
         <p className="backup-error" role="alert">
           {error}

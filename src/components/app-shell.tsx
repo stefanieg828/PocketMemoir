@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
+import { A2hsTip } from "@/components/a2hs-tip";
 import { BackupNudge } from "@/components/backup-nudge";
 import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
@@ -90,7 +91,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex-1 pt-7">
-        {pathname === "/" ? <BackupNudge /> : null}
+        {pathname === "/" ? (
+          <>
+            <A2hsTip />
+            <BackupNudge />
+          </>
+        ) : null}
         {children}
       </main>
 
