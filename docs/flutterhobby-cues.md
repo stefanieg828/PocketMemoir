@@ -55,16 +55,16 @@ Keep **Scrapbook** + **Corkboard** Looks, same data, same Stick it in / Pin it.
 
 | Bucket | Kinds | Browse label (scrapbook / cork) |
 |--------|-------|----------------------------------|
-| **Scraps** | note, idea, list, quote | Scraps / Notes |
-| **People** | person, pet | People / Faces |
-| **Out & About** | place, trip, ticket, event, moment | Out & About / Pins on the map |
-| **Everyday** | thing, food, recipe, work, money, health, song | Everyday / Desk pile |
-| **Proud** | win, lesson | Proud / Gold pins |
-| **Dreams** | dream | Dreams / Soft pins |
+| **Thoughts** | note, idea, list, quote | Thoughts |
+| **People** | person, pet | People |
+| **Places** | place, trip, ticket, event, moment | Places |
+| **To-Do** | thing, food, recipe, work, money, health, song | To-Do |
+| **Achievements** | win, lesson | Achievements |
+| **Goals** | dream | Goals |
 
-Optional collapse: merge Dreams → Proud (5 buckets). Calendar-worthy kinds stay `event, moment, trip, health` under the hood.
+Optional collapse: merge Goals → Achievements (5 buckets). Calendar-worthy kinds stay `event, moment, trip, health` under the hood.
 
-Add flow: show **bucket first** (6 chips), then kind stickers inside the bucket — or keep kind chip but group visually. Default still **Note** under Scraps.
+Add flow: show **bucket first** (6 chips), then kind stickers inside the bucket — or keep kind chip but group visually. Default still **Note** under Thoughts.
 
 ### B. Status shelves (FH In season / Proud energy)
 
@@ -97,6 +97,6 @@ Shelf Home: wood-sign / washi-lane sections (or cork lanes) for Fresh · Soft pi
 1. Add `bucket` (derived from kind) + optional `status` on entries; migrate existing → Fresh.
 2. Replace Shelf `FILTERS` chip row with 6 buckets (+ All); keep kind on card sticker.
 3. Section Shelf by status (Fresh / Soft pile / Keepsakes); Tucked collapsed.
-4. Keep-form: bucket → kind chips (default Scraps / Note).
+4. Keep-form: bucket → kind chips (default Thoughts / Note).
 5. Screenshot Shelf with seeds in both Looks against `fh-refs/` for Stefanie.
 

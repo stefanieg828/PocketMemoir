@@ -1,8 +1,8 @@
 /**
  * Shelf categories = scrapbook spreads = cork boards.
  *
- * Free taste: the 6 starters (always available). Behind unlock: extra presets,
- * custom categories, rename / hide / reorder. Hidden categories that still
+ * Free taste: the 6 starters (always available; rename allowed). Behind unlock:
+ * extra presets, custom categories, hide / reorder. Hidden categories that still
  * hold scraps stay on the shelf (tucked at the end) so nothing gets lost.
  */
 import {
@@ -70,12 +70,13 @@ const STARTER_DEFAULTS: Record<
   StarterId,
   { scrapbook: string; corkboard: string; vibe: CategoryVibe }
 > = {
-  scraps: { scrapbook: "Scraps", corkboard: "Notes", vibe: "cream" },
-  people: { scrapbook: "People", corkboard: "Faces", vibe: "peach" },
-  out: { scrapbook: "Out & About", corkboard: "Pins on the map", vibe: "sky" },
-  everyday: { scrapbook: "Everyday", corkboard: "Desk pile", vibe: "mustard" },
-  proud: { scrapbook: "Proud", corkboard: "Gold pins", vibe: "rose" },
-  dreams: { scrapbook: "Dreams", corkboard: "Soft pins", vibe: "sage" },
+  // Same plain names for scrapbook + corkboard. Free users can rename these six.
+  scraps: { scrapbook: "Thoughts", corkboard: "Thoughts", vibe: "cream" },
+  people: { scrapbook: "People", corkboard: "People", vibe: "peach" },
+  out: { scrapbook: "Places", corkboard: "Places", vibe: "sky" },
+  everyday: { scrapbook: "To-Do", corkboard: "To-Do", vibe: "mustard" },
+  proud: { scrapbook: "Achievements", corkboard: "Achievements", vibe: "rose" },
+  dreams: { scrapbook: "Goals", corkboard: "Goals", vibe: "sage" },
 };
 
 const PRESET_DEFAULTS: Record<PresetId, { name: string; vibe: CategoryVibe }> = {

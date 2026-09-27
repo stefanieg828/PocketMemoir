@@ -48,6 +48,21 @@ describe("categories", () => {
     );
   });
 
+  it("plain starter defaults match across scrapbook and corkboard", () => {
+    const expected = {
+      scraps: "Thoughts",
+      people: "People",
+      out: "Places",
+      everyday: "To-Do",
+      proud: "Achievements",
+      dreams: "Goals",
+    };
+    for (const id of m.STARTER_IDS) {
+      assert.equal(m.defaultCategoryName(id, "scrapbook"), expected[id]);
+      assert.equal(m.defaultCategoryName(id, "corkboard"), expected[id]);
+    }
+  });
+
   it("unlocked shelf can add Books + Movies + Bucket List", () => {
     let cfg = m.DEFAULT_CATEGORY_CONFIG;
     cfg = m.togglePreset(cfg, "books-to-read", true);

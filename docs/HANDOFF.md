@@ -55,14 +55,14 @@ Browse groups them into **6 buckets** (Shelf chips = All + buckets, not 21 kinds
 
 | Bucket | Kinds |
 |--------|-------|
-| Scraps | note, idea, list, quote |
+| Thoughts | note, idea, list, quote |
 | People | person, pet |
-| Out & About | place, trip, ticket, event, moment |
-| Everyday | thing, food, recipe, work, money, health, song |
-| Proud | win, lesson |
-| Dreams | dream |
+| Places | place, trip, ticket, event, moment |
+| To-Do | thing, food, recipe, work, money, health, song |
+| Achievements | win, lesson |
+| Goals | dream |
 
-Kind still shows as a sticker on the card + detail. Add form: bucket chips → kinds inside the bucket (default **Scraps / Note**). One Add screen still.
+Kind still shows as a sticker on the card + detail. Add form: bucket chips → kinds inside the bucket (default **Thoughts / Note**). One Add screen still.
 
 Calendar-worthy kinds: `event, moment, trip, health`.
 
@@ -137,7 +137,7 @@ Warm, short, handwritten-adjacent. Not wellness-app copy. Not “capture your jo
 
 ## Flip album slice (feature/visual-polish)
 
-Scrapbook Look Shelf is now a **flip album**: open two-page spread per bucket (Scraps → Dreams). Adjacent flips use a single page-turn; jumping tabs whooshes. Tucked stays behind a fold under the book. Corkboard Look still uses status shelf sections (cork wall is next).
+Scrapbook Look Shelf is now a **flip album**: open two-page spread per bucket (Thoughts → Goals). Adjacent flips use a single page-turn; jumping tabs whooshes. Tucked stays behind a fold under the book. Corkboard Look still uses status shelf sections (cork wall is next).
 
 **Cover = Add:** scrapbook `/keep` is a closed album cover; sealing navigates to `/?spread=<bucket>&flipIn=1` and opens that spread.
 

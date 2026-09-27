@@ -131,8 +131,8 @@ type MemoirState = {
   look: LookId;
   riso: RisoPrefs;
   /**
-   * Same gate as Comic / Riso Looks. Free taste = starters only; unlock opens
-   * presets, customs, rename / hide / reorder. Selecting an unlock Look (or
+   * Same gate as Comic / Riso Looks. Free taste = six starters (rename allowed);
+   * unlock opens presets, customs, hide / reorder. Selecting an unlock Look (or
    * tapping Unlock on the categories tease) turns this on — no paywall yet.
    */
   unlocked: boolean;
@@ -299,7 +299,7 @@ export const useMemoir = create<MemoirState>()(
       setTourSeen: (seen) => set({ tourSeen: seen }),
       setMode: (mode) => set({ mode }),
       setLook: (look) => {
-        // Unlock Looks (Comic / Riso) also unlock category editing — same gate, no paywall yet.
+        // Unlock Looks (Comic / Riso) also unlock presets/customs/hide/reorder — same gate, no paywall yet.
         const unlock = LOOK_SKINS[look]?.unlock === true;
         set(unlock ? { look, unlocked: true } : { look });
       },
