@@ -108,7 +108,7 @@ export function CorkWall({
             {showCorkWallTip ? (
               <div className="cork-wall-sub-wrap">
                 <p className="cork-wall-sub">
-                  Your boards — same sticky-note shelf as the scrapbook. Tap one to zoom in.
+                  Your boards. Tap one to zoom in.
                 </p>
                 <button
                   type="button"
