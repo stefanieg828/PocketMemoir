@@ -12,12 +12,12 @@ const STEPS: TourStep[] = [
   {
     kicker: "Welcome",
     title: `Meet ${APP_NAME}`,
-    body: `A tiny scrapbook and corkboard for life’s bits — passwords, people, tickets, little wins. ${TAGLINE}`,
+    body: `A tiny memoir for life’s bits... passwords, people, events, little wins. ${TAGLINE}`,
   },
   {
     kicker: "Two ways to look",
     title: "Flip the album or peek the wall",
-    body: "Scrapbook turns pages. Corkboard pins boards on a wall. Switch Layout anytime under Look → Make it yours.",
+    body: "Choose either scrapbook or corkboard for your layout. You can switch the layout anytime under Look → Make it yours.",
   },
   {
     kicker: "Your scraps",
