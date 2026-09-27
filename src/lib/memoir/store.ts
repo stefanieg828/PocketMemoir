@@ -151,9 +151,9 @@ type MemoirState = {
   look: LookId;
   riso: RisoPrefs;
   /**
-   * Same gate as Comic / Riso Looks. Free taste = six starters (rename allowed);
-   * unlock (99¢ one-time) opens presets, customs, hide / reorder, Comic/Riso,
-   * vibe colors, and Got an idea?. Set via pay success URL, backup restore, or
+   * Same gate as comic / riso looks. little scraps = six starters (rename allowed);
+   * big scraps (99¢ one-time) opens presets, customs, hide / reorder, comic/riso,
+   * vibe colors, and got an idea?. Set via pay success URL, backup restore, or
    * DEV / previewUnlock testing — never by picking a Look alone.
    */
   unlocked: boolean;

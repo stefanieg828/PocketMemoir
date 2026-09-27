@@ -14,14 +14,14 @@ import {
 } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
-import { UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
+import { PLAN_FREE_NAME, PLAN_PAID_NAME, UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { LOOK_IDS, MODES, type LookId, type ModeId } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 /**
- * Two separate settings: Layout (scrapbook vs corkboard) and Look (skin).
- * Riso adds ink + type options. Comic / Riso open the unlock sheet when gated.
+ * Two separate settings: layout (scrapbook vs corkboard) and look (skin).
+ * riso adds ink + type options. comic / riso open the unlock sheet when gated.
  */
 export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const mode = useMemoir((s) => s.mode);
@@ -63,29 +63,29 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
         <button
           type="button"
           className="app-nav-link"
-          aria-label={`Look, currently ${MODE_META[mode].name} · ${LOOK_SKINS[look].name}`}
+          aria-label={`look, currently ${MODE_META[mode].name} · ${LOOK_SKINS[look].name}`}
         >
-          Look
+          look
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="picker-overlay fixed inset-0 z-50" />
         <Dialog.Content className="picker-dialog fixed top-1/2 left-1/2 z-50 max-h-[min(92dvh,46rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
-          <Dialog.Title className="picker-title">Make it yours</Dialog.Title>
+          <Dialog.Title className="picker-title">make it yours</Dialog.Title>
           <Dialog.Description className="sr-only">
-            Choose layout, look, and shelf boards.
+            choose layout, look, and shelf boards.
           </Dialog.Description>
 
-          <PickerSection step="1" title="Layout">
-            <div role="radiogroup" aria-label="Layout" className="picker-grid picker-grid-2">
+          <PickerSection step="1" title="layout">
+            <div role="radiogroup" aria-label="layout" className="picker-grid picker-grid-2">
               {MODES.map((id) => (
                 <ModeCard key={id} id={id} selected={id === mode} onPick={() => setMode(id)} />
               ))}
             </div>
           </PickerSection>
 
-          <PickerSection step="2" title="Look">
-            <div role="radiogroup" aria-label="Look" className="picker-grid picker-grid-3">
+          <PickerSection step="2" title="look">
+            <div role="radiogroup" aria-label="look" className="picker-grid picker-grid-3">
               {LOOK_IDS.map((id) => (
                 <LookCard
                   key={id}
@@ -106,7 +106,7 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
 
           <GotAnIdeaSection />
 
-          <section className="picker-section tour-replay-section" aria-label="Tour">
+          <section className="picker-section tour-replay-section" aria-label="tour">
             <button
               type="button"
               className="tour-replay"
@@ -115,7 +115,7 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
                 setTourSeen(false);
               }}
             >
-              Show the tour again
+              show the tour again
             </button>
           </section>
 
@@ -125,7 +125,7 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
             </p>
             <Dialog.Close asChild>
               <button type="button" className="kind-chip picker-done">
-                Done
+                done
               </button>
             </Dialog.Close>
           </div>
@@ -203,17 +203,17 @@ function LookCard({
     >
       {skin.unlock ? (
         unlocked ? (
-          <span className="unlock-badge unlock-badge-done" title="Unlocked">
-            Unlocked ✓
+          <span className="unlock-badge unlock-badge-done" title={PLAN_PAID_NAME}>
+            {PLAN_PAID_NAME} ✓
           </span>
         ) : (
-          <span className="unlock-badge" title={`Unlock · ${UNLOCK_PRICE_LABEL}`}>
+          <span className="unlock-badge" title={`unlock ${PLAN_PAID_NAME} · ${UNLOCK_PRICE_LABEL}`}>
             <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
             {UNLOCK_PRICE_LABEL}
           </span>
         )
       ) : (
-        <span className="unlock-badge unlock-badge-free">Free</span>
+        <span className="unlock-badge unlock-badge-free">{PLAN_FREE_NAME}</span>
       )}
       <span className={cn("look-swatch", `look-swatch-${id}`)} style={style} aria-hidden="true">
         <span className="ls-title">{id === "storybook" ? "Memoir" : id === "comic" ? "POW!" : "Zine"}</span>
@@ -236,11 +236,11 @@ function RisoOptions() {
   const vars = risoCssVars(riso);
 
   return (
-    <PickerSection step="3" title="Riso inks & type">
-      <p className="picker-hint">Two inks, grain, torn edges and stamps stay. Swap the drums and the lettering.</p>
+    <PickerSection step="3" title="riso inks & type">
+      <p className="picker-hint">two inks, grain, torn edges and stamps stay. swap the drums and the lettering.</p>
 
-      <h4 className="picker-sub">Ink pair</h4>
-      <div role="radiogroup" aria-label="Ink pair" className="ink-grid">
+      <h4 className="picker-sub">ink pair</h4>
+      <div role="radiogroup" aria-label="ink pair" className="ink-grid">
         {RISO_INK_PAIRS.map((pair) => {
           const on = riso.pair === pair.id;
           return (
@@ -263,14 +263,14 @@ function RisoOptions() {
         })}
         <div className={cn("ink-chip ink-chip-custom", riso.pair === "custom" && "is-selected")}>
           <span className="ink-dots">
-            <label className="ink-picker" aria-label="Custom accent ink">
+            <label className="ink-picker" aria-label="custom accent ink">
               <input
                 type="color"
                 value={vars["--riso-a"]}
                 onChange={(e) => setRiso({ pair: "custom", inkA: e.target.value, inkB: vars["--riso-b"] })}
               />
             </label>
-            <label className="ink-picker" aria-label="Custom key ink">
+            <label className="ink-picker" aria-label="custom key ink">
               <input
                 type="color"
                 value={vars["--riso-b"]}
@@ -278,12 +278,12 @@ function RisoOptions() {
               />
             </label>
           </span>
-          <span className="ink-name">Custom</span>
+          <span className="ink-name">custom</span>
         </div>
       </div>
 
-      <h4 className="picker-sub">Title lettering</h4>
-      <div role="radiogroup" aria-label="Title font" className="font-grid">
+      <h4 className="picker-sub">title lettering</h4>
+      <div role="radiogroup" aria-label="title font" className="font-grid">
         {RISO_TITLE_FONTS.map((f) => (
           <button
             key={f.id}
@@ -294,15 +294,15 @@ function RisoOptions() {
             onClick={() => setRiso({ titleFont: f.id })}
           >
             <span className="font-chip-sample" style={{ fontFamily: f.stack }}>
-              Pocket Memoir
+              pocket memoir
             </span>
             <span className="font-chip-name">{f.name}</span>
           </button>
         ))}
       </div>
 
-      <h4 className="picker-sub">Notes & labels</h4>
-      <div role="radiogroup" aria-label="Body font" className="font-grid">
+      <h4 className="picker-sub">notes & labels</h4>
+      <div role="radiogroup" aria-label="body font" className="font-grid">
         {RISO_BODY_FONTS.map((f) => (
           <button
             key={f.id}

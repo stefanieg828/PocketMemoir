@@ -13,22 +13,22 @@ export type LookSkin = {
 export const LOOK_SKINS: Record<LookId, LookSkin> = {
   storybook: {
     id: "storybook",
-    name: "Soft Storybook",
-    line: "Watercolor washes, peach & sage, loose ink, pressed flowers.",
+    name: "soft storybook",
+    line: "watercolor washes, peach & sage, loose ink, pressed flowers.",
     unlock: false,
     kicker: "soft storybook",
   },
   comic: {
     id: "comic",
-    name: "Comic",
-    line: "Heavy ink, CMYK brights, halftone dots, starbursts.",
+    name: "comic",
+    line: "heavy ink, CMYK brights, halftone dots, starbursts.",
     unlock: true,
     kicker: "comic edition",
   },
   riso: {
     id: "riso",
-    name: "Risograph Zine",
-    line: "Two inks on grainy cream, torn edges, off-register stamps.",
+    name: "risograph zine",
+    line: "two inks on grainy cream, torn edges, off-register stamps.",
     unlock: true,
     kicker: "risograph zine",
   },

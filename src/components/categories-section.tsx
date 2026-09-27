@@ -18,14 +18,14 @@ import {
 import { KIND_META } from "@/lib/memoir/copy";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
-import { UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
+import { PLAN_FREE_NAME, PLAN_PAID_NAME, UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { cn } from "@/lib/utils";
 
 /**
  * Sticky-note shelf manager in the Look sheet.
- * Free: six starters you can rename + Unlock tease for more boards.
- * Unlocked: presets on/off, customs, rename anything (starters + presets +
+ * little scraps: six starters you can rename + big scraps tease for more boards.
+ * big scraps: presets on/off, customs, rename anything (starters + presets +
  * customs), hide, reorder, and editable stickers per board.
  * Renames are display-only; Reset restores the built-in name for starters/presets.
  */
@@ -194,19 +194,19 @@ export function CategoriesSection() {
         <span className="picker-step categories-step" aria-hidden="true">
           ✿
         </span>
-        Your shelf
+        your shelf
       </h3>
       {!unlocked ? (
         <div className="categories-lock-card">
           <p className="categories-lock-line">
-            Free: six starter boards you can rename. Unlock adds more boards (Books, Movies, Gift ideas, and ones you
-            customize), weekly new sticker packs, hide &amp; reorder, and a “Got an idea?” email to
+            {PLAN_FREE_NAME}: six starter boards you can rename. {PLAN_PAID_NAME} adds more boards (books, movies, gift
+            ideas, and ones you customize), weekly new sticker packs, hide &amp; reorder, and a “got an idea?” email to
             scraps@pocketmemoir.fun.
           </p>
           <p className="categories-hint">
-            Tap a name to customize it. Reset brings the default name back.
+            tap a name to customize it. reset brings the default name back.
           </p>
-          <ul className="categories-on-list" aria-label="Starter categories">
+          <ul className="categories-on-list" aria-label="starter categories">
             {freeStarters.map((row) => (
               <li key={row.id} className={cn("cat-row", `cat-vibe-${row.vibe}`)}>
                 <div className="cat-row-main">{renderRenameMain(row)}</div>
@@ -228,16 +228,16 @@ export function CategoriesSection() {
           </ul>
           <button type="button" className="sticker-cta categories-unlock-btn" onClick={() => openUnlock(true)}>
             <Lock className="size-4" strokeWidth={2.4} aria-hidden="true" />
-            Unlock more boards · {UNLOCK_PRICE_LABEL}
+            unlock {PLAN_PAID_NAME} · {UNLOCK_PRICE_LABEL}
           </button>
-          <p className="categories-lock-hint">Same one-time unlock as Comic &amp; Riso.</p>
+          <p className="categories-lock-hint">same one-time unlock as comic &amp; riso.</p>
         </div>
       ) : (
         <>
           <p className="categories-hint">
-            Tap a name to make it yours. Pick a color for any board. Reset brings the default name back.
+            tap a name to make it yours. pick a color for any board. reset brings the default name back.
           </p>
-          <ul className="categories-on-list" aria-label="Categories on your shelf">
+          <ul className="categories-on-list" aria-label="categories on your shelf">
             {onShelf.map((row, i) => (
               <li key={row.id} className={cn("cat-row", `cat-vibe-${row.vibe}`)}>
                 <div className="cat-row-main">{renderRenameMain(row)}</div>

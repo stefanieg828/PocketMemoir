@@ -1,14 +1,24 @@
 /**
- * Site unlock (99¢ one-time) — Stripe Payment Link plugs in later.
+ * Site unlock (99¢ one-time) — Stripe Payment Link for big scraps.
  * No webhook yet: success URL / restore backup / DEV preview unlock the gate.
  */
 
-/** Build-time Payment Link. Empty until Stefanie creates one. */
-export const STRIPE_PAYMENT_LINK = String(
-  (typeof import.meta !== "undefined" &&
-    (import.meta.env?.VITE_STRIPE_PAYMENT_LINK as string | undefined)) ||
-    "",
-).trim();
+/** Live buy-button URL (semi-public). Override with VITE_STRIPE_PAYMENT_LINK. */
+export const DEFAULT_STRIPE_PAYMENT_LINK =
+  "https://buy.stripe.com/7sY8wR0jHgGh8FWbFF6Vq00";
+
+/**
+ * Build-time Payment Link. Unset → live default. Explicit empty string keeps the
+ * soft “Stripe link next” CTA for local testing.
+ */
+export const STRIPE_PAYMENT_LINK = (() => {
+  const raw =
+    typeof import.meta !== "undefined"
+      ? (import.meta.env?.VITE_STRIPE_PAYMENT_LINK as string | undefined)
+      : undefined;
+  if (raw === undefined || raw === null) return DEFAULT_STRIPE_PAYMENT_LINK;
+  return String(raw).trim();
+})();
 
 const PREVIEW_SESSION_KEY = "pm.previewUnlock";
 
@@ -23,7 +33,7 @@ export function isUnlockDevPreview() {
 
 /**
  * One-shot / session testing path for production builds without a Payment Link.
- * Honors `?previewUnlock=1` (strips it) or a prior session flag — never a public free CTA.
+ * Honors `?previewUnlock=1` (strips it) or a prior session flag — never a public free unlock.
  */
 export function consumePreviewUnlockFlag(): boolean {
   if (typeof window === "undefined") return false;
@@ -97,4 +107,11 @@ export function stripUnlockSuccessParams() {
 }
 
 export const UNLOCK_PRICE_LABEL = "99¢";
+
+/** Free plan — always lowercase in UI copy. */
+export const PLAN_FREE_NAME = "little scraps";
+
+/** Paid unlock plan — always lowercase in UI copy. */
+export const PLAN_PAID_NAME = "big scraps";
+
 export const UNLOCK_MAILTO = "mailto:scraps@pocketmemoir.fun?subject=pocket%20memoir%20unlock";

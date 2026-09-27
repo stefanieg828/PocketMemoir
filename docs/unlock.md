@@ -1,22 +1,22 @@
-# Unlock (99¢ one-time)
+# Unlock — little scraps / big scraps (99¢ one-time)
 
 One soft gate for Pocket Memoir. No App Store / Play Billing in this pass —
 Play Billing stays separate for Android later.
 
-## Free (always)
+## little scraps (always free)
 
-- Soft Storybook look
-- Scrapbook / corkboard layouts
-- Six starter boards (rename allowed)
-- Free starter stickers
+- soft storybook look
+- scrapbook / corkboard layouts
+- six starter boards (rename allowed)
+- free starter stickers
 
-## Unlock (one-time 99¢)
+## big scraps (one-time 99¢)
 
-- Comic + Risograph looks
-- More boards / presets / customs
-- Hide, reorder, vibe colors
-- Got an idea? email to scraps@
-- Future sticker packs (same gate)
+- comic + risograph looks
+- more boards / presets / customs
+- hide, reorder, vibe colors
+- got an idea? email to scraps@
+- future sticker packs (same gate)
 
 ## How unlock turns on (today)
 
@@ -26,34 +26,43 @@ Play Billing stays separate for Android later.
    query, and shows a soft “you're unlocked” toast. No webhook required yet.
 2. **Backup restore** — backups already include `unlocked`. Restore a copy from
    another device under **Look → Keep them safe**.
-3. **Testing only** — when `VITE_STRIPE_PAYMENT_LINK` is empty:
+3. **Testing only** — when `VITE_STRIPE_PAYMENT_LINK` is overridden to empty:
    - Primary CTA is disabled (“Stripe link next”).
    - In **DEV**, a small “I'm testing — preview unlock” appears.
    - Or open once with `?previewUnlock=1` (session-armed; not a public free unlock).
 
-## Stripe Payment Link (Stefanie, later)
+## Stripe Payment Link (live)
 
-1. In Stripe Dashboard, create a **Payment Link** for **$0.99** (one-time).
-2. Set the **success URL** to:  
-   `https://pocketmemoir.fun/?unlock=success`
-3. Copy the Payment Link URL.
-4. Set it at build time:
+Live buy link (semi-public, like a buy button):
+
+`https://buy.stripe.com/7sY8wR0jHgGh8FWbFF6Vq00`
+
+Success URL (set in Stripe Dashboard — do not change from the app):
+
+`https://pocketmemoir.fun/?unlock=success`
+
+Build wiring:
+
+1. **GitHub Pages** — `VITE_STRIPE_PAYMENT_LINK` is set in
+   `.github/workflows/deploy-pages.yml` on the build job.
+2. **App default** — `src/lib/memoir/unlock.ts` falls back to the same live URL
+   when the env var is unset (so local / preview builds still open the CTA).
+3. **Local override** — copy `.env.example` → `.env` (gitignored) if you need a
+   different link.
 
    ```bash
    VITE_STRIPE_PAYMENT_LINK=https://buy.stripe.com/...
    ```
 
-   Or leave empty until ready — the sheet stays friendly and gated.
-
-5. Redeploy. The unlock sheet primary CTA becomes **Unlock for 99¢** and opens
-   the Payment Link.
+4. Redeploy. The unlock sheet primary CTA is **unlock big scraps · 99¢** and
+   opens the Payment Link.
 
 Cancel / failure URLs can return to `https://pocketmemoir.fun/` with no query;
 nothing unlocks.
 
 ## UX entry points
 
-- Look → Comic or Riso (opens sheet; look stays put until unlocked)
-- Look → Your shelf → **Unlock more boards · 99¢**
+- Look → comic or riso (opens sheet; look stays put until unlocked)
+- Look → your shelf → **unlock big scraps · 99¢**
 - After unlock: looks apply normally; shelf shows the full editor; CTAs hide /
-  show **Unlocked ✓**
+  show **big scraps ✓** on gated looks (free look shows **little scraps**)

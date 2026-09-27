@@ -34,6 +34,8 @@ jobs:
         env:
           GITHUB_PAGES: "true"
           VITE_BASE: /
+          # Live Stripe Payment Link (semi-public buy button). Not a secret.
+          VITE_STRIPE_PAYMENT_LINK: https://buy.stripe.com/7sY8wR0jHgGh8FWbFF6Vq00
         run: npm run build:pages
 
       - name: Upload Pages artifact
