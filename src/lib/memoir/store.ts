@@ -33,6 +33,7 @@ import {
   type PlacedSticker,
   type StickerMarkId,
 } from "./stickers";
+import { resolveTourSeen } from "./tour-seen";
 import type {
   EntryStatus,
   LookId,
@@ -552,20 +553,9 @@ export const useMemoir = create<MemoirState>()(
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:
             typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
-          // Zustand persist always calls merge(persisted, current). On a brand-new
-          // browser, persisted is undefined — keep current.tourSeen (false) so the tour shows.
-          // Only treat as legacy-seen when we have a real pre-tour save (object with
-          // shelf/settings keys but no tourSeen). Empty {} must not count as legacy.
-          tourSeen: (() => {
-            if (typeof incoming.tourSeen === "boolean") return incoming.tourSeen;
-            if (persisted == null || typeof persisted !== "object") return current.tourSeen;
-            const legacy =
-              Array.isArray(incoming.entries) ||
-              incoming.mode != null ||
-              incoming.look != null ||
-              incoming.jacket != null;
-            return legacy ? true : current.tourSeen;
-          })(),
+          // See resolveTourSeen — also prefers live tourSeen once hasHydrated so a
+          // late/stale rehydrate cannot clobber skip/complete (or Look → show again).
+          tourSeen: resolveTourSeen(persisted, current.tourSeen, current.hasHydrated),
           shelfLedeDismissed:
             typeof incoming.shelfLedeDismissed === "boolean"
               ? incoming.shelfLedeDismissed

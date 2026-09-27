@@ -42,17 +42,19 @@ export function AppShell({ children }: { children: ReactNode }) {
     const finish = () => {
       if (!cancelled) setHasHydrated(true);
     };
+    // Do not mark hydrated until persist.rehydrate() / onFinishHydration settle.
+    // A former 200ms timeout flipped hasHydrated early → TourOverlay opened with
+    // default tourSeen:false; skip wrote true; then late merge applied a stale
+    // storage read (tourSeen:false) and clobbered the skip. Result: tour every refresh.
     const unsub = useMemoir.persist.onFinishHydration(finish);
     if (useMemoir.persist.hasHydrated()) {
       finish();
     } else {
       void Promise.resolve(useMemoir.persist.rehydrate()).then(finish, finish);
     }
-    const timer = window.setTimeout(finish, 200);
     return () => {
       cancelled = true;
       unsub();
-      window.clearTimeout(timer);
     };
   }, [setHasHydrated]);
 
