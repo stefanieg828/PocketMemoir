@@ -18,6 +18,8 @@ import {
 import { KIND_META } from "@/lib/memoir/copy";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
+import { UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
+import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,8 +31,8 @@ import { cn } from "@/lib/utils";
  */
 export function CategoriesSection() {
   const unlocked = useMemoir((s) => s.unlocked);
-  const setUnlocked = useMemoir((s) => s.setUnlocked);
   const mode = useMemoir((s) => s.mode);
+  const openUnlock = useUnlockUi((s) => s.setOpen);
   const config = useMemoir((s) => s.categories);
   const setPresetOn = useMemoir((s) => s.setPresetOn);
   const createCategory = useMemoir((s) => s.createCategory);
@@ -223,11 +225,11 @@ export function CategoriesSection() {
               </li>
             ))}
           </ul>
-          <button type="button" className="sticker-cta categories-unlock-btn" onClick={() => setUnlocked(true)}>
+          <button type="button" className="sticker-cta categories-unlock-btn" onClick={() => openUnlock(true)}>
             <Lock className="size-4" strokeWidth={2.4} aria-hidden="true" />
-            Unlock more boards
+            Unlock more boards · {UNLOCK_PRICE_LABEL}
           </button>
-          <p className="categories-lock-hint">Same unlock as Comic &amp; Riso — free for now, no paywall.</p>
+          <p className="categories-lock-hint">Same one-time unlock as Comic &amp; Riso.</p>
         </div>
       ) : (
         <>

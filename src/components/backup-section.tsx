@@ -129,6 +129,9 @@ export function BackupSection() {
           ? `Last saved ${shortDate(new Date(lastBackupAt))}. ${plural(entries.length, "scrap")} here now.`
           : `No backup yet. It takes a second. ${plural(entries.length, "scrap")} here now.`}
       </p>
+      <p className="backup-restore-unlock">
+        Already unlocked on another device? Restore a backup.
+      </p>
       {error ? (
         <p className="backup-error" role="alert">
           {error}

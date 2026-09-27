@@ -14,7 +14,7 @@ a social feed, and not a replacement for scrap kinds / category chips.
 | `stickers[]` | Marks in the pack (`id`, `name`, `mark`) |
 
 Unlock can open a bigger library later. Do not invent App Store / Play Billing
-here — unlock is the same soft gate as Comic / Riso Looks for now.
+here — same 99¢ site unlock as Comic / Riso (see `docs/unlock.md`).
 
 ## Placement
 

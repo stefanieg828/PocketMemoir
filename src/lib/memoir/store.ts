@@ -152,8 +152,9 @@ type MemoirState = {
   riso: RisoPrefs;
   /**
    * Same gate as Comic / Riso Looks. Free taste = six starters (rename allowed);
-   * unlock opens presets, customs, hide / reorder. Selecting an unlock Look (or
-   * tapping Unlock on the categories tease) turns this on — no paywall yet.
+   * unlock (99¢ one-time) opens presets, customs, hide / reorder, Comic/Riso,
+   * vibe colors, and Got an idea?. Set via pay success URL, backup restore, or
+   * DEV / previewUnlock testing — never by picking a Look alone.
    */
   unlocked: boolean;
   categories: CategoryConfig;
@@ -371,9 +372,8 @@ export const useMemoir = create<MemoirState>()(
       clearPageStickers: () => set({ pageStickers: [] }),
       setMode: (mode) => set({ mode }),
       setLook: (look) => {
-        // Unlock Looks (Comic / Riso) also unlock presets/customs/hide/reorder — same gate, no paywall yet.
-        const unlock = LOOK_SKINS[look]?.unlock === true;
-        set(unlock ? { look, unlocked: true } : { look });
+        // Look selection never free-unlocks. UI opens the unlock sheet when gated.
+        set({ look });
       },
       setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
       setUnlocked: (unlocked) => set({ unlocked }),

@@ -4,7 +4,7 @@ export type LookSkin = {
   id: LookId;
   name: string;
   line: string;
-  /** Future 99¢ unlock marker — purely cosmetic for now (no paywall). */
+  /** 99¢ unlock marker — gated by the unlock sheet / payment success. */
   unlock: boolean;
   /** Short kicker shown above Shelf headings. */
   kicker: string;

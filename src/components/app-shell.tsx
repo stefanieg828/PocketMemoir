@@ -1,15 +1,21 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { BackupNudge } from "@/components/backup-nudge";
 import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
+import { UnlockSheet } from "@/components/unlock-sheet";
 import { KeepSeal } from "@/components/keep-seal";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
 import { applyThemeToDocument } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
+import {
+  consumePreviewUnlockFlag,
+  readUnlockSuccessFromUrl,
+  stripUnlockSuccessParams,
+} from "@/lib/memoir/unlock";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -19,6 +25,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const mode = useMemoir((s) => s.mode);
   const look = useMemoir((s) => s.look);
   const riso = useMemoir((s) => s.riso);
+  const hasHydrated = useMemoir((s) => s.hasHydrated);
+  const unlocked = useMemoir((s) => s.unlocked);
+  const setUnlocked = useMemoir((s) => s.setUnlocked);
   const openPickerAt = usePickerUi((s) => s.openAt);
 
   useEffect(() => {
@@ -43,6 +52,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     applyThemeToDocument(mode, look, riso);
   }, [mode, look, riso]);
+
+  // Stripe success URL (or manual ?unlocked=1) — no webhook needed yet.
+  useEffect(() => {
+    if (!hasHydrated) return;
+    // Allow ?previewUnlock=1 to arm a session testing flag even before opening the sheet.
+    consumePreviewUnlockFlag();
+    if (!readUnlockSuccessFromUrl()) return;
+    stripUnlockSuccessParams();
+    if (!unlocked) {
+      setUnlocked(true);
+      toast.success("you're unlocked");
+    }
+  }, [hasHydrated, unlocked, setUnlocked]);
 
   return (
     <div className="app-frame relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 pb-32 pt-5 sm:px-6 sm:pb-16 sm:pt-7">
@@ -88,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       ) : null}
 
       <TourOverlay />
+      <UnlockSheet />
 
       <Toaster
         position="bottom-center"

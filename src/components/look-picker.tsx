@@ -14,22 +14,34 @@ import {
 } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
+import { UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
+import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { LOOK_IDS, MODES, type LookId, type ModeId } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 /**
  * Two separate settings: Layout (scrapbook vs corkboard) and Look (skin).
- * Riso adds ink + type options. Comic / Riso carry a cosmetic "Unlock" badge only.
+ * Riso adds ink + type options. Comic / Riso open the unlock sheet when gated.
  */
 export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const mode = useMemoir((s) => s.mode);
   const look = useMemoir((s) => s.look);
   const setMode = useMemoir((s) => s.setMode);
   const setLook = useMemoir((s) => s.setLook);
+  const unlocked = useMemoir((s) => s.unlocked);
   const setTourSeen = useMemoir((s) => s.setTourSeen);
   const open = usePickerUi((s) => s.open);
   const focus = usePickerUi((s) => s.focus);
   const setOpen = usePickerUi((s) => s.setOpen);
+  const openUnlock = useUnlockUi((s) => s.setOpen);
+
+  const pickLook = (id: LookId) => {
+    if (LOOK_SKINS[id]?.unlock && !unlocked) {
+      openUnlock(true);
+      return;
+    }
+    setLook(id);
+  };
 
   useEffect(() => {
     if (defaultOpen) setOpen(true);
@@ -75,7 +87,13 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           <PickerSection step="2" title="Look">
             <div role="radiogroup" aria-label="Look" className="picker-grid picker-grid-3">
               {LOOK_IDS.map((id) => (
-                <LookCard key={id} id={id} selected={id === look} onPick={() => setLook(id)} />
+                <LookCard
+                  key={id}
+                  id={id}
+                  selected={id === look}
+                  unlocked={unlocked}
+                  onPick={() => pickLook(id)}
+                />
               ))}
             </div>
           </PickerSection>
@@ -161,7 +179,17 @@ function ModeCard({ id, selected, onPick }: { id: ModeId; selected: boolean; onP
   );
 }
 
-function LookCard({ id, selected, onPick }: { id: LookId; selected: boolean; onPick: () => void }) {
+function LookCard({
+  id,
+  selected,
+  unlocked,
+  onPick,
+}: {
+  id: LookId;
+  selected: boolean;
+  unlocked: boolean;
+  onPick: () => void;
+}) {
   const skin = LOOK_SKINS[id];
   const riso = useMemoir((s) => s.riso);
   const style = id === "riso" ? (risoCssVars(riso) as CSSProperties) : undefined;
@@ -174,10 +202,16 @@ function LookCard({ id, selected, onPick }: { id: LookId; selected: boolean; onP
       className={cn("picker-card picker-card-look", selected && "is-selected")}
     >
       {skin.unlock ? (
-        <span className="unlock-badge" title="Future unlock — free for now">
-          <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
-          Unlock
-        </span>
+        unlocked ? (
+          <span className="unlock-badge unlock-badge-done" title="Unlocked">
+            Unlocked ✓
+          </span>
+        ) : (
+          <span className="unlock-badge" title={`Unlock · ${UNLOCK_PRICE_LABEL}`}>
+            <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
+            {UNLOCK_PRICE_LABEL}
+          </span>
+        )
       ) : (
         <span className="unlock-badge unlock-badge-free">Free</span>
       )}
