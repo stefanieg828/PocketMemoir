@@ -510,6 +510,8 @@
       radial-gradient(circle, rgb(255 214 0 / 0.35) 30%, transparent 33%) 0 0 / 10px 10px,
       #fff5e1;
     box-shadow: 8px 8px 0 #111;
+    /* Body copy reads soft; headers/CTAs keep Bangers + caps. */
+    font-family: var(--font-sans);
   }
 
   html[data-look="comic"] .picker-section-title {
@@ -657,16 +659,58 @@ html[data-look="comic"] .categories-lock-card,
   }
 }
 
-/* Sticker tray stays soft lowercase even in Comic. */
+/* Soft lowercase body copy in Comic — headers/CTAs stay caps. */
 html[data-look="comic"] :is(
   .sticker-tray-label,
   .sticker-tray-meta,
   .sticker-tray-lede,
   .sticker-tray-hint,
-  .sticker-tray-chip-name
+  .sticker-tray-chip-name,
+  .backup-lede,
+  .backup-status,
+  .backup-restore-unlock,
+  .backup-error,
+  .backup-nudge p,
+  .backup-nudge-more,
+  .categories-hint,
+  .categories-lock-line,
+  .categories-lock-hint,
+  .picker-desc,
+  .picker-card-line,
+  .picker-hint,
+  .unlock-sheet-body,
+  .unlock-sheet-perks,
+  .unlock-sheet-soon-hint,
+  .unlock-sheet-preview,
+  .unlock-sheet-kicker,
+  .footer-link,
+  .shelf-lede,
+  .album-empty-scene p,
+  .cork-sheet p,
+  .tour-card .tour-body,
+  .tour-card .tour-kicker,
+  .restore-warn,
+  .restore-choice-meta
 ) {
   text-transform: lowercase;
-  font-family: var(--font-display);
+  font-family: var(--font-sans);
   font-style: normal;
+  font-weight: 700;
   letter-spacing: 0.01em;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+/* Keep Comic headers shouty even inside the softer picker. */
+html[data-look="comic"] :is(
+  .picker-section-title,
+  .picker-title,
+  .picker-card-name,
+  .unlock-sheet-title,
+  .restore-title,
+  .restore-choice-name
+) {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
