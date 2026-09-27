@@ -201,8 +201,7 @@ export function CategoriesSection() {
             you invent), editable stickers on each board, hide &amp; reorder, and a “Got an idea?” email to scraps@.
           </p>
           <p className="categories-hint">
-            Tap a name to make it yours. Pick a color for any board — starters, presets, and yours.
-            Reset brings the default name back.
+            Tap a name to make it yours. Reset brings the default name back.
           </p>
           <ul className="categories-on-list" aria-label="Starter categories">
             {freeStarters.map((row) => (
@@ -233,8 +232,7 @@ export function CategoriesSection() {
       ) : (
         <>
           <p className="categories-hint">
-            Tap a name to make it yours. Pick a color for any board — starters, presets, and yours.
-            Reset brings the default name back.
+            Tap a name to make it yours. Pick a color for any board. Reset brings the default name back.
           </p>
           <ul className="categories-on-list" aria-label="Categories on your shelf">
             {onShelf.map((row, i) => (
