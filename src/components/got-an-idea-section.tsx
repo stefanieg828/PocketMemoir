@@ -20,8 +20,7 @@ export function GotAnIdeaSection() {
       </h3>
       <p className="backup-lede">
         Email the creator at{" "}
-        <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a> and maybe your ideas
-        will come to fruition.
+        <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a>.
       </p>
     </section>
   );
