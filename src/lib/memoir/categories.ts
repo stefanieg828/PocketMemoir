@@ -412,10 +412,10 @@ export function defaultKindForCategory(id: string): EntryKind {
 
 // Local copy of starter→kinds head so we don't re-export the whole map.
 const BUCKET_KINDS_SAFE: Record<string, readonly EntryKind[]> = {
-  scraps: ["note", "idea", "list", "quote"],
+  scraps: ["note", "idea", "list", "quote", "song"],
   people: ["person", "pet"],
   out: ["place", "trip", "ticket", "event", "moment"],
-  everyday: ["thing", "food", "recipe", "work", "money", "health", "song"],
+  everyday: ["thing", "food", "recipe", "work", "money", "health"],
   proud: ["win", "lesson"],
-  dreams: ["dream"],
+  dreams: ["dream", "year-1", "year-5"],
 };

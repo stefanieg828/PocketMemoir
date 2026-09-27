@@ -16,6 +16,8 @@ export const ENTRY_KINDS = [
   "money",
   "quote",
   "dream",
+  "year-1",
+  "year-5",
   "ticket",
   "song",
   "win",
@@ -38,12 +40,12 @@ export const ENTRY_BUCKETS = [
 export type EntryBucket = (typeof ENTRY_BUCKETS)[number];
 
 export const BUCKET_KINDS: Record<EntryBucket, readonly EntryKind[]> = {
-  scraps: ["note", "idea", "list", "quote"],
+  scraps: ["note", "idea", "list", "quote", "song"],
   people: ["person", "pet"],
   out: ["place", "trip", "ticket", "event", "moment"],
-  everyday: ["thing", "food", "recipe", "work", "money", "health", "song"],
+  everyday: ["thing", "food", "recipe", "work", "money", "health"],
   proud: ["win", "lesson"],
-  dreams: ["dream"],
+  dreams: ["dream", "year-1", "year-5"],
 };
 
 const KIND_TO_BUCKET = Object.fromEntries(

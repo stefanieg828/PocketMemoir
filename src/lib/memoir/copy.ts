@@ -133,10 +133,24 @@ export const KIND_META: Record<EntryKind, KindMeta> = {
     dateRequired: false,
   },
   dream: {
-    label: "Dream",
+    label: "Dreams",
     plural: "Dreams",
     titleHint: "the house with the round window",
     detailHint: "I was late and the train waited",
+    dateRequired: false,
+  },
+  "year-1": {
+    label: "1-year",
+    plural: "1-year",
+    titleHint: "where I want to be in a year",
+    detailHint: "one clear hope, not a to-do list",
+    dateRequired: false,
+  },
+  "year-5": {
+    label: "5-year",
+    plural: "5-year",
+    titleHint: "the longer arc",
+    detailHint: "still soft — a direction, not a deadline",
     dateRequired: false,
   },
   ticket: {
