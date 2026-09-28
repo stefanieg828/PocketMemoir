@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
 import { usePwaInstall } from "@/lib/memoir/use-pwa-install";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
@@ -72,7 +73,15 @@ export function A2hsTip() {
             add to home screen
           </button>
         ) : null}
-        <button type="button" className="backup-nudge-x" aria-label="Not now" onClick={dismiss}>
+        <button
+          type="button"
+          className="backup-nudge-x"
+          aria-label="Not now"
+          onClick={() => {
+            trackEvent(GA_EVENTS.a2hsDismiss);
+            dismiss();
+          }}
+        >
           <X className="size-4" strokeWidth={2.4} aria-hidden="true" />
         </button>
       </div>

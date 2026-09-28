@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
+import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
 import { useMemoir } from "@/lib/memoir/store";
 
 type TourStep = {
@@ -60,6 +61,7 @@ export function TourOverlay() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
+        trackEvent(GA_EVENTS.tourSkip);
         setTourSeen(true);
       }
     };
@@ -85,9 +87,16 @@ export function TourOverlay() {
   const last = step >= STEPS.length - 1;
   const current = STEPS[step]!;
 
-  const finish = () => setTourSeen(true);
+  const skip = () => {
+    trackEvent(GA_EVENTS.tourSkip);
+    setTourSeen(true);
+  };
+  const complete = () => {
+    trackEvent(GA_EVENTS.tourComplete);
+    setTourSeen(true);
+  };
   const next = () => {
-    if (last) finish();
+    if (last) complete();
     else setStep((s) => s + 1);
   };
   const back = () => setStep((s) => Math.max(0, s - 1));
@@ -123,7 +132,7 @@ export function TourOverlay() {
 
         <div className="tour-actions">
           <div className="tour-actions-left">
-            <button type="button" className="tour-skip footer-link" onClick={finish}>
+            <button type="button" className="tour-skip footer-link" onClick={skip}>
               Skip
             </button>
             {step > 0 ? (

@@ -36,6 +36,9 @@ jobs:
           VITE_BASE: /
           # Live Stripe Payment Link (semi-public buy button). Not a secret.
           VITE_STRIPE_PAYMENT_LINK: https://buy.stripe.com/7sY8wR0jHgGh8FWbFF6Vq00
+          # GA4 Measurement ID (G-…). Empty until Stefanie adds repo secret VITE_GA_MEASUREMENT_ID.
+          # See docs/analytics.md — never hardcode a fake ID; unset keeps gtag unloaded.
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
         run: npm run build:pages
 
       - name: Upload Pages artifact

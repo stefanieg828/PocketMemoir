@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
 import { A2hsTip } from "@/components/a2hs-tip";
+import { AnalyticsListener } from "@/components/analytics-listener";
 import { BackupNudge } from "@/components/backup-nudge";
 import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
@@ -19,6 +20,7 @@ import {
   readUnlockSuccessFromUrl,
   stripUnlockSuccessParams,
 } from "@/lib/memoir/unlock";
+import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -69,6 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     // Allow ?previewUnlock=1 to arm a session testing flag even before opening the sheet.
     consumePreviewUnlockFlag();
     if (!readUnlockSuccessFromUrl()) return;
+    trackEvent(GA_EVENTS.unlockSuccess);
     stripUnlockSuccessParams();
     if (!unlocked) {
       setUnlocked(true);
@@ -83,6 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         peeking && "is-peeking",
       )}
     >
+      <AnalyticsListener />
       <PeekBanner />
       <header className="app-header flex items-start justify-between gap-3">
         <div className="min-w-0">

@@ -66,3 +66,10 @@ nothing unlocks.
 - Look → your shelf → **unlock big scraps · 99¢**
 - After unlock: looks apply normally; shelf shows the full editor; CTAs hide /
   show **big scraps ✓** on gated looks (free look shows **little scraps**)
+
+## Analytics (opens vs unlocks)
+
+GA4 is optional and off until `VITE_GA_MEASUREMENT_ID` is set. See
+[analytics.md](./analytics.md). Stripe Dashboard remains the source of truth
+for paid / promo unlocks; GA tracks the soft `unlock_success` landing plus
+site opens.
