@@ -64,12 +64,30 @@ var t=T[0],f=B[0];for(i=0;i<T.length;i++){if(T[i].id===r.titleFont)t=T[i];}for(i
 d.style.setProperty("--riso-a",a);d.style.setProperty("--riso-b",b);d.style.setProperty("--riso-title",t.stack);d.style.setProperty("--riso-body",f.stack);
 }}catch(e){}})();`;
 
+/** Pinterest base tag (conversions / retargeting). No email: the app never collects one. */
+const PINTEREST_TAG_ID = "2612625941613";
+const PINTEREST_TAG = `!function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+pintrk('load','${PINTEREST_TAG_ID}');
+pintrk('page');`;
+
 function RootDocument() {
   return (
     <html lang="en" data-mode="scrapbook" data-look="storybook" data-jacket="scrapbook" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <HeadContent />
+        {/* Pinterest Tag */}
+        <script dangerouslySetInnerHTML={{ __html: PINTEREST_TAG }} />
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            alt=""
+            src={`https://ct.pinterest.com/v3/?event=init&tid=${PINTEREST_TAG_ID}&noscript=1`}
+          />
+        </noscript>
+        {/* end Pinterest Tag */}
       </head>
       <body>
         <PreviewHostBridge />
