@@ -1,11 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "fun.pocketmemoir.app",
       "sha256_cert_fingerprints": [
-        "2A:5F:18:2D:52:42:D0:44:8D:A0:36:2F:F8:E0:D9:9C:D7:6C:09:97:E6:B1:A7:1C:D1:67:F8:86:48:6C:1B:E1"
+        "2A:5F:18:2D:52:42:D0:44:8D:A0:36:2F:F8:E0:D9:9C:D7:6C:09:97:E6:B1:A7:1C:D1:67:F8:86:48:6C:1B:E1",
+        "02:E8:EF:62:8A:33:FC:B3:08:79:CD:6C:8C:FD:87:98:A2:F2:29:91:17:4E:E2:19:D8:19:47:D7:27:F9:71:2D"
       ]
     }
   }
