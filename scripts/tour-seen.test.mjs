@@ -11,6 +11,7 @@ import { createServer } from "vite";
 let resolveTourSeen;
 let readTourSeenFlag;
 let writeTourSeenFlag;
+let isPreTourLegacySave;
 let TOUR_SEEN_FLAG_KEY;
 let server;
 
@@ -43,6 +44,7 @@ before(async () => {
   resolveTourSeen = mod.resolveTourSeen;
   readTourSeenFlag = mod.readTourSeenFlag;
   writeTourSeenFlag = mod.writeTourSeenFlag;
+  isPreTourLegacySave = mod.isPreTourLegacySave;
   TOUR_SEEN_FLAG_KEY = mod.TOUR_SEEN_FLAG_KEY;
 });
 
@@ -61,11 +63,36 @@ describe("resolveTourSeen", () => {
     assert.equal(resolveTourSeen({ tourSeen: false }, true, false, null), false);
   });
 
-  it("treats pre-tour legacy saves (shelf/settings, no tourSeen) as seen", () => {
-    assert.equal(resolveTourSeen({ mode: "scrapbook" }, false, false, null), true);
-    assert.equal(resolveTourSeen({ look: "storybook" }, false, false, null), true);
-    assert.equal(resolveTourSeen({ jacket: "corkboard" }, false, false, null), true);
-    assert.equal(resolveTourSeen({ entries: [] }, false, false, null), true);
+  it("does not treat factory defaults / seed shelf as legacy (TWA drop of tourSeen)", () => {
+    // Fresh install persists seeds + mode/look; if TWA drops tourSeen from the
+    // blob, legacy must NOT skip the tour.
+    assert.equal(resolveTourSeen({ mode: "scrapbook" }, false, false, null), false);
+    assert.equal(resolveTourSeen({ look: "storybook" }, false, false, null), false);
+    assert.equal(resolveTourSeen({ jacket: "corkboard" }, false, false, null), false);
+    assert.equal(resolveTourSeen({ entries: [] }, false, false, null), false);
+    assert.equal(
+      resolveTourSeen(
+        {
+          mode: "scrapbook",
+          look: "storybook",
+          entries: [{ id: "seed-wifi", title: "wifi" }],
+        },
+        false,
+        false,
+        null,
+      ),
+      false,
+    );
+  });
+
+  it("treats real pre-tour use (no tourSeen) as seen", () => {
+    assert.equal(
+      resolveTourSeen({ entries: [{ id: "kept-1", title: "mine" }] }, false, false, null),
+      true,
+    );
+    assert.equal(resolveTourSeen({ unlocked: true }, false, false, null), true);
+    assert.equal(resolveTourSeen({ lastBackupAt: 1 }, false, false, null), true);
+    assert.equal(resolveTourSeen({ a2hsTipDismissed: true }, false, false, null), true);
   });
 
   it("does not treat empty {} as legacy", () => {
@@ -91,6 +118,25 @@ describe("resolveTourSeen", () => {
     assert.equal(resolveTourSeen({ tourSeen: true }, true, false, false), false);
     // No flag → fall through to blob / legacy (explicit null).
     assert.equal(resolveTourSeen({ tourSeen: true }, false, false, null), true);
+  });
+});
+
+describe("isPreTourLegacySave", () => {
+  it("rejects factory defaults and seed-only shelves", () => {
+    assert.equal(isPreTourLegacySave(null), false);
+    assert.equal(isPreTourLegacySave({}), false);
+    assert.equal(isPreTourLegacySave({ mode: "scrapbook", look: "storybook" }), false);
+    assert.equal(
+      isPreTourLegacySave({ entries: [{ id: "seed-wifi", title: "wifi" }] }),
+      false,
+    );
+  });
+
+  it("detects real prior use", () => {
+    assert.equal(isPreTourLegacySave({ entries: [{ id: "abc", title: "x" }] }), true);
+    assert.equal(isPreTourLegacySave({ unlocked: true }), true);
+    assert.equal(isPreTourLegacySave({ pageStickers: [{ id: "s1" }] }), true);
+    assert.equal(isPreTourLegacySave({ categories: { names: { people: "folks" } } }), true);
   });
 });
 

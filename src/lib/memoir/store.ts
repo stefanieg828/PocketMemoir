@@ -37,6 +37,10 @@ import {
   resolveA2hsTipDismissed,
   writeA2hsTipDismissedFlag,
 } from "./a2hs-tip-dismissed";
+import {
+  resolveShelfLedeDismissed,
+  writeShelfLedeDismissedFlag,
+} from "./shelf-lede-dismissed";
 import { resolveTourSeen, writeTourSeenFlag } from "./tour-seen";
 import type {
   EntryStatus,
@@ -175,7 +179,10 @@ type MemoirState = {
    * Not part of BackupSettings — restore leaves tourSeen alone.
    */
   tourSeen: boolean;
-  /** Home shelf-lede tip scrap dismissed (all jacket / starter variants). */
+  /**
+   * Home sample-scraps / shelf-lede tip dismissed (all jacket / starter variants).
+   * Dual-written to pocketmemoir.shelfLedeDismissed for TWA durability.
+   */
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
   corkWallTipDismissed: boolean;
@@ -379,7 +386,12 @@ export const useMemoir = create<MemoirState>()(
         writeTourSeenFlag(seen);
         set({ tourSeen: seen });
       },
-      dismissShelfLede: () => set({ shelfLedeDismissed: true }),
+      dismissShelfLede: () => {
+        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
+        // drop or lag shelfLedeDismissed inside the big pocketmemoir.v1 blob.
+        writeShelfLedeDismissedFlag(true);
+        set({ shelfLedeDismissed: true });
+      },
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
       dismissA2hsTip: () => {
         // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
@@ -573,10 +585,13 @@ export const useMemoir = create<MemoirState>()(
           // See resolveTourSeen — also prefers live tourSeen once hasHydrated so a
           // late/stale rehydrate cannot clobber skip/complete (or Look → show again).
           tourSeen: resolveTourSeen(persisted, current.tourSeen, current.hasHydrated),
-          shelfLedeDismissed:
-            typeof incoming.shelfLedeDismissed === "boolean"
-              ? incoming.shelfLedeDismissed
-              : current.shelfLedeDismissed,
+          // See resolveShelfLedeDismissed — dual-write + alreadyHydrated guard so
+          // TWA lag / late rehydrate cannot revive the sample-scraps tip after X.
+          shelfLedeDismissed: resolveShelfLedeDismissed(
+            persisted,
+            current.shelfLedeDismissed,
+            current.hasHydrated,
+          ),
           corkWallTipDismissed:
             typeof incoming.corkWallTipDismissed === "boolean"
               ? incoming.corkWallTipDismissed
@@ -613,7 +628,14 @@ export const useMemoir = create<MemoirState>()(
         };
       },
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        // Pin dual-write flags after hydrate so empty storage / TWA blob lag
+        // cannot "lose" unseen tour or tip-dismiss and hit a false legacy skip.
+        if (state) {
+          writeTourSeenFlag(state.tourSeen);
+          writeShelfLedeDismissedFlag(state.shelfLedeDismissed);
+          writeA2hsTipDismissedFlag(state.a2hsTipDismissed);
+          state.setHasHydrated(true);
+        }
       },
     },
   ),

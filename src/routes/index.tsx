@@ -40,6 +40,8 @@ function Home() {
   const dismissShelfLede = useMemoir((s) => s.dismissShelfLede);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  // Sample-scraps / shelf lede tip — dismissShelfLede dual-writes
+  // pocketmemoir.v1 + pocketmemoir.shelfLedeDismissed (TWA-safe).
   const showShelfLede = hasHydrated && !shelfLedeDismissed && !peeking;
 
   const visible = useMemo(() => {
