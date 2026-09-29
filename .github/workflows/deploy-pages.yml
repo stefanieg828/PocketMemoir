@@ -38,7 +38,7 @@ jobs:
           VITE_STRIPE_PAYMENT_LINK: https://buy.stripe.com/7sY8wR0jHgGh8FWbFF6Vq00
           # GA4 Measurement ID (G-…). Empty until Stefanie adds repo secret VITE_GA_MEASUREMENT_ID.
           # See docs/analytics.md — never hardcode a fake ID; unset keeps gtag unloaded.
-          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID || 'G-4M8193E8M7' }}
         run: npm run build:pages
 
       - name: Upload Pages artifact
