@@ -33,6 +33,10 @@ import {
   type PlacedSticker,
   type StickerMarkId,
 } from "./stickers";
+import {
+  resolveA2hsTipDismissed,
+  writeA2hsTipDismissedFlag,
+} from "./a2hs-tip-dismissed";
 import { resolveTourSeen, writeTourSeenFlag } from "./tour-seen";
 import type {
   EntryStatus,
@@ -175,7 +179,10 @@ type MemoirState = {
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
   corkWallTipDismissed: boolean;
-  /** First-visit Add to Home Screen / install tip dismissed. */
+  /**
+   * First-visit Add to Home Screen / install tip dismissed.
+   * Dual-written to pocketmemoir.a2hsTipDismissed for TWA durability.
+   */
   a2hsTipDismissed: boolean;
   /** Decorative stickers stuck on the album page / cork wall. */
   pageStickers: PlacedSticker[];
@@ -374,7 +381,12 @@ export const useMemoir = create<MemoirState>()(
       },
       dismissShelfLede: () => set({ shelfLedeDismissed: true }),
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
-      dismissA2hsTip: () => set({ a2hsTipDismissed: true }),
+      dismissA2hsTip: () => {
+        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
+        // drop or lag a2hsTipDismissed inside the big pocketmemoir.v1 blob.
+        writeA2hsTipDismissedFlag(true);
+        set({ a2hsTipDismissed: true });
+      },
       placeSticker: (stickerId, at) => {
         const seed = Date.now() ^ (get().pageStickers.length * 9973);
         const spot =
@@ -569,10 +581,13 @@ export const useMemoir = create<MemoirState>()(
             typeof incoming.corkWallTipDismissed === "boolean"
               ? incoming.corkWallTipDismissed
               : current.corkWallTipDismissed,
-          a2hsTipDismissed:
-            typeof incoming.a2hsTipDismissed === "boolean"
-              ? incoming.a2hsTipDismissed
-              : current.a2hsTipDismissed,
+          // See resolveA2hsTipDismissed — also prefers live value once hasHydrated
+          // so a late/stale rehydrate cannot clobber X / install dismiss.
+          a2hsTipDismissed: resolveA2hsTipDismissed(
+            persisted,
+            current.a2hsTipDismissed,
+            current.hasHydrated,
+          ),
           pageStickers: Array.isArray(incoming.pageStickers)
             ? normalizePageStickers(incoming.pageStickers)
             : current.pageStickers,
