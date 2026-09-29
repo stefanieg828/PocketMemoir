@@ -4,6 +4,11 @@ import { Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useMemoir } from "@/lib/memoir/store";
 import {
+  getPlayBillingService,
+  purchaseBigScraps,
+  shouldPreferPlayBilling,
+} from "@/lib/memoir/play-billing";
+import {
   PLAN_FREE_NAME,
   PLAN_PAID_NAME,
   STRIPE_PAYMENT_LINK,
@@ -16,9 +21,8 @@ import {
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 
 /**
- * Soft scrapbook paywall. Stripe Payment Link via VITE_STRIPE_PAYMENT_LINK
- * (falls back to the live buy link). Empty override keeps a soft “almost ready”
- * CTA; DEV / ?previewUnlock=1 expose a testing unlock.
+ * Soft scrapbook paywall.
+ * Play/TWA: Digital Goods → setUnlocked(true). Browser: Stripe Payment Link.
  */
 export function UnlockSheet() {
   const open = useUnlockUi((s) => s.open);
@@ -26,6 +30,8 @@ export function UnlockSheet() {
   const unlocked = useMemoir((s) => s.unlocked);
   const setUnlocked = useMemoir((s) => s.setUnlocked);
   const [previewOk, setPreviewOk] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [playReady, setPlayReady] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -35,14 +41,63 @@ export function UnlockSheet() {
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void (async () => {
+      const service = await getPlayBillingService();
+      if (!cancelled) setPlayReady(Boolean(service));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (unlocked && open) setOpen(false);
   }, [unlocked, open, setOpen]);
 
+  const preferPlay = shouldPreferPlayBilling();
   const linked = hasStripePaymentLink();
+  // Play path when Digital Goods is up; Stripe only outside Play/TWA.
+  const usePlayCta = playReady;
+  const useStripeCta = !preferPlay && linked;
+  const ctaEnabled = usePlayCta || useStripeCta;
 
-  const onPrimary = () => {
-    if (!linked) return;
-    window.open(STRIPE_PAYMENT_LINK, "_blank", "noopener,noreferrer");
+  const onPrimary = async () => {
+    if (busy) return;
+
+    if (usePlayCta) {
+      setBusy(true);
+      try {
+        const service = await getPlayBillingService();
+        if (!service) {
+          toast.error("Play Billing isn’t available yet", {
+            description: "Update the app from Play, then try again.",
+          });
+          return;
+        }
+        await purchaseBigScraps(service);
+        setUnlocked(true);
+        setOpen(false);
+        toast.success("you're unlocked", {
+          description: `${PLAN_PAID_NAME} — comic, riso & more boards are yours.`,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "";
+        // User cancel / dismiss — stay quiet.
+        if (/abort|cancel|dismiss/i.test(msg)) return;
+        toast.error("couldn’t finish Play purchase", {
+          description: msg || "Try again in a moment.",
+        });
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (useStripeCta) {
+      window.open(STRIPE_PAYMENT_LINK, "_blank", "noopener,noreferrer");
+    }
   };
 
   const onPreview = () => {
@@ -52,6 +107,10 @@ export function UnlockSheet() {
       description: `${PLAN_PAID_NAME} — comic, riso & more boards are yours.`,
     });
   };
+
+  const ctaLabel = preferPlay
+    ? `unlock ${PLAN_PAID_NAME} · ${UNLOCK_PRICE_LABEL}`
+    : `unlock ${PLAN_PAID_NAME} · ${UNLOCK_PRICE_LABEL}`;
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -74,10 +133,27 @@ export function UnlockSheet() {
           </ul>
 
           <div className="unlock-sheet-actions">
-            {linked ? (
-              <button type="button" className="sticker-cta unlock-sheet-cta" onClick={onPrimary}>
+            {ctaEnabled ? (
+              <button
+                type="button"
+                className="sticker-cta unlock-sheet-cta"
+                onClick={() => void onPrimary()}
+                disabled={busy}
+                aria-busy={busy}
+              >
                 <Lock className="size-4" strokeWidth={2.4} aria-hidden="true" />
-                unlock {PLAN_PAID_NAME} · {UNLOCK_PRICE_LABEL}
+                {busy ? "opening Play…" : ctaLabel}
+              </button>
+            ) : preferPlay ? (
+              <button
+                type="button"
+                className="sticker-cta unlock-sheet-cta is-soon"
+                disabled
+                aria-disabled="true"
+                title="Play Billing needs the billing-enabled app build"
+              >
+                <Lock className="size-4" strokeWidth={2.4} aria-hidden="true" />
+                Play Billing next
               </button>
             ) : (
               <button
@@ -98,13 +174,19 @@ export function UnlockSheet() {
             </Dialog.Close>
           </div>
 
-          {!linked ? (
+          {!ctaEnabled && preferPlay ? (
+            <p className="unlock-sheet-soon-hint">
+              unlock via Google Play — update the app if this stays grey.
+            </p>
+          ) : null}
+
+          {!ctaEnabled && !preferPlay ? (
             <p className="unlock-sheet-soon-hint">
               pay link coming soon — your {PLAN_FREE_NAME} stay free meanwhile.
             </p>
           ) : null}
 
-          {!linked && previewOk ? (
+          {!ctaEnabled && previewOk ? (
             <button type="button" className="unlock-sheet-preview footer-link" onClick={onPreview}>
               {isUnlockDevPreview() ? "I'm testing — preview unlock" : "Preview unlock"}
             </button>

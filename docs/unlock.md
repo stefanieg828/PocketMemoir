@@ -1,7 +1,7 @@
 # Unlock — little scraps / big scraps (99¢ one-time)
 
-One soft gate for Pocket Memoir. No App Store / Play Billing in this pass —
-Play Billing stays separate for Android later.
+One soft gate for Pocket Memoir. Browser unlocks via Stripe; Play/TWA unlocks
+via Digital Goods / Play Billing (`big_scraps`) → same `setUnlocked(true)`.
 
 ## little scraps (always free)
 
@@ -73,3 +73,22 @@ GA4 is optional and off until `VITE_GA_MEASUREMENT_ID` is set. See
 [analytics.md](./analytics.md). Stripe Dashboard remains the source of truth
 for paid / promo unlocks; GA tracks the soft `unlock_success` landing plus
 site opens.
+
+
+## Android / Play TWA
+
+Play installs must unlock via **Play Billing** (not Stripe).
+
+1. **Purchase** — Unlock sheet detects Digital Goods (`getDigitalGoodsService`),
+   runs Payment Request for SKU `big_scraps`, then `setUnlocked(true)`.
+2. **Restore** — On hydrate, `listPurchases()`; if `big_scraps` is owned →
+   `setUnlocked(true)` (same toast / GA as Stripe success).
+3. **Browser** — Stripe Payment Link unchanged (gated off when TWA referrer /
+   Play Billing is preferred).
+
+Code: `src/lib/memoir/play-billing.ts`, wired in `unlock-sheet.tsx` + `app-shell.tsx`.
+
+Native shell: Bubblewrap `features.playBilling` — see
+[`PLAY_BILLING_MINIMAL.md`](./PLAY_BILLING_MINIMAL.md).
+Fullscreen TWA: Play App Signing SHA in assetlinks —
+[`PLAY_SIGNING_SHA256.md`](./PLAY_SIGNING_SHA256.md).

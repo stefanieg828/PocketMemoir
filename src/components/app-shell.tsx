@@ -20,6 +20,10 @@ import {
   readUnlockSuccessFromUrl,
   stripUnlockSuccessParams,
 } from "@/lib/memoir/unlock";
+import {
+  getPlayBillingService,
+  restoreBigScraps,
+} from "@/lib/memoir/play-billing";
 import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +81,24 @@ export function AppShell({ children }: { children: ReactNode }) {
       setUnlocked(true);
       toast.success("you're unlocked");
     }
+  }, [hasHydrated, unlocked, setUnlocked]);
+
+  // Play Billing restore (TWA Digital Goods) — same setUnlocked(true) as Stripe.
+  useEffect(() => {
+    if (!hasHydrated || unlocked) return;
+    let cancelled = false;
+    void (async () => {
+      const service = await getPlayBillingService();
+      if (!service || cancelled) return;
+      const owned = await restoreBigScraps(service);
+      if (cancelled || !owned) return;
+      setUnlocked(true);
+      trackEvent(GA_EVENTS.unlockSuccess);
+      toast.success("you're unlocked");
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [hasHydrated, unlocked, setUnlocked]);
 
   return (
