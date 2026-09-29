@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { isRunningAsInstalledApp } from "@/lib/memoir/installed-display";
 
 /** Chromium's deferred install event (not in lib.dom yet everywhere). */
 export type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
-
-type NavigatorStandalone = Navigator & { standalone?: boolean };
 
 type InstallSnap = {
   standalone: boolean;
@@ -16,13 +15,7 @@ type InstallSnap = {
 };
 
 function readStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  const displayStandalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.matchMedia("(display-mode: fullscreen)").matches ||
-    window.matchMedia("(display-mode: minimal-ui)").matches;
-  const iosStandalone = (window.navigator as NavigatorStandalone).standalone === true;
-  return displayStandalone || iosStandalone;
+  return isRunningAsInstalledApp();
 }
 
 function readIos(): boolean {
@@ -89,6 +82,9 @@ function getServerSnap(): InstallSnap {
  * Soft PWA / Add to Home Screen helpers (shared across tip + settings).
  * Chromium may delay or skip `beforeinstallprompt` (engagement heuristics,
  * already installed, missing SW). iOS never fires it — show Share steps instead.
+ *
+ * `standalone` includes display-mode (standalone/fullscreen/minimal-ui), iOS
+ * home-screen, and Android TWA (`document.referrer` android-app://).
  */
 export function usePwaInstall() {
   const state = useSyncExternalStore(subscribe, getSnap, getServerSnap);
@@ -116,7 +112,7 @@ export function usePwaInstall() {
   }, []);
 
   return {
-    /** Already running as an installed / home-screen app. */
+    /** Already running as an installed / home-screen / TWA app. */
     standalone: state.standalone,
     /** iPhone / iPad Safari (or Chrome on iOS — still no BIP). */
     ios: state.ios,

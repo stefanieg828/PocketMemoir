@@ -8,8 +8,10 @@ import { useMemoir } from "@/lib/memoir/store";
 /**
  * Soft first-visit Add to Home Screen / install slip.
  * Waits until the tour is done (or was skipped) so it never stacks on top.
- * Dismiss dual-writes pocketmemoir.v1 + pocketmemoir.a2hsTipDismissed (TWA-safe).
- * Hidden when already standalone.
+ * Dismiss (X) calls dismissA2hsTip → dual-writes pocketmemoir.v1 +
+ * pocketmemoir.a2hsTipDismissed (TWA-safe).
+ * Never shown when already installed: display-mode standalone/fullscreen/minimal-ui,
+ * iOS navigator.standalone, or Android TWA (document.referrer android-app://).
  */
 export function A2hsTip() {
   const hasHydrated = useMemoir((s) => s.hasHydrated);
