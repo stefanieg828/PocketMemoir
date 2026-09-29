@@ -33,7 +33,7 @@ import {
   type PlacedSticker,
   type StickerMarkId,
 } from "./stickers";
-import { resolveTourSeen } from "./tour-seen";
+import { resolveTourSeen, writeTourSeenFlag } from "./tour-seen";
 import type {
   EntryStatus,
   LookId,
@@ -366,7 +366,12 @@ export const useMemoir = create<MemoirState>()(
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      setTourSeen: (seen) => set({ tourSeen: seen }),
+      setTourSeen: (seen) => {
+        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
+        // drop or lag tourSeen inside the big pocketmemoir.v1 zustand blob.
+        writeTourSeenFlag(seen);
+        set({ tourSeen: seen });
+      },
       dismissShelfLede: () => set({ shelfLedeDismissed: true }),
       dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
       dismissA2hsTip: () => set({ a2hsTipDismissed: true }),
