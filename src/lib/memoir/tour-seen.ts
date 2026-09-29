@@ -19,9 +19,21 @@
  * Android TWA / Play installs have seen the big `pocketmemoir.v1` JSON lose or lag
  * the tourSeen field across refresh while Chrome keeps skip — a tiny string key is
  * more durable. setTourSeen (and Look → show again) writes both.
+ *
+ * TWA namespace: when `document.referrer` starts with `android-app://`, read/write
+ * `pocketmemoir.twa.tourSeen` instead. Chrome and the Play TWA share origin
+ * localStorage for pocketmemoir.fun, so a Chrome-era `pocketmemoir.tourSeen=1`
+ * (and blob tourSeen:true) would otherwise suppress the tour on first Play open
+ * even after Clear storage + reinstall. TWA keys start fresh — we do NOT copy
+ * Chrome tourSeen / shelfLede into the TWA namespace. Full store (`pocketmemoir.v1`)
+ * stays shared for now; only first-run tips are scoped.
  */
 
+import { isAndroidTwaReferrer } from "./installed-display";
+
 export const TOUR_SEEN_FLAG_KEY = "pocketmemoir.tourSeen";
+/** Play TWA / android-app referrer — isolated from Chrome tab dismissals. */
+export const TOUR_SEEN_TWA_FLAG_KEY = "pocketmemoir.twa.tourSeen";
 
 type FlagStorage = Pick<Storage, "getItem" | "setItem">;
 
@@ -34,14 +46,20 @@ function defaultStorage(): FlagStorage | null {
   }
 }
 
+/** Flag key for the current shell (Chrome tab vs Play TWA). */
+export function tourSeenFlagKey(twa: boolean = isAndroidTwaReferrer()): string {
+  return twa ? TOUR_SEEN_TWA_FLAG_KEY : TOUR_SEEN_FLAG_KEY;
+}
+
 /** Write the durable "1"/"0" flag. No-op when storage is unavailable. */
 export function writeTourSeenFlag(
   seen: boolean,
   storage: FlagStorage | null = defaultStorage(),
+  twa: boolean = isAndroidTwaReferrer(),
 ): void {
   if (!storage) return;
   try {
-    storage.setItem(TOUR_SEEN_FLAG_KEY, seen ? "1" : "0");
+    storage.setItem(tourSeenFlagKey(twa), seen ? "1" : "0");
   } catch {
     /* quota / private mode */
   }
@@ -53,10 +71,11 @@ export function writeTourSeenFlag(
  */
 export function readTourSeenFlag(
   storage: Pick<Storage, "getItem"> | null = defaultStorage(),
+  twa: boolean = isAndroidTwaReferrer(),
 ): boolean | null {
   if (!storage) return null;
   try {
-    const v = storage.getItem(TOUR_SEEN_FLAG_KEY);
+    const v = storage.getItem(tourSeenFlagKey(twa));
     if (v === "1") return true;
     if (v === "0") return false;
     return null;
@@ -120,21 +139,32 @@ export function isPreTourLegacySave(persisted: unknown): boolean {
   return false;
 }
 
+export type ResolveTourSeenOptions = {
+  /** Override TWA detection (tests). Defaults to android-app:// referrer. */
+  twa?: boolean;
+};
+
 /**
- * @param flagFromStorage — optional override for tests; when omitted, reads
- *   `pocketmemoir.tourSeen` from localStorage. Pass `null` to simulate no flag.
+ * @param flagFromStorage — optional override for tests; when omitted, reads the
+ *   shell-scoped flag from localStorage. Pass `null` to simulate no flag.
  */
 export function resolveTourSeen(
   persisted: unknown,
   currentTourSeen: boolean,
   alreadyHydrated = false,
   flagFromStorage?: boolean | null,
+  options: ResolveTourSeenOptions = {},
 ): boolean {
   if (alreadyHydrated) return currentTourSeen;
 
+  const twa = options.twa ?? isAndroidTwaReferrer();
   const flag =
-    flagFromStorage !== undefined ? flagFromStorage : readTourSeenFlag();
+    flagFromStorage !== undefined ? flagFromStorage : readTourSeenFlag(undefined, twa);
   if (flag !== null) return flag;
+
+  // Play TWA: Chrome-shared blob / pocketmemoir.tourSeen must not suppress first
+  // open. Missing TWA flag → fresh defaults (keep current, usually false).
+  if (twa) return currentTourSeen;
 
   const incoming = (persisted ?? {}) as {
     tourSeen?: unknown;

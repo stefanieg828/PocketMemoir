@@ -25,6 +25,24 @@ function defaultMatchMedia(): MatchMediaLike | null {
 }
 
 /**
+ * True when launched from an Android TWA / Play package
+ * (`document.referrer` starts with `android-app://`).
+ *
+ * Used to namespace tour / shelf-lede dismiss flags so Chrome tab dismissals for
+ * the same origin (shared cookie + localStorage partition) do not suppress the
+ * first-open tour + sample-scraps lede inside the Play app.
+ */
+export function isAndroidTwaReferrer(referrer?: string): boolean {
+  const r =
+    referrer !== undefined
+      ? referrer
+      : typeof document !== "undefined"
+        ? document.referrer
+        : "";
+  return typeof r === "string" && r.startsWith("android-app://");
+}
+
+/**
  * True when the page is already in an installed / TWA / home-screen shell.
  * Pure aside from optional env overrides (for tests).
  */
@@ -48,8 +66,7 @@ export function isRunningAsInstalledApp(env: InstalledDisplayEnv = {}): boolean 
       : typeof document !== "undefined"
         ? document.referrer
         : "";
-  const twaFromReferrer =
-    typeof referrer === "string" && referrer.startsWith("android-app://");
+  const twaFromReferrer = isAndroidTwaReferrer(referrer);
 
   return displayStandalone || iosStandalone || twaFromReferrer;
 }

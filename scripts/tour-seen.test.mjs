@@ -1,6 +1,6 @@
 /**
  * tourSeen persist merge — hydration ordering / stale rehydrate clobber /
- * dual-write pocketmemoir.tourSeen flag for TWA durability.
+ * dual-write pocketmemoir.tourSeen flag + Play TWA pocketmemoir.twa.tourSeen.
  *   node --test scripts/tour-seen.test.mjs
  */
 import { after, before, describe, it } from "node:test";
@@ -11,8 +11,10 @@ import { createServer } from "vite";
 let resolveTourSeen;
 let readTourSeenFlag;
 let writeTourSeenFlag;
+let tourSeenFlagKey;
 let isPreTourLegacySave;
 let TOUR_SEEN_FLAG_KEY;
+let TOUR_SEEN_TWA_FLAG_KEY;
 let server;
 
 function memoryStorage() {
@@ -44,8 +46,10 @@ before(async () => {
   resolveTourSeen = mod.resolveTourSeen;
   readTourSeenFlag = mod.readTourSeenFlag;
   writeTourSeenFlag = mod.writeTourSeenFlag;
+  tourSeenFlagKey = mod.tourSeenFlagKey;
   isPreTourLegacySave = mod.isPreTourLegacySave;
   TOUR_SEEN_FLAG_KEY = mod.TOUR_SEEN_FLAG_KEY;
+  TOUR_SEEN_TWA_FLAG_KEY = mod.TOUR_SEEN_TWA_FLAG_KEY;
 });
 
 after(async () => {
@@ -119,6 +123,39 @@ describe("resolveTourSeen", () => {
     // No flag → fall through to blob / legacy (explicit null).
     assert.equal(resolveTourSeen({ tourSeen: true }, false, false, null), true);
   });
+
+  it("Play TWA with missing twa flag ignores Chrome blob tourSeen (fresh first open)", () => {
+    // Shared origin: Chrome already dismissed; TWA flag never set → show tour.
+    assert.equal(
+      resolveTourSeen({ tourSeen: true }, false, false, null, { twa: true }),
+      false,
+    );
+    assert.equal(
+      resolveTourSeen(
+        {
+          tourSeen: true,
+          shelfLedeDismissed: true,
+          entries: [{ id: "kept-1", title: "mine" }],
+          unlocked: true,
+        },
+        false,
+        false,
+        null,
+        { twa: true },
+      ),
+      false,
+    );
+    // Once the user skips in TWA, the twa flag wins.
+    assert.equal(
+      resolveTourSeen({ tourSeen: false }, false, false, true, { twa: true }),
+      true,
+    );
+    // Look → show again in TWA (flag "0").
+    assert.equal(
+      resolveTourSeen({ tourSeen: true }, true, false, false, { twa: true }),
+      false,
+    );
+  });
 });
 
 describe("isPreTourLegacySave", () => {
@@ -141,30 +178,50 @@ describe("isPreTourLegacySave", () => {
 });
 
 describe("tourSeen dual-write flag", () => {
-  it("uses pocketmemoir.tourSeen as the key", () => {
+  it("uses pocketmemoir.tourSeen (Chrome) and pocketmemoir.twa.tourSeen (TWA)", () => {
     assert.equal(TOUR_SEEN_FLAG_KEY, "pocketmemoir.tourSeen");
+    assert.equal(TOUR_SEEN_TWA_FLAG_KEY, "pocketmemoir.twa.tourSeen");
+    assert.equal(tourSeenFlagKey(false), TOUR_SEEN_FLAG_KEY);
+    assert.equal(tourSeenFlagKey(true), TOUR_SEEN_TWA_FLAG_KEY);
   });
 
-  it("writes and reads 1/0", () => {
+  it("writes and reads 1/0 on the Chrome key by default", () => {
     const storage = memoryStorage();
-    writeTourSeenFlag(true, storage);
+    writeTourSeenFlag(true, storage, false);
     assert.equal(storage.getItem(TOUR_SEEN_FLAG_KEY), "1");
-    assert.equal(readTourSeenFlag(storage), true);
+    assert.equal(storage.getItem(TOUR_SEEN_TWA_FLAG_KEY), null);
+    assert.equal(readTourSeenFlag(storage, false), true);
 
-    writeTourSeenFlag(false, storage);
+    writeTourSeenFlag(false, storage, false);
     assert.equal(storage.getItem(TOUR_SEEN_FLAG_KEY), "0");
-    assert.equal(readTourSeenFlag(storage), false);
+    assert.equal(readTourSeenFlag(storage, false), false);
+  });
+
+  it("Play TWA writes/reads only the twa key (Chrome flag ignored)", () => {
+    const storage = memoryStorage();
+    // Chrome already dismissed — must not leak into TWA reads.
+    storage.setItem(TOUR_SEEN_FLAG_KEY, "1");
+    assert.equal(readTourSeenFlag(storage, true), null);
+
+    writeTourSeenFlag(true, storage, true);
+    assert.equal(storage.getItem(TOUR_SEEN_TWA_FLAG_KEY), "1");
+    assert.equal(storage.getItem(TOUR_SEEN_FLAG_KEY), "1"); // untouched Chrome key
+    assert.equal(readTourSeenFlag(storage, true), true);
+
+    writeTourSeenFlag(false, storage, true);
+    assert.equal(storage.getItem(TOUR_SEEN_TWA_FLAG_KEY), "0");
+    assert.equal(readTourSeenFlag(storage, true), false);
   });
 
   it("returns null when missing or unknown", () => {
     const storage = memoryStorage();
-    assert.equal(readTourSeenFlag(storage), null);
+    assert.equal(readTourSeenFlag(storage, false), null);
     storage.setItem(TOUR_SEEN_FLAG_KEY, "yes");
-    assert.equal(readTourSeenFlag(storage), null);
-    assert.equal(readTourSeenFlag(null), null);
+    assert.equal(readTourSeenFlag(storage, false), null);
+    assert.equal(readTourSeenFlag(null, false), null);
   });
 
   it("write is a no-op without storage", () => {
-    assert.doesNotThrow(() => writeTourSeenFlag(true, null));
+    assert.doesNotThrow(() => writeTourSeenFlag(true, null, false));
   });
 });

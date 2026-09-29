@@ -181,7 +181,8 @@ type MemoirState = {
   tourSeen: boolean;
   /**
    * Home sample-scraps / shelf-lede tip dismissed (all jacket / starter variants).
-   * Dual-written to pocketmemoir.shelfLedeDismissed for TWA durability.
+   * Dual-written to pocketmemoir.shelfLedeDismissed (Chrome) or
+   * pocketmemoir.twa.shelfLedeDismissed (Play TWA) for durability / first-run.
    */
   shelfLedeDismissed: boolean;
   /** Cork wall intro sub tip scrap dismissed. */
@@ -381,14 +382,16 @@ export const useMemoir = create<MemoirState>()(
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setTourSeen: (seen) => {
-        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
+        // Dual-write: shell-scoped "1"/"0" key (pocketmemoir.tourSeen in Chrome,
+        // pocketmemoir.twa.tourSeen in Play TWA) survives TWA refreshes that can
         // drop or lag tourSeen inside the big pocketmemoir.v1 zustand blob.
+        // TWA key is separate so Chrome dismissals do not skip the Play tour.
         writeTourSeenFlag(seen);
         set({ tourSeen: seen });
       },
       dismissShelfLede: () => {
-        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
-        // drop or lag shelfLedeDismissed inside the big pocketmemoir.v1 blob.
+        // Dual-write: shell-scoped flag (…shelfLedeDismissed / …twa.shelfLedeDismissed)
+        // so Chrome dismissals do not hide the sample-scraps lede on first Play open.
         writeShelfLedeDismissedFlag(true);
         set({ shelfLedeDismissed: true });
       },
@@ -630,6 +633,7 @@ export const useMemoir = create<MemoirState>()(
       onRehydrateStorage: () => (state) => {
         // Pin dual-write flags after hydrate so empty storage / TWA blob lag
         // cannot "lose" unseen tour or tip-dismiss and hit a false legacy skip.
+        // In Play TWA these write pocketmemoir.twa.* keys (not Chrome-shared ones).
         if (state) {
           writeTourSeenFlag(state.tourSeen);
           writeShelfLedeDismissedFlag(state.shelfLedeDismissed);

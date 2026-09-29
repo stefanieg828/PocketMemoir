@@ -37,9 +37,10 @@ const STEPS: TourStep[] = [
  * Soft first-visit scrapbook slip. Skip and Done both set tourSeen so return
  * visits stay quiet. Escape = Skip. Back / page dots rewind. Light focus trap.
  *
- * Always shown when tourSeen is false after empty storage — including Play TWA /
+ * Always shown when tourSeen is false after hydrate — including Play TWA /
  * standalone (android-app referrer). Unlike A2hsTip, installed-shell detection
- * must never hide this tour.
+ * must never hide this tour. Play TWA uses pocketmemoir.twa.tourSeen so Chrome
+ * tab dismissals for the same origin do not suppress first Play open.
  */
 export function TourOverlay() {
   const hasHydrated = useMemoir((s) => s.hasHydrated);

@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { createServer } from "vite";
 
 let isRunningAsInstalledApp;
+let isAndroidTwaReferrer;
 let server;
 
 function mm(map) {
@@ -27,6 +28,7 @@ before(async () => {
   });
   const mod = await server.ssrLoadModule("/src/lib/memoir/installed-display.ts");
   isRunningAsInstalledApp = mod.isRunningAsInstalledApp;
+  isAndroidTwaReferrer = mod.isAndroidTwaReferrer;
 });
 
 after(async () => {
@@ -119,5 +121,15 @@ describe("isRunningAsInstalledApp", () => {
       }),
       false,
     );
+  });
+});
+
+describe("isAndroidTwaReferrer", () => {
+  it("detects android-app:// referrers only", () => {
+    assert.equal(isAndroidTwaReferrer("android-app://com.example.pocketmemoir/"), true);
+    assert.equal(isAndroidTwaReferrer("android-app://com.stefanie.pocketmemoir"), true);
+    assert.equal(isAndroidTwaReferrer("https://android-app.example/"), false);
+    assert.equal(isAndroidTwaReferrer("https://pocketmemoir.fun/"), false);
+    assert.equal(isAndroidTwaReferrer(""), false);
   });
 });

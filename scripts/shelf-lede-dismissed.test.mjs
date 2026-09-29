@@ -1,6 +1,6 @@
 /**
  * shelfLedeDismissed persist merge — hydration ordering / stale rehydrate clobber /
- * dual-write pocketmemoir.shelfLedeDismissed flag for TWA durability.
+ * dual-write pocketmemoir.shelfLedeDismissed + Play TWA …twa.shelfLedeDismissed.
  *   node --test scripts/shelf-lede-dismissed.test.mjs
  */
 import { after, before, describe, it } from "node:test";
@@ -11,7 +11,9 @@ import { createServer } from "vite";
 let resolveShelfLedeDismissed;
 let readShelfLedeDismissedFlag;
 let writeShelfLedeDismissedFlag;
+let shelfLedeDismissedFlagKey;
 let SHELF_LEDE_DISMISSED_FLAG_KEY;
+let SHELF_LEDE_DISMISSED_TWA_FLAG_KEY;
 let server;
 
 function memoryStorage() {
@@ -43,7 +45,9 @@ before(async () => {
   resolveShelfLedeDismissed = mod.resolveShelfLedeDismissed;
   readShelfLedeDismissedFlag = mod.readShelfLedeDismissedFlag;
   writeShelfLedeDismissedFlag = mod.writeShelfLedeDismissedFlag;
+  shelfLedeDismissedFlagKey = mod.shelfLedeDismissedFlagKey;
   SHELF_LEDE_DISMISSED_FLAG_KEY = mod.SHELF_LEDE_DISMISSED_FLAG_KEY;
+  SHELF_LEDE_DISMISSED_TWA_FLAG_KEY = mod.SHELF_LEDE_DISMISSED_TWA_FLAG_KEY;
 });
 
 after(async () => {
@@ -84,33 +88,74 @@ describe("resolveShelfLedeDismissed", () => {
     // No flag → fall through to blob (explicit null).
     assert.equal(resolveShelfLedeDismissed({ shelfLedeDismissed: true }, false, false, null), true);
   });
+
+  it("Play TWA with missing twa flag ignores Chrome blob dismiss (fresh first open)", () => {
+    assert.equal(
+      resolveShelfLedeDismissed({ shelfLedeDismissed: true }, false, false, null, {
+        twa: true,
+      }),
+      false,
+    );
+    assert.equal(
+      resolveShelfLedeDismissed(
+        { shelfLedeDismissed: true, tourSeen: true },
+        false,
+        false,
+        null,
+        { twa: true },
+      ),
+      false,
+    );
+    // Once dismissed in TWA, the twa flag wins.
+    assert.equal(
+      resolveShelfLedeDismissed({ shelfLedeDismissed: false }, false, false, true, {
+        twa: true,
+      }),
+      true,
+    );
+  });
 });
 
 describe("shelfLedeDismissed dual-write flag", () => {
-  it("uses pocketmemoir.shelfLedeDismissed as the key", () => {
+  it("uses Chrome and TWA keys", () => {
     assert.equal(SHELF_LEDE_DISMISSED_FLAG_KEY, "pocketmemoir.shelfLedeDismissed");
+    assert.equal(SHELF_LEDE_DISMISSED_TWA_FLAG_KEY, "pocketmemoir.twa.shelfLedeDismissed");
+    assert.equal(shelfLedeDismissedFlagKey(false), SHELF_LEDE_DISMISSED_FLAG_KEY);
+    assert.equal(shelfLedeDismissedFlagKey(true), SHELF_LEDE_DISMISSED_TWA_FLAG_KEY);
   });
 
-  it("writes and reads 1/0", () => {
+  it("writes and reads 1/0 on the Chrome key", () => {
     const storage = memoryStorage();
-    writeShelfLedeDismissedFlag(true, storage);
+    writeShelfLedeDismissedFlag(true, storage, false);
     assert.equal(storage.getItem(SHELF_LEDE_DISMISSED_FLAG_KEY), "1");
-    assert.equal(readShelfLedeDismissedFlag(storage), true);
+    assert.equal(storage.getItem(SHELF_LEDE_DISMISSED_TWA_FLAG_KEY), null);
+    assert.equal(readShelfLedeDismissedFlag(storage, false), true);
 
-    writeShelfLedeDismissedFlag(false, storage);
+    writeShelfLedeDismissedFlag(false, storage, false);
     assert.equal(storage.getItem(SHELF_LEDE_DISMISSED_FLAG_KEY), "0");
-    assert.equal(readShelfLedeDismissedFlag(storage), false);
+    assert.equal(readShelfLedeDismissedFlag(storage, false), false);
+  });
+
+  it("Play TWA writes/reads only the twa key (Chrome flag ignored)", () => {
+    const storage = memoryStorage();
+    storage.setItem(SHELF_LEDE_DISMISSED_FLAG_KEY, "1");
+    assert.equal(readShelfLedeDismissedFlag(storage, true), null);
+
+    writeShelfLedeDismissedFlag(true, storage, true);
+    assert.equal(storage.getItem(SHELF_LEDE_DISMISSED_TWA_FLAG_KEY), "1");
+    assert.equal(storage.getItem(SHELF_LEDE_DISMISSED_FLAG_KEY), "1");
+    assert.equal(readShelfLedeDismissedFlag(storage, true), true);
   });
 
   it("returns null when missing or unknown", () => {
     const storage = memoryStorage();
-    assert.equal(readShelfLedeDismissedFlag(storage), null);
+    assert.equal(readShelfLedeDismissedFlag(storage, false), null);
     storage.setItem(SHELF_LEDE_DISMISSED_FLAG_KEY, "yes");
-    assert.equal(readShelfLedeDismissedFlag(storage), null);
-    assert.equal(readShelfLedeDismissedFlag(null), null);
+    assert.equal(readShelfLedeDismissedFlag(storage, false), null);
+    assert.equal(readShelfLedeDismissedFlag(null, false), null);
   });
 
   it("write is a no-op without storage", () => {
-    assert.doesNotThrow(() => writeShelfLedeDismissedFlag(true, null));
+    assert.doesNotThrow(() => writeShelfLedeDismissedFlag(true, null, false));
   });
 });
