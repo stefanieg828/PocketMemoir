@@ -1,7 +1,7 @@
-import type { JacketId } from "./types";
+import type { ModeId } from "./types";
 
-export type LookMeta = {
-  id: JacketId;
+export type ModeMeta = {
+  id: ModeId;
   name: string;
   line: string;
   emptyTitle: string;
@@ -13,31 +13,32 @@ export type LookMeta = {
   keptToast: (title: string) => string;
 };
 
-export const LOOK_META: Record<JacketId, LookMeta> = {
+/** Mode copy (layout engine). Skins live in looks.ts. */
+export const MODE_META: Record<ModeId, ModeMeta> = {
   scrapbook: {
     id: "scrapbook",
-    name: "Scrapbook",
-    line: "Cream pages, washi, a smiling seal.",
-    emptyTitle: "The page is blank on purpose.",
-    emptyBody: "Nothing stuck in yet.",
-    keepLabel: "Stick it in",
-    addHeading: "Stick something in",
-    dayMoment: "Stick this day in",
-    dayEvent: "Stick it as an event",
-    keptToast: (title) => `Stuck ${title} in.`,
+    name: "scrapbook",
+    line: "a flip album. six spreads, one book.",
+    emptyTitle: "the page is blank on purpose.",
+    emptyBody: "nothing stuck in yet.",
+    keepLabel: "stick it in",
+    addHeading: "stick something in",
+    dayMoment: "stick this day in",
+    dayEvent: "stick it as an event",
+    keptToast: (title) => `stuck ${title} in.`,
   },
   corkboard: {
     id: "corkboard",
-    name: "Corkboard",
-    line: "Cork dots, index cards, candy pins.",
-    emptyTitle: "Plenty of cork left.",
-    emptyBody: "Nothing pinned yet.",
-    keepLabel: "Pin it",
-    addHeading: "Pin something",
-    dayMoment: "Pin this day",
-    dayEvent: "Pin it as an event",
-    keptToast: (title) => `Pinned ${title}.`,
+    name: "corkboard",
+    line: "a wall of six boards. tap one to zoom in.",
+    emptyTitle: "plenty of cork left.",
+    emptyBody: "nothing pinned yet.",
+    keepLabel: "pin it",
+    addHeading: "pin something",
+    dayMoment: "pin this day",
+    dayEvent: "pin it as an event",
+    keptToast: (title) => `pinned ${title}.`,
   },
 };
 
-export const JACKET_META = LOOK_META;
+export const JACKET_META = MODE_META;

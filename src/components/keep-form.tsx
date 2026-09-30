@@ -1,13 +1,27 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, useEffect, useMemo } from "react";
 import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
+import { StickerTray } from "@/components/sticker-tray";
 import { Button } from "@/components/ui/button";
 import { KIND_META } from "@/lib/memoir/copy";
-import { LOOK_META } from "@/lib/memoir/jackets";
+import {
+  defaultKindForCategory,
+  isCustomKindId,
+  isStarterId,
+  kindsForBucket,
+  selectionFromSticker,
+  type StickerChip,
+} from "@/lib/memoir/categories";
+import { MODE_META } from "@/lib/memoir/jackets";
 import { compressPhoto } from "@/lib/memoir/photos";
 import { useMemoir } from "@/lib/memoir/store";
-import { ENTRY_KINDS, type EntryKind, type MemoirDraft } from "@/lib/memoir/types";
+import { useShelfCategories } from "@/lib/memoir/use-shelf";
+import {
+  bucketForKind,
+  type EntryKind,
+  type MemoirDraft,
+} from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
 type KeepFormProps = {
@@ -16,11 +30,46 @@ type KeepFormProps = {
   onCancel?: () => void;
 };
 
+function chipIdFromInitial(initial?: Partial<MemoirDraft>): string {
+  if (initial?.stickerId && isCustomKindId(initial.stickerId)) return initial.stickerId;
+  return initial?.kind ?? "note";
+}
+
 export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
-  const look = useMemoir((s) => s.jacket);
+  const look = useMemoir((s) => s.mode);
+  const unlocked = useMemoir((s) => s.unlocked);
+  const categories = useMemoir((s) => s.categories);
+  const shelf = useShelfCategories();
   const fileRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Focus the title without scrolling the page down past categories.
+    titleInputRef.current?.focus({ preventScroll: true });
+  }, []);
+
   const [kind, setKind] = useState<EntryKind>(initial?.kind ?? "note");
-  const meta = KIND_META[kind];
+  const [bucket, setBucket] = useState<string>(
+    initial?.category
+      ?? (initial?.kind ? bucketForKind(initial.kind) : shelf[0]?.id ?? "scraps"),
+  );
+  const [selectedChip, setSelectedChip] = useState<string>(chipIdFromInitial(initial));
+
+  const chips = useMemo(
+    () => kindsForBucket(categories, bucket, unlocked),
+    [categories, bucket, unlocked],
+  );
+
+  const activeChip: StickerChip =
+    chips.find((c) => c.id === selectedChip) ?? chips[0] ?? {
+      id: kind,
+      label: KIND_META[kind].label,
+      custom: false,
+      builtinKind: kind,
+    };
+  const meta = KIND_META[activeChip.builtinKind];
+
   const [title, setTitle] = useState(initial?.title ?? "");
   const [how, setHow] = useState(initial?.how ?? "");
   const [note, setNote] = useState(initial?.note ?? "");
@@ -28,6 +77,24 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const [wouldBuyAgain, setWouldBuyAgain] = useState(Boolean(initial?.wouldBuyAgain));
   const [photo, setPhoto] = useState<string | undefined>(initial?.photo);
   const [busy, setBusy] = useState(false);
+
+  function applyChip(chip: StickerChip) {
+    const sel = selectionFromSticker(chip);
+    setKind(sel.kind);
+    setSelectedChip(chip.id);
+  }
+
+  function pickBucket(next: string) {
+    setBucket(next);
+    const nextChips = kindsForBucket(categories, next, unlocked);
+    const first = nextChips[0];
+    if (first) applyChip(first);
+    else {
+      const k = defaultKindForCategory(next);
+      setKind(k);
+      setSelectedChip(k);
+    }
+  }
 
   async function onPickPhoto(file: File | undefined) {
     if (!file) return;
@@ -59,36 +126,70 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       toast("An event needs a day.");
       return;
     }
+    const sel = selectionFromSticker(activeChip);
     onKeep({
-      kind,
+      kind: sel.kind,
+      stickerId: sel.stickerId,
       title: next,
       how,
       facts: initial?.facts ?? "",
       note,
       happenedOn: dateValue || undefined,
-      wouldBuyAgain: kind === "thing" ? wouldBuyAgain : undefined,
+      wouldBuyAgain: sel.kind === "thing" ? wouldBuyAgain : undefined,
       photo,
+      category: bucket,
     });
   }
 
+  const showKindRow = isStarterId(bucket) || chips.length > 1;
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div role="radiogroup" aria-label="What kind of scrap" className="flex flex-wrap gap-2">
-        {ENTRY_KINDS.map((id) => {
-          const on = id === kind;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => setKind(id)}
-              className={cn("kind-chip", on && "bg-gold")}
-            >
-              {KIND_META[id].label}
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-3">
+        <div
+          role="radiogroup"
+          aria-label="Shelf category"
+          className="flex flex-wrap gap-2"
+        >
+          {shelf.map((cat) => {
+            const on = cat.id === bucket;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => pickBucket(cat.id)}
+                className={cn("kind-chip", on && "bg-gold")}
+              >
+                {cat.name}
+              </button>
+            );
+          })}
+        </div>
+        {showKindRow ? (
+          <div
+            role="radiogroup"
+            aria-label="What kind of scrap"
+            className="keep-kind-row flex flex-wrap gap-2"
+          >
+            {chips.map((chip) => {
+              const on = chip.id === activeChip.id;
+              return (
+                <button
+                  key={chip.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => applyChip(chip)}
+                  className={cn("kind-chip kind-chip-soft", on && "bg-gold")}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
       <button
@@ -131,11 +232,11 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         <input
           id="title"
           name="title"
+          ref={titleInputRef}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={meta.titleHint}
           required
-          autoFocus
           maxLength={80}
           autoComplete="off"
           className="notebook-line"
@@ -193,6 +294,8 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         </button>
       ) : null}
 
+      <StickerTray compact className="keep-sticker-tray" />
+
       <div className="flex items-center justify-between gap-4 pt-2">
         {onCancel ? (
           <Button type="button" variant="ghost" onClick={onCancel}>
@@ -201,7 +304,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         ) : (
           <span />
         )}
-        <KeepSeal type="submit" label={LOOK_META[look].keepLabel} size="lg" />
+        <KeepSeal type="submit" label={MODE_META[look].keepLabel} size="lg" />
       </div>
     </form>
   );

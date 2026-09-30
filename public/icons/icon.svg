@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PocketMemoir">
+  <defs>
+    <!-- soft watercolor washes -->
+    <radialGradient id="paperWash" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="55%" stop-color="#fff3df"/>
+      <stop offset="100%" stop-color="#f0e0c4"/>
+    </radialGradient>
+    <radialGradient id="blushWash" cx="78%" cy="72%" r="45%">
+      <stop offset="0%" stop-color="#f3c4c8" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#f3c4c8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sageWash" cx="22%" cy="68%" r="40%">
+      <stop offset="0%" stop-color="#b7c9b4" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#b7c9b4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pageL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fffcf6"/>
+      <stop offset="100%" stop-color="#f7ead2"/>
+    </linearGradient>
+    <linearGradient id="pageR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f3e6cf"/>
+      <stop offset="100%" stop-color="#fffcf6"/>
+    </linearGradient>
+    <filter id="softShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#3a2430" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <!-- cream tile + washes (maskable: keep art in ~80% center) -->
+  <rect width="512" height="512" rx="96" fill="url(#paperWash)"/>
+  <rect width="512" height="512" rx="96" fill="url(#blushWash)"/>
+  <rect width="512" height="512" rx="96" fill="url(#sageWash)"/>
+  <!-- faint paper flecks -->
+  <g fill="#e2d0b0" opacity="0.45">
+    <circle cx="86" cy="100" r="2.5"/><circle cx="420" cy="88" r="2"/><circle cx="70" cy="400" r="2.2"/>
+    <circle cx="448" cy="420" r="2.5"/><circle cx="130" cy="160" r="1.6"/><circle cx="390" cy="340" r="1.8"/>
+  </g>
+
+  <!-- open scrapbook (loose ink) -->
+  <g filter="url(#softShadow)">
+    <!-- left page -->
+    <path d="M118 150c0-8 6-14 14-14h110c8 0 14 6 14 14v230c0 8-6 14-14 14H132c-8 0-14-6-14-14V150z"
+          fill="url(#pageL)" stroke="#3a2430" stroke-width="9" stroke-linejoin="round"/>
+    <!-- right page -->
+    <path d="M256 150c0-8 6-14 14-14h110c8 0 14 6 14 14v230c0 8-6 14-14 14H270c-8 0-14-6-14-14V150z"
+          fill="url(#pageR)" stroke="#3a2430" stroke-width="9" stroke-linejoin="round"/>
+    <!-- spine shadow -->
+    <path d="M256 140v254" stroke="#3a2430" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+    <!-- faint ruled lines on left -->
+    <g stroke="#d8c4a4" stroke-width="4" stroke-linecap="round" opacity="0.65">
+      <line x1="148" y1="210" x2="230" y2="210"/>
+      <line x1="148" y1="236" x2="218" y2="236"/>
+      <line x1="148" y1="262" x2="224" y2="262"/>
+      <line x1="148" y1="288" x2="210" y2="288"/>
+    </g>
+    <!-- soft photo corner on right (blank cream, no face) -->
+    <rect x="286" y="178" width="92" height="78" rx="6" fill="#f0d8c8" stroke="#3a2430" stroke-width="6" opacity="0.85"/>
+    <rect x="280" y="172" width="92" height="90" rx="5" fill="none" stroke="#3a2430" stroke-width="5" opacity="0.25" transform="rotate(-4 326 217)"/>
+  </g>
+
+  <!-- sage washi across the gutter -->
+  <g transform="rotate(-12 256 200)">
+    <rect x="168" y="188" width="176" height="28" rx="5" fill="#a8bfa6" stroke="#3a2430" stroke-width="6"/>
+    <g stroke="#fff3df" stroke-width="2.5" opacity="0.5">
+      <line x1="184" y1="194" x2="184" y2="210"/><line x1="208" y1="194" x2="208" y2="210"/>
+      <line x1="232" y1="194" x2="232" y2="210"/><line x1="256" y1="194" x2="256" y2="210"/>
+      <line x1="280" y1="194" x2="280" y2="210"/><line x1="304" y1="194" x2="304" y2="210"/>
+      <line x1="328" y1="194" x2="328" y2="210"/>
+    </g>
+  </g>
+
+  <!-- pressed flower (quiet, botanical) -->
+  <g transform="translate(318 300)">
+    <!-- stem -->
+    <path d="M8 42c2-16 4-28 2-40" fill="none" stroke="#5f7a5c" stroke-width="5" stroke-linecap="round"/>
+    <!-- leaf -->
+    <path d="M10 18c12-2 18 8 10 16-10 2-16-8-10-16z" fill="#9fbfa0" stroke="#3a2430" stroke-width="4" stroke-linejoin="round"/>
+    <!-- petals -->
+    <g fill="#e8a8b0" stroke="#3a2430" stroke-width="4.5" stroke-linejoin="round">
+      <ellipse cx="0" cy="-2" rx="14" ry="18" transform="rotate(-20)"/>
+      <ellipse cx="16" cy="2" rx="13" ry="17" transform="rotate(25)"/>
+      <ellipse cx="8" cy="-14" rx="12" ry="16" transform="rotate(5)"/>
+    </g>
+    <circle cx="8" cy="-2" r="7" fill="#f0d78a" stroke="#3a2430" stroke-width="4"/>
+  </g>
+
+  <!-- tiny blush washi scrap top-left -->
+  <g transform="rotate(18 160 130)">
+    <rect x="120" y="118" width="78" height="18" rx="4" fill="#e8b0b8" stroke="#3a2430" stroke-width="5" opacity="0.9"/>
+  </g>
+</svg>

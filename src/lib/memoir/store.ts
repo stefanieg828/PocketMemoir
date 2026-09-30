@@ -1,7 +1,57 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
-import type { JacketId, MemoirDraft, MemoirEntry } from "./types";
-import { normalizeJacket, normalizeKind } from "./types";
+import type { BackupSettings } from "./backup";
+import {
+  DEFAULT_CATEGORY_CONFIG,
+  addCustom,
+  addCustomKind,
+  hideCategory,
+  hideKind,
+  moveCategory,
+  normalizeCategoryConfig,
+  removeCustom,
+  removeCustomKind,
+  renameCategory,
+  renameKind,
+  resetCategoryName,
+  resetKindName,
+  setCategoryVibe,
+  showCategory,
+  showKind,
+  togglePreset,
+  type CategoryConfig,
+  type CategoryVibe,
+  type PresetId,
+} from "./categories";
+import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
+import { DEFAULT_TEXT_SIZE, normalizeBoldText, normalizeTextSize, type TextSize } from "./reading";
+import {
+  clampStickerCoord,
+  normalizePageStickers,
+  PAGE_STICKER_CAP,
+  placementAt,
+  scatterPlacement,
+  type PlacedSticker,
+  type StickerMarkId,
+} from "./stickers";
+import {
+  resolveA2hsTipDismissed,
+  writeA2hsTipDismissedFlag,
+} from "./a2hs-tip-dismissed";
+import {
+  resolveShelfLedeDismissed,
+  writeShelfLedeDismissedFlag,
+} from "./shelf-lede-dismissed";
+import { resolveTourSeen, writeTourSeenFlag } from "./tour-seen";
+import type {
+  EntryStatus,
+  LookId,
+  MemoirDraft,
+  MemoirEntry,
+  ModeId,
+  RisoPrefs,
+} from "./types";
+import { bucketForKind, normalizeKind, normalizeLook, normalizeMode, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 
@@ -19,6 +69,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-win",
     kind: "win",
+    status: "keepsake",
     title: "Finished the drawer",
     how: "It closes. That is the whole win.",
     facts: "",
@@ -29,6 +80,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-dentist",
     kind: "health",
+    status: "fresh",
     title: "The dentist who gives stickers",
     how: "Morning. Bring the old card.",
     facts: "",
@@ -40,6 +92,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-bday",
     kind: "event",
+    status: "fresh",
     title: "Sam’s birthday",
     how: "The restaurant with the green awning.",
     facts: "",
@@ -51,6 +104,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-lamp",
     kind: "thing",
+    status: "soft",
     title: "The green lamp",
     how: "Kitchen shelf.",
     facts: "would buy again",
@@ -62,6 +116,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-sam",
     kind: "person",
+    status: "keepsake",
     title: "Sam",
     how: "Coworker.",
     facts: "allergic to almonds",
@@ -72,6 +127,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-snow",
     kind: "moment",
+    status: "soft",
     title: "First snow on Oak",
     how: "The lights went and it kept falling.",
     facts: "",
@@ -83,6 +139,7 @@ const SEEDS: MemoirEntry[] = [
   {
     id: "seed-wifi",
     kind: "note",
+    status: "fresh",
     title: "Wifi is oaknest",
     how: "Third floor. The plant knows.",
     facts: "",
@@ -92,18 +149,113 @@ const SEEDS: MemoirEntry[] = [
   },
 ];
 
+export type MemoirSuggestion = {
+  id: string;
+  text: string;
+  createdAt: number;
+};
+
 type MemoirState = {
   entries: MemoirEntry[];
-  jacket: JacketId;
+  /** Layout engine: flip album vs wall of boards. */
+  mode: ModeId;
+  /** Skin: storybook / comic / riso. */
+  look: LookId;
+  riso: RisoPrefs;
+  /**
+   * Reading comfort (accessibility) — free for everyone, never gated by
+   * `unlocked`. Applied to <html> as data-text-size / data-bold, and by
+   * THEME_BOOT before first paint. Device preference: not part of backups.
+   */
+  textSize: TextSize;
+  boldText: boolean;
+  /**
+   * Same gate as comic / riso looks. little scraps = six starters (rename allowed);
+   * big scraps (99¢ one-time) opens presets, customs, hide / reorder, comic/riso,
+   * vibe colors, and got an idea?. Set via pay success URL, backup restore, or
+   * DEV / previewUnlock testing — never by picking a Look alone.
+   */
+  unlocked: boolean;
+  categories: CategoryConfig;
+  /** When the last backup file was saved (ms), or null if never. */
+  lastBackupAt: number | null;
+  /** "Not now" on the backup nudge (ms). */
+  backupNudgeDismissedAt: number | null;
+  /**
+   * First-visit tour finished or skipped. Omitted in older saves → treated as
+   * true on hydrate so we don't re-nag people who already use the shelf.
+   * Not part of BackupSettings — restore leaves tourSeen alone.
+   */
+  tourSeen: boolean;
+  /**
+   * Home sample-scraps / shelf-lede tip dismissed (all jacket / starter variants).
+   * Dual-written to pocketmemoir.shelfLedeDismissed (Chrome) or
+   * pocketmemoir.twa.shelfLedeDismissed (Play TWA) for durability / first-run.
+   */
+  shelfLedeDismissed: boolean;
+  /** Cork wall intro sub tip scrap dismissed. */
+  corkWallTipDismissed: boolean;
+  /**
+   * First-visit Add to Home Screen / install tip dismissed.
+   * Dual-written to pocketmemoir.a2hsTipDismissed for TWA durability.
+   */
+  a2hsTipDismissed: boolean;
+  /** Decorative stickers stuck on the album page / cork wall. */
+  pageStickers: PlacedSticker[];
+  /**
+   * Unlock perk: tiny local-only "Got an idea?" notes. Cap ~20. Not required
+   * in backups for v1 (still persisted in localStorage).
+   */
+  suggestions: MemoirSuggestion[];
   hasHydrated: boolean;
   storageFull: boolean;
   setHasHydrated: (value: boolean) => void;
-  setJacket: (jacket: JacketId) => void;
+  setTourSeen: (seen: boolean) => void;
+  dismissShelfLede: () => void;
+  dismissCorkWallTip: () => void;
+  dismissA2hsTip: () => void;
+  placeSticker: (
+    stickerId: StickerMarkId,
+    at?: Pick<PlacedSticker, "x" | "y"> | "scatter",
+  ) => void;
+  movePageSticker: (id: string, x: number, y: number) => void;
+  removePageSticker: (id: string) => void;
+  clearPageStickers: () => void;
+  setMode: (mode: ModeId) => void;
+  setLook: (look: LookId) => void;
+  setRiso: (patch: Partial<RisoPrefs>) => void;
+  setUnlocked: (unlocked: boolean) => void;
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
+  setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
+  setTextSize: (size: TextSize) => void;
+  setBoldText: (bold: boolean) => void;
+  markBackedUp: (at?: number) => void;
+  dismissBackupNudge: () => void;
+  /** Swap in restored scraps (already merged/replaced) and optionally settings. */
+  applyRestore: (entries: MemoirEntry[], settings?: BackupSettings) => void;
+  setPresetOn: (id: PresetId, on: boolean) => void;
+  createCategory: (name: string, vibe?: CategoryVibe) => string;
+  renameCategory: (id: string, name: string) => void;
+  resetCategoryName: (id: string) => void;
+  hideCategory: (id: string) => void;
+  showCategory: (id: string) => void;
+  removeCategory: (id: string) => void;
+  moveCategory: (id: string, dir: -1 | 1) => void;
+  setCategoryVibe: (id: string, vibe: CategoryVibe) => void;
+  renameKind: (bucket: string, kindId: string, label: string) => void;
+  resetKindName: (bucket: string, kindId: string) => void;
+  hideKind: (bucket: string, kindId: string) => void;
+  showKind: (bucket: string, kindId: string) => void;
+  addCustomKind: (bucket: string, label: string) => string;
+  removeCustomKind: (bucket: string, kindId: string) => void;
+  addSuggestion: (text: string) => void;
+  removeSuggestion: (id: string) => void;
 };
+
+const SUGGESTION_CAP = 20;
 
 function createId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -160,6 +312,11 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
   return {
     id: base?.id ?? createId(),
     kind,
+    status: draft.status
+      ? normalizeStatus(draft.status)
+      : base
+        ? normalizeStatus(base.status)
+        : "fresh",
     title: draft.title.trim(),
     how: draft.how.trim(),
     facts: draft.facts.trim(),
@@ -167,19 +324,35 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
     wouldBuyAgain: kind === "thing" ? Boolean(draft.wouldBuyAgain) : undefined,
     photo: draft.photo,
     happenedOn: draft.happenedOn?.trim() || undefined,
+    category: draft.category?.trim() || base?.category,
+    stickerId:
+      typeof draft.stickerId === "string" && draft.stickerId.trim()
+        ? draft.stickerId.trim()
+        : undefined,
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
   };
 }
 
-function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
+const SEED_STATUS = Object.fromEntries(SEEDS.map((s) => [s.id, s.status])) as Record<
+  string,
+  EntryStatus
+>;
+
+export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
   if (!raw || typeof raw !== "object") return null;
   const entry = raw as Partial<MemoirEntry>;
   if (typeof entry.id !== "string" || typeof entry.title !== "string") return null;
   const kind = normalizeKind(entry.kind);
+  // First migrate: missing status → seed’s demo shelf if known, else fresh
+  const status =
+    "status" in entry
+      ? normalizeStatus(entry.status)
+      : normalizeStatus(SEED_STATUS[entry.id] ?? "fresh");
   return {
     id: entry.id,
     kind,
+    status,
     title: entry.title,
     how: typeof entry.how === "string" ? entry.how : "",
     facts: typeof entry.facts === "string" ? entry.facts : "",
@@ -187,6 +360,12 @@ function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     wouldBuyAgain: kind === "thing" ? Boolean(entry.wouldBuyAgain) : undefined,
     photo: typeof entry.photo === "string" ? entry.photo : undefined,
     happenedOn: typeof entry.happenedOn === "string" ? entry.happenedOn : undefined,
+    category: typeof entry.category === "string" && entry.category.trim()
+      ? entry.category.trim()
+      : undefined,
+    stickerId: typeof entry.stickerId === "string" && entry.stickerId.trim()
+      ? entry.stickerId.trim()
+      : undefined,
     createdAt: typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
     updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : Date.now(),
   };
@@ -196,11 +375,82 @@ export const useMemoir = create<MemoirState>()(
   persist(
     (set, get) => ({
       entries: SEEDS,
-      jacket: "scrapbook",
+      mode: "scrapbook",
+      look: "storybook",
+      riso: { ...DEFAULT_RISO },
+      textSize: DEFAULT_TEXT_SIZE,
+      boldText: false,
+      unlocked: false,
+      categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
+      lastBackupAt: null,
+      backupNudgeDismissedAt: null,
+      tourSeen: false,
+      shelfLedeDismissed: false,
+      corkWallTipDismissed: false,
+      a2hsTipDismissed: false,
+      pageStickers: [],
+      suggestions: [],
       hasHydrated: false,
       storageFull: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      setJacket: (jacket) => set({ jacket }),
+      setTourSeen: (seen) => {
+        // Dual-write: shell-scoped "1"/"0" key (pocketmemoir.tourSeen in Chrome,
+        // pocketmemoir.twa.tourSeen in Play TWA) survives TWA refreshes that can
+        // drop or lag tourSeen inside the big pocketmemoir.v1 zustand blob.
+        // TWA key is separate so Chrome dismissals do not skip the Play tour.
+        writeTourSeenFlag(seen);
+        set({ tourSeen: seen });
+      },
+      dismissShelfLede: () => {
+        // Dual-write: shell-scoped flag (…shelfLedeDismissed / …twa.shelfLedeDismissed)
+        // so Chrome dismissals do not hide the sample-scraps lede on first Play open.
+        writeShelfLedeDismissedFlag(true);
+        set({ shelfLedeDismissed: true });
+      },
+      dismissCorkWallTip: () => set({ corkWallTipDismissed: true }),
+      dismissA2hsTip: () => {
+        // Dual-write: dedicated "1"/"0" key survives TWA refreshes that can
+        // drop or lag a2hsTipDismissed inside the big pocketmemoir.v1 blob.
+        writeA2hsTipDismissedFlag(true);
+        set({ a2hsTipDismissed: true });
+      },
+      placeSticker: (stickerId, at) => {
+        const seed = Date.now() ^ (get().pageStickers.length * 9973);
+        const spot =
+          at && at !== "scatter" && typeof at.x === "number" && typeof at.y === "number"
+            ? placementAt(at.x, at.y, seed)
+            : scatterPlacement(seed);
+        const row: PlacedSticker = {
+          id: createId(),
+          stickerId,
+          ...spot,
+        };
+        set({ pageStickers: [...get().pageStickers, row].slice(-PAGE_STICKER_CAP) });
+      },
+      movePageSticker: (id, x, y) =>
+        set({
+          pageStickers: get().pageStickers.map((s) =>
+            s.id === id
+              ? {
+                  ...s,
+                  x: clampStickerCoord(x, 4, 96),
+                  y: clampStickerCoord(y, 6, 94),
+                }
+              : s,
+          ),
+        }),
+      removePageSticker: (id) =>
+        set({ pageStickers: get().pageStickers.filter((s) => s.id !== id) }),
+      clearPageStickers: () => set({ pageStickers: [] }),
+      setMode: (mode) => set({ mode }),
+      setLook: (look) => {
+        // Look selection never free-unlocks. UI opens the unlock sheet when gated.
+        set({ look });
+      },
+      setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
+      setTextSize: (size) => set({ textSize: normalizeTextSize(size) }),
+      setBoldText: (bold) => set({ boldText: Boolean(bold) }),
+      setUnlocked: (unlocked) => set({ unlocked }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -214,29 +464,200 @@ export const useMemoir = create<MemoirState>()(
           ),
         });
       },
+      setEntryStatus: (id, status) => {
+        const next = normalizeStatus(status);
+        set({
+          entries: get().entries.map((entry) =>
+            entry.id === id
+              ? { ...entry, status: next, updatedAt: Date.now() }
+              : entry,
+          ),
+        });
+      },
       removeEntry: (id) =>
         set({ entries: get().entries.filter((entry) => entry.id !== id) }),
+      markBackedUp: (at = Date.now()) => set({ lastBackupAt: at, backupNudgeDismissedAt: null }),
+      dismissBackupNudge: () => set({ backupNudgeDismissedAt: Date.now() }),
+      applyRestore: (entries, settings) =>
+        set(
+          settings
+            ? {
+                entries,
+                mode: normalizeMode(settings.mode),
+                look: normalizeLook(settings.look),
+                riso: normalizeRiso(settings.riso),
+                unlocked: settings.unlocked ?? get().unlocked,
+                categories: settings.categories
+                  ? normalizeCategoryConfig(settings.categories)
+                  : get().categories,
+                ...(settings.pageStickers !== undefined
+                  ? { pageStickers: normalizePageStickers(settings.pageStickers) }
+                  : {}),
+              }
+            : { entries },
+        ),
+      setPresetOn: (id, on) => set({ categories: togglePreset(get().categories, id, on) }),
+      createCategory: (name, vibe) => {
+        const { config, id } = addCustom(get().categories, { name, vibe });
+        set({ categories: config });
+        return id;
+      },
+      renameCategory: (id, name) => set({ categories: renameCategory(get().categories, id, name) }),
+      resetCategoryName: (id) => set({ categories: resetCategoryName(get().categories, id) }),
+      hideCategory: (id) => set({ categories: hideCategory(get().categories, id) }),
+      showCategory: (id) => set({ categories: showCategory(get().categories, id) }),
+      removeCategory: (id) => set({ categories: removeCustom(get().categories, id) }),
+      moveCategory: (id, dir) => set({ categories: moveCategory(get().categories, id, dir) }),
+      setCategoryVibe: (id, vibe) => {
+        if (!get().unlocked) return;
+        set({ categories: setCategoryVibe(get().categories, id, vibe) });
+      },
+      renameKind: (bucket, kindId, label) => {
+        if (!get().unlocked) return;
+        set({ categories: renameKind(get().categories, bucket, kindId, label) });
+      },
+      resetKindName: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: resetKindName(get().categories, bucket, kindId) });
+      },
+      hideKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: hideKind(get().categories, bucket, kindId) });
+      },
+      showKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: showKind(get().categories, bucket, kindId) });
+      },
+      addCustomKind: (bucket, label) => {
+        if (!get().unlocked) return "";
+        const { config, id } = addCustomKind(get().categories, bucket, label);
+        set({ categories: config });
+        return id;
+      },
+      removeCustomKind: (bucket, kindId) => {
+        if (!get().unlocked) return;
+        set({ categories: removeCustomKind(get().categories, bucket, kindId) });
+      },
+      addSuggestion: (text) => {
+        if (!get().unlocked) return;
+        const cleaned = text.trim().replace(/\s+/g, " ").slice(0, 280);
+        if (!cleaned) return;
+        const row: MemoirSuggestion = {
+          id: createId(),
+          text: cleaned,
+          createdAt: Date.now(),
+        };
+        const next = [row, ...get().suggestions].slice(0, SUGGESTION_CAP);
+        set({ suggestions: next });
+      },
+      removeSuggestion: (id) => {
+        if (!get().unlocked) return;
+        set({ suggestions: get().suggestions.filter((s) => s.id !== id) });
+      },
     }),
     {
       name: STORAGE_KEY,
       skipHydration: true,
       storage: createJSONStorage(() => browserStorage),
-      partialize: (state) => ({ entries: state.entries, jacket: state.jacket }),
+      partialize: (state) => ({
+        entries: state.entries,
+        mode: state.mode,
+        look: state.look,
+        riso: state.riso,
+        textSize: state.textSize,
+        boldText: state.boldText,
+        unlocked: state.unlocked,
+        categories: state.categories,
+        lastBackupAt: state.lastBackupAt,
+        backupNudgeDismissedAt: state.backupNudgeDismissedAt,
+        tourSeen: state.tourSeen,
+        shelfLedeDismissed: state.shelfLedeDismissed,
+        corkWallTipDismissed: state.corkWallTipDismissed,
+        a2hsTipDismissed: state.a2hsTipDismissed,
+        pageStickers: state.pageStickers,
+        suggestions: state.suggestions,
+      }),
       merge: (persisted, current) => {
-        const incoming = (persisted ?? {}) as Partial<MemoirState>;
+        // Older saves stored `jacket` (scrapbook | corkboard) and no look → storybook.
+        const incoming = (persisted ?? {}) as Partial<MemoirState> & { jacket?: unknown };
         const entries = Array.isArray(incoming.entries)
           ? incoming.entries
               .map(normalizeStoredEntry)
               .filter((entry): entry is MemoirEntry => Boolean(entry))
           : current.entries;
+        const unlocked =
+          typeof incoming.unlocked === "boolean"
+            ? incoming.unlocked
+            : LOOK_SKINS[normalizeLook(incoming.look)]?.unlock === true
+              ? true
+              : current.unlocked;
         return {
           ...current,
-          jacket: normalizeJacket(incoming.jacket),
+          mode: normalizeMode(incoming.mode ?? incoming.jacket),
+          look: normalizeLook(incoming.look),
+          riso: normalizeRiso(incoming.riso),
+          textSize: normalizeTextSize(incoming.textSize),
+          boldText: normalizeBoldText(incoming.boldText),
+          unlocked,
+          categories: normalizeCategoryConfig(incoming.categories),
+          lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
+          backupNudgeDismissedAt:
+            typeof incoming.backupNudgeDismissedAt === "number" ? incoming.backupNudgeDismissedAt : null,
+          // See resolveTourSeen — also prefers live tourSeen once hasHydrated so a
+          // late/stale rehydrate cannot clobber skip/complete (or Look → show again).
+          tourSeen: resolveTourSeen(persisted, current.tourSeen, current.hasHydrated),
+          // See resolveShelfLedeDismissed — dual-write + alreadyHydrated guard so
+          // TWA lag / late rehydrate cannot revive the sample-scraps tip after X.
+          shelfLedeDismissed: resolveShelfLedeDismissed(
+            persisted,
+            current.shelfLedeDismissed,
+            current.hasHydrated,
+          ),
+          corkWallTipDismissed:
+            typeof incoming.corkWallTipDismissed === "boolean"
+              ? incoming.corkWallTipDismissed
+              : current.corkWallTipDismissed,
+          // See resolveA2hsTipDismissed — also prefers live value once hasHydrated
+          // so a late/stale rehydrate cannot clobber X / install dismiss.
+          a2hsTipDismissed: resolveA2hsTipDismissed(
+            persisted,
+            current.a2hsTipDismissed,
+            current.hasHydrated,
+          ),
+          pageStickers: Array.isArray(incoming.pageStickers)
+            ? normalizePageStickers(incoming.pageStickers)
+            : current.pageStickers,
+          suggestions: Array.isArray(incoming.suggestions)
+            ? incoming.suggestions
+                .filter(
+                  (s): s is MemoirSuggestion =>
+                    Boolean(s) &&
+                    typeof s === "object" &&
+                    typeof (s as MemoirSuggestion).id === "string" &&
+                    typeof (s as MemoirSuggestion).text === "string" &&
+                    typeof (s as MemoirSuggestion).createdAt === "number",
+                )
+                .map((s) => ({
+                  id: s.id,
+                  text: String(s.text).trim().slice(0, 280),
+                  createdAt: s.createdAt,
+                }))
+                .filter((s) => s.text)
+                .slice(0, SUGGESTION_CAP)
+            : current.suggestions,
           entries,
         };
       },
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        // Pin dual-write flags after hydrate so empty storage / TWA blob lag
+        // cannot "lose" unseen tour or tip-dismiss and hit a false legacy skip.
+        // In Play TWA these write pocketmemoir.twa.* keys (not Chrome-shared ones).
+        if (state) {
+          writeTourSeenFlag(state.tourSeen);
+          writeShelfLedeDismissedFlag(state.shelfLedeDismissed);
+          writeA2hsTipDismissedFlag(state.a2hsTipDismissed);
+          state.setHasHydrated(true);
+        }
       },
     },
   ),
@@ -245,7 +666,16 @@ export const useMemoir = create<MemoirState>()(
 export function matchesQuery(entry: MemoirEntry, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  const hay = [entry.title, entry.how, entry.facts, entry.note, entry.kind, entry.happenedOn]
+  const hay = [
+    entry.title,
+    entry.how,
+    entry.facts,
+    entry.note,
+    entry.kind,
+    bucketForKind(entry.kind),
+    entry.status,
+    entry.happenedOn,
+  ]
     .join(" ")
     .toLowerCase();
   return hay.includes(q);

@@ -4,7 +4,16 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { AppShell } from "@/components/app-shell";
 import { NotFound } from "@/components/not-found";
 import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
+import { RISO_BODY_FONTS, RISO_INK_PAIRS, RISO_TITLE_FONTS } from "@/lib/memoir/looks";
+import { READING_BOOT } from "@/lib/memoir/reading";
 import appCss from "../styles.css?url";
+
+/** Prefix public assets with Vite base (Pages project path). */
+function assetUrl(path: string): string {
+  const base = import.meta.env.BASE_URL || "/";
+  const cleaned = path.replace(/^\//, "");
+  return `${base}${cleaned}`;
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -14,9 +23,15 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: TAGLINE },
       { name: "theme-color", content: "#fff3df" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: APP_NAME },
+      // Pinterest domain claim for pocketmemoir.fun
+      { name: "p:domain_verify", content: "91765c9537387bd3f234657bcb55d5e8" },
     ],
     links: [
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/svg+xml", href: assetUrl("favicon.svg") },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
@@ -24,19 +39,60 @@ export const Route = createRootRoute({
         crossOrigin: "anonymous",
       },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "manifest", href: assetUrl("manifest.webmanifest") },
+      { rel: "apple-touch-icon", href: assetUrl("icons/apple-touch-icon.png") },
     ],
   }),
   notFoundComponent: NotFound,
   component: RootDocument,
 });
 
+/**
+ * Runs before first paint: apply saved mode / look / riso inks and reading
+ * comfort (text size / bold) to <html> so the page never flashes the default
+ * skin or size. Mirrors applyThemeToDocument() + applyReadingToDocument().
+ */
+const THEME_BOOT = `(function(){try{
+var d=document.documentElement;
+var s=(JSON.parse(localStorage.getItem("pocketmemoir.v1")||"{}").state)||{};
+var m=s.mode||s.jacket;m=(m==="corkboard"||m==="ash")?"corkboard":"scrapbook";
+var l=["storybook","comic","riso"].indexOf(s.look)>=0?s.look:"storybook";
+d.dataset.mode=m;d.dataset.look=l;d.dataset.jacket=m;
+${READING_BOOT}
+if(l==="riso"){
+var r=s.riso||{};var P=${JSON.stringify(RISO_INK_PAIRS)};var T=${JSON.stringify(RISO_TITLE_FONTS)};var B=${JSON.stringify(RISO_BODY_FONTS)};
+var hx=/^#[0-9a-f]{6}$/i;var p=null;for(var i=0;i<P.length;i++){if(P[i].id===r.pair)p=P[i];}
+var a=r.pair==="custom"&&hx.test(r.inkA)?r.inkA:(p||P[0]).a;var b=r.pair==="custom"&&hx.test(r.inkB)?r.inkB:(p||P[0]).b;
+var t=T[0],f=B[0];for(i=0;i<T.length;i++){if(T[i].id===r.titleFont)t=T[i];}for(i=0;i<B.length;i++){if(B[i].id===r.bodyFont)f=B[i];}
+d.style.setProperty("--riso-a",a);d.style.setProperty("--riso-b",b);d.style.setProperty("--riso-title",t.stack);d.style.setProperty("--riso-body",f.stack);
+}}catch(e){}})();`;
+
+/** Pinterest base tag (conversions / retargeting). No email: the app never collects one. */
+const PINTEREST_TAG_ID = "2612625941613";
+const PINTEREST_TAG = `!function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+pintrk('load','${PINTEREST_TAG_ID}');
+pintrk('page');`;
+
 function RootDocument() {
   return (
-    <html lang="en" data-jacket="scrapbook" suppressHydrationWarning>
+    <html lang="en" data-mode="scrapbook" data-look="storybook" data-jacket="scrapbook"
+      data-text-size="normal"
+      suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <HeadContent />
+        {/* Pinterest Tag */}
+        <script dangerouslySetInnerHTML={{ __html: PINTEREST_TAG }} />
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            alt=""
+            src={`https://ct.pinterest.com/v3/?event=init&tid=${PINTEREST_TAG_ID}&noscript=1`}
+          />
+        </noscript>
+        {/* end Pinterest Tag */}
       </head>
       <body>
         <PreviewHostBridge />
