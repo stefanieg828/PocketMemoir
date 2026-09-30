@@ -24,6 +24,7 @@ import {
   type PresetId,
 } from "./categories";
 import { DEFAULT_RISO, LOOK_SKINS, normalizeRiso } from "./looks";
+import { DEFAULT_TEXT_SIZE, normalizeBoldText, normalizeTextSize, type TextSize } from "./reading";
 import {
   clampStickerCoord,
   normalizePageStickers,
@@ -162,6 +163,13 @@ type MemoirState = {
   look: LookId;
   riso: RisoPrefs;
   /**
+   * Reading comfort (accessibility) — free for everyone, never gated by
+   * `unlocked`. Applied to <html> as data-text-size / data-bold, and by
+   * THEME_BOOT before first paint. Device preference: not part of backups.
+   */
+  textSize: TextSize;
+  boldText: boolean;
+  /**
    * Same gate as comic / riso looks. little scraps = six starters (rename allowed);
    * big scraps (99¢ one-time) opens presets, customs, hide / reorder, comic/riso,
    * vibe colors, and got an idea?. Set via pay success URL, backup restore, or
@@ -222,6 +230,8 @@ type MemoirState = {
   updateEntry: (id: string, draft: MemoirDraft) => void;
   setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
+  setTextSize: (size: TextSize) => void;
+  setBoldText: (bold: boolean) => void;
   markBackedUp: (at?: number) => void;
   dismissBackupNudge: () => void;
   /** Swap in restored scraps (already merged/replaced) and optionally settings. */
@@ -368,6 +378,8 @@ export const useMemoir = create<MemoirState>()(
       mode: "scrapbook",
       look: "storybook",
       riso: { ...DEFAULT_RISO },
+      textSize: DEFAULT_TEXT_SIZE,
+      boldText: false,
       unlocked: false,
       categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
       lastBackupAt: null,
@@ -436,6 +448,8 @@ export const useMemoir = create<MemoirState>()(
         set({ look });
       },
       setRiso: (patch) => set({ riso: normalizeRiso({ ...get().riso, ...patch }) }),
+      setTextSize: (size) => set({ textSize: normalizeTextSize(size) }),
+      setBoldText: (bold) => set({ boldText: Boolean(bold) }),
       setUnlocked: (unlocked) => set({ unlocked }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
@@ -550,6 +564,8 @@ export const useMemoir = create<MemoirState>()(
         mode: state.mode,
         look: state.look,
         riso: state.riso,
+        textSize: state.textSize,
+        boldText: state.boldText,
         unlocked: state.unlocked,
         categories: state.categories,
         lastBackupAt: state.lastBackupAt,
@@ -580,6 +596,8 @@ export const useMemoir = create<MemoirState>()(
           mode: normalizeMode(incoming.mode ?? incoming.jacket),
           look: normalizeLook(incoming.look),
           riso: normalizeRiso(incoming.riso),
+          textSize: normalizeTextSize(incoming.textSize),
+          boldText: normalizeBoldText(incoming.boldText),
           unlocked,
           categories: normalizeCategoryConfig(incoming.categories),
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,

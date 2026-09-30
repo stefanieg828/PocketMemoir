@@ -12,6 +12,7 @@ import { PeekBanner } from "@/components/peek-banner";
 import { Wordmark } from "@/components/wordmark";
 import { TAGLINE } from "@/lib/memoir/copy";
 import { applyThemeToDocument } from "@/lib/memoir/looks";
+import { applyReadingToDocument } from "@/lib/memoir/reading";
 import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useMemoir } from "@/lib/memoir/store";
@@ -39,6 +40,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const peekLook = usePeekSession((s) => s.look);
   const peekRiso = usePeekSession((s) => s.riso);
   const hasHydrated = useMemoir((s) => s.hasHydrated);
+  const textSize = useMemoir((s) => s.textSize);
+  const boldText = useMemoir((s) => s.boldText);
   const unlocked = useMemoir((s) => s.unlocked);
   const setUnlocked = useMemoir((s) => s.setUnlocked);
   const openPickerAt = usePickerUi((s) => s.openAt);
@@ -68,6 +71,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (peeking) applyThemeToDocument(peekMode, peekLook, peekRiso);
     else applyThemeToDocument(mode, look, riso);
   }, [peeking, peekMode, peekLook, peekRiso, mode, look, riso]);
+
+  // Reading comfort is always the viewer's own (even while peeking). Wait for
+  // hydrate so store defaults never overwrite what THEME_BOOT already applied.
+  useEffect(() => {
+    if (!hasHydrated) return;
+    applyReadingToDocument(textSize, boldText);
+  }, [hasHydrated, textSize, boldText]);
 
   // Stripe success URL (or manual ?unlocked=1) — no webhook needed yet.
   useEffect(() => {

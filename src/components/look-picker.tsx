@@ -4,6 +4,7 @@ import { Lock } from "lucide-react";
 import { BackupSection } from "@/components/backup-section";
 import { CategoriesSection } from "@/components/categories-section";
 import { GotAnIdeaSection } from "@/components/got-an-idea-section";
+import { ReadingComfortSection } from "@/components/reading-comfort-section";
 import { MODE_META } from "@/lib/memoir/jackets";
 import {
   LOOK_SKINS,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 /**
  * Two separate settings: layout (scrapbook vs corkboard) and look (skin).
  * riso adds ink + type options. comic / riso open the unlock sheet when gated.
+ * Reading comfort (text size + bold) follows, free for everyone.
  */
 export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const ownMode = useMemoir((s) => s.mode);
@@ -85,7 +87,7 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
         <Dialog.Content className="picker-dialog fixed top-1/2 left-1/2 z-50 max-h-[min(92dvh,46rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
           <Dialog.Title className="picker-title">make it yours</Dialog.Title>
           <Dialog.Description className="sr-only">
-            choose layout, look, and shelf boards.
+            choose layout, look, reading comfort, and shelf boards.
           </Dialog.Description>
 
           {peeking ? (
@@ -117,6 +119,9 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           </PickerSection>
 
           {!peeking && look === "riso" ? <RisoOptions /> : null}
+
+          {/* Free accessibility setting — never gated, stays on while peeking. */}
+          <ReadingComfortSection step={!peeking && look === "riso" ? "4" : "3"} />
 
           {!peeking ? <CategoriesSection /> : null}
 

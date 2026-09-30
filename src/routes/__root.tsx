@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { NotFound } from "@/components/not-found";
 import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
 import { RISO_BODY_FONTS, RISO_INK_PAIRS, RISO_TITLE_FONTS } from "@/lib/memoir/looks";
+import { READING_BOOT } from "@/lib/memoir/reading";
 import appCss from "../styles.css?url";
 
 /** Prefix public assets with Vite base (Pages project path). */
@@ -47,8 +48,9 @@ export const Route = createRootRoute({
 });
 
 /**
- * Runs before first paint: apply saved mode / look / riso inks to <html> so the
- * page never flashes the default skin. Mirrors applyThemeToDocument().
+ * Runs before first paint: apply saved mode / look / riso inks and reading
+ * comfort (text size / bold) to <html> so the page never flashes the default
+ * skin or size. Mirrors applyThemeToDocument() + applyReadingToDocument().
  */
 const THEME_BOOT = `(function(){try{
 var d=document.documentElement;
@@ -56,6 +58,7 @@ var s=(JSON.parse(localStorage.getItem("pocketmemoir.v1")||"{}").state)||{};
 var m=s.mode||s.jacket;m=(m==="corkboard"||m==="ash")?"corkboard":"scrapbook";
 var l=["storybook","comic","riso"].indexOf(s.look)>=0?s.look:"storybook";
 d.dataset.mode=m;d.dataset.look=l;d.dataset.jacket=m;
+${READING_BOOT}
 if(l==="riso"){
 var r=s.riso||{};var P=${JSON.stringify(RISO_INK_PAIRS)};var T=${JSON.stringify(RISO_TITLE_FONTS)};var B=${JSON.stringify(RISO_BODY_FONTS)};
 var hx=/^#[0-9a-f]{6}$/i;var p=null;for(var i=0;i<P.length;i++){if(P[i].id===r.pair)p=P[i];}
@@ -72,7 +75,9 @@ pintrk('page');`;
 
 function RootDocument() {
   return (
-    <html lang="en" data-mode="scrapbook" data-look="storybook" data-jacket="scrapbook" suppressHydrationWarning>
+    <html lang="en" data-mode="scrapbook" data-look="storybook" data-jacket="scrapbook"
+      data-text-size="normal"
+      suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <HeadContent />
