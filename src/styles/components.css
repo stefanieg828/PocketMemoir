@@ -2733,6 +2733,45 @@
     font-size: 0.9rem;
   }
 
+  .unlock-sheet-status:empty {
+    display: none;
+  }
+
+  .unlock-sheet-cta.no-underline {
+    text-decoration: none;
+  }
+
+  .unlock-debug {
+    margin-top: 0.85rem;
+    padding: 0.6rem 0.7rem;
+    border: var(--b1, 1px) dashed color-mix(in srgb, var(--color-line) 60%, transparent);
+    border-radius: 0.7rem;
+    background: color-mix(in srgb, var(--color-card) 90%, transparent);
+  }
+
+  .unlock-debug-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    text-transform: lowercase;
+    color: var(--color-muted);
+  }
+
+  .unlock-debug-log {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--color-ink);
+  }
+
+  .unlock-debug-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
   .backup-peek-lede {
     margin: 0.85rem 0 0.45rem;
     font-size: 0.92rem;

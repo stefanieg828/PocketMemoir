@@ -22,6 +22,17 @@ describe("play billing wiring", () => {
     assert.match(sheet, /shouldPreferPlayBilling/);
   });
 
+  it("never silently swallows PaymentRequest aborts (TWA reports Play failures as cancel)", () => {
+    assert.doesNotMatch(sheet, /abort\|cancel\|dismiss/);
+    assert.match(sheet, /classifyPlayError/);
+    assert.match(src, /getDetails\(\[PLAY_SKU_BIG_SCRAPS\]\)/);
+  });
+
+  it("UnlockSheet never renders a disabled Play CTA and has a billing debug readout", () => {
+    assert.doesNotMatch(sheet, /Play Billing next/);
+    assert.match(sheet, /debug=billing|"billing"/);
+  });
+
   it("AppShell restores owned big_scraps purchases", () => {
     assert.match(shell, /restoreBigScraps/);
     assert.match(shell, /getPlayBillingService/);

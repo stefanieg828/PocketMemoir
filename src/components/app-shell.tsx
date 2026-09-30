@@ -23,6 +23,7 @@ import {
 } from "@/lib/memoir/unlock";
 import {
   getPlayBillingService,
+  isTwaSession,
   restoreBigScraps,
 } from "@/lib/memoir/play-billing";
 import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
@@ -94,6 +95,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [hasHydrated, unlocked, setUnlocked]);
 
   // Play Billing restore (TWA Digital Goods) — same setUnlocked(true) as Stripe.
+  useEffect(() => {
+    // Remember the TWA launch (referrer is only android-app:// on the first load).
+    isTwaSession();
+  }, []);
+
   useEffect(() => {
     if (!hasHydrated || unlocked) return;
     let cancelled = false;
