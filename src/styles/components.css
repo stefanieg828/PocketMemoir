@@ -2100,6 +2100,14 @@
     font-size: 1.05rem;
   }
 
+  .backup-save-hint {
+    flex: 1 0 100%;
+    margin: 0.05rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    color: var(--color-muted);
+  }
+
   .backup-actions .kind-chip {
     display: inline-flex;
     align-items: center;

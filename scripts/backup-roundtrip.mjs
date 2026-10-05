@@ -2,7 +2,7 @@
 /**
  * End-to-end backup round-trip in a real browser (Playwright, phone viewport):
  *   seed scraps (incl. a photo) + corkboard/riso custom inks
- *   → Save a backup (through the UI)  → wipe browser storage
+ *   → Save to… (through the UI)  → wipe browser storage
  *   → Restore from a file (through the UI, "Replace")  → compare everything.
  * Then: merge restore keeps a newer scrap, and a junk file shows a friendly error.
  *
@@ -32,7 +32,9 @@ page.on("pageerror", (e) => errors.push(String(e)));
 
 const readState = () => page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null")?.state ?? null, KEY);
 async function openKeepSafe() {
-  await page.getByRole("button", { name: /^Look/ }).click();
+  const skip = page.getByRole("button", { name: "Skip" });
+  if (await skip.isVisible().catch(() => false)) await skip.click();
+  await page.getByRole("button", { name: /^look/i }).click();
   await page.locator("#keep-safe").scrollIntoViewIfNeeded();
 }
 const step = (msg) => console.log(`✓ ${msg}`);
@@ -69,26 +71,76 @@ assert.equal(before.entries.length, 4);
 assert.equal(await page.evaluate(() => document.documentElement.dataset.look), "riso");
 step("seeded 4 scraps (1 photo) + corkboard / riso custom inks");
 
-// 2. Save through the UI
+// 2. Save through the UI — stub the system save dialog so the test can read
+// the bytes the picker would write (headless Chromium can't drive the native one).
 await openKeepSafe();
-const [download] = await Promise.all([
-  page.waitForEvent("download"),
-  page.getByRole("button", { name: "Save a backup" }).click(),
-]);
-const name = download.suggestedFilename();
-assert.match(name, /^pocketmemoir-backup-\d{4}-\d{2}-\d{2}\.json$/);
+await page.getByRole("heading", { name: "Keep them safe" }).waitFor();
+assert.match(await page.locator("#backup-save-hint").innerText(), /pick a folder, drive, or files app/i);
+await page.evaluate(() => {
+  window.__pmSave = {};
+  window.showSaveFilePicker = async (options) => {
+    window.__pmSave.options = {
+      suggestedName: options?.suggestedName ?? "",
+      id: options?.id ?? "",
+      accept: options?.types?.[0]?.accept ?? null,
+    };
+    let body = "";
+    return {
+      name: "tucked-with-grandma.json",
+      async createWritable() {
+        return {
+          async write(data) {
+            if (typeof data === "string") body = data;
+            else if (data instanceof Blob) body = await data.text();
+            else body = new TextDecoder().decode(data);
+          },
+          async close() {
+            window.__pmSave.body = body;
+          },
+          async abort() {
+            window.__pmSave.aborted = true;
+          },
+        };
+      },
+    };
+  };
+});
+await page.getByRole("button", { name: /save to…/i }).click();
+await page.waitForFunction(() => Boolean(window.__pmSave && window.__pmSave.body));
+const captured = await page.evaluate(() => window.__pmSave);
+assert.match(captured.options.suggestedName, /^pocketmemoir-backup-\d{4}-\d{2}-\d{2}\.json$/);
+assert.equal(captured.options.id, "pocketmemoir-backup");
+assert.deepEqual(captured.options.accept, { "application/json": [".json"] });
+const name = captured.options.suggestedName;
 const file = join(dir, name);
-await download.saveAs(file);
+writeFileSync(file, captured.body);
 const json = JSON.parse(readFileSync(file, "utf8"));
 assert.equal(json.format, "pocketmemoir-backup");
-assert.equal(json.version, 1);
+assert.equal(json.version, 2);
 assert.deepEqual(json.counts, { scraps: 4, photos: 1 });
 assert.equal(json.entries.find((e) => e.id === "rt-1").photo, photo);
 assert.equal(json.settings.riso.inkB, "#1b6b73");
 const afterSave = await readState();
 assert.ok(afterSave.lastBackupAt > 0, "lastBackupAt stored");
 await page.getByText(/Last saved/).waitFor();
-step(`downloaded ${name} (${(readFileSync(file).length / 1024).toFixed(1)} KB), lastBackupAt recorded`);
+step(`picker wrote ${name} as tucked-with-grandma.json (${(readFileSync(file).length / 1024).toFixed(1)} KB), lastBackupAt recorded`);
+
+// 2b. No picker and no file-share → the same button still downloads a backup.
+await page.evaluate(() => {
+  window.showSaveFilePicker = undefined;
+  navigator.canShare = () => false;
+});
+const [download] = await Promise.all([
+  page.waitForEvent("download"),
+  page.getByRole("button", { name: /save to…/i }).click(),
+]);
+assert.match(download.suggestedFilename(), /^pocketmemoir-backup-\d{4}-\d{2}-\d{2}\.json$/);
+const fallbackFile = join(dir, `fallback-${download.suggestedFilename()}`);
+await download.saveAs(fallbackFile);
+const fallbackJson = JSON.parse(readFileSync(fallbackFile, "utf8"));
+assert.equal(fallbackJson.format, "pocketmemoir-backup");
+assert.equal(fallbackJson.counts.scraps, 4);
+step(`fallback download ${download.suggestedFilename()}`);
 await page.keyboard.press("Escape");
 
 // 3. Wipe

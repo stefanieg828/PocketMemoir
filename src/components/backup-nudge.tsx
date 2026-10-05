@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import { scrapsSinceBackup, shouldNudgeBackup } from "@/lib/memoir/backup";
-import { saveBackup, savedToast } from "@/lib/memoir/backup-io";
+import { presentSaveToOutcome, saveBackupToChosenPlace } from "@/lib/memoir/backup-io";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
@@ -24,8 +25,16 @@ export function BackupNudge() {
         {n} new scraps since {lastBackupAt ? "your last backup" : "you started"}. Keep a copy?
       </p>
       <div className="backup-nudge-actions">
-        <button type="button" className="kind-chip backup-nudge-save" onClick={() => savedToast(saveBackup())}>
-          Save a backup
+        <button
+          type="button"
+          className="kind-chip backup-nudge-save"
+          onClick={() => {
+            void saveBackupToChosenPlace()
+              .then((res) => presentSaveToOutcome(res))
+              .catch(() => toast.error("Couldn't make the file just now. Try again in a moment."));
+          }}
+        >
+          Save to…
         </button>
         <button type="button" className="footer-link backup-nudge-more" onClick={() => openPickerAt("backup")}>
           More

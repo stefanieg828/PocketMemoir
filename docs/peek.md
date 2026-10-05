@@ -9,7 +9,7 @@ own scraps, unlock, and `pocketmemoir.v1` stay untouched.
 |---|---|---|---|
 | Purpose | Friend looks at your album | You move *your* scraps between devices | one-time 99¢ · little scraps → big scraps |
 | File kind | `pocketmemoir-peek` | `pocketmemoir-backup` | (no file — Stripe success URL / restore) |
-| Where | Keep them safe → **share a peek** / **open a peek** | Keep them safe → Save / Share / Restore | Look → unlock sheet |
+| Where | Keep them safe → **share a peek** / **open a peek** | Keep them safe → Save to… / Share / Restore | Look → unlock sheet |
 | Writes friend’s album? | No — in-memory session only | Restore merges or replaces | Restore can carry `unlocked` |
 | Grants unlock? | **Never** | Yes, if the backup includes unlock | Yes |
 
