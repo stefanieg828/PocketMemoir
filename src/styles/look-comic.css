@@ -667,6 +667,7 @@ html[data-look="comic"] :is(
   .sticker-tray-hint,
   .sticker-tray-chip-name,
   .backup-lede,
+  .backup-save-hint,
   .backup-status,
   .backup-restore-unlock,
   .backup-peek-lede,

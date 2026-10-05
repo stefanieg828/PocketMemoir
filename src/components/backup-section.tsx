@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Download, Eye, FolderOpen, Share2 } from "lucide-react";
+import { Download, Eye, FolderDown, FolderOpen, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Title as AlertTitle } from "@radix-ui/react-alert-dialog";
 import {
@@ -15,8 +15,10 @@ import { parseBackup, planRestore, type ParsedBackup, type RestoreStrategy } fro
 import {
   MAX_BACKUP_BYTES,
   canShareBackupFile,
+  presentSaveToOutcome,
   readFileText,
   saveBackup,
+  saveBackupToChosenPlace,
   savedToast,
   shareBackup,
   shareCanceledToast,
@@ -67,10 +69,10 @@ export function BackupSection() {
     setCanSharePeek(canSharePeekFile());
   }, []);
 
-  const onSave = () => {
+  const onSave = async () => {
     setError(null);
     try {
-      savedToast(saveBackup());
+      presentSaveToOutcome(await saveBackupToChosenPlace());
     } catch {
       setError("Couldn't make the file just now. Try again in a moment.");
     }
@@ -170,9 +172,15 @@ export function BackupSection() {
           : "Tuck a copy of the whole album away now and then, and you can bring it all back anywhere."}
       </p>
       <div className="backup-actions">
-        <button type="button" className="sticker-cta backup-save" onClick={onSave} disabled={peeking}>
-          <Download className="size-4" strokeWidth={2.4} aria-hidden="true" />
-          Save a backup
+        <button
+          type="button"
+          className="sticker-cta backup-save"
+          onClick={() => void onSave()}
+          disabled={peeking}
+          aria-describedby="backup-save-hint"
+        >
+          <FolderDown className="size-4" strokeWidth={2.4} aria-hidden="true" />
+          Save to…
         </button>
         {canShare ? (
           <button type="button" className="kind-chip backup-share" onClick={onShare} disabled={peeking}>
@@ -202,6 +210,9 @@ export function BackupSection() {
             e.target.value = "";
           }}
         />
+        <p className="backup-save-hint" id="backup-save-hint">
+          pick a folder, drive, or files app
+        </p>
       </div>
 
       <p className="backup-peek-lede">want a friend to look — not edit, not merge?</p>
@@ -362,7 +373,11 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
             <button
               type="button"
               className="restore-warn-link"
-              onClick={() => savedToast(saveBackup())}
+              onClick={() => {
+                void saveBackupToChosenPlace()
+                  .then((res) => presentSaveToOutcome(res))
+                  .catch(() => toast.error("Couldn't make the file just now. Try again in a moment."));
+              }}
             >
               Save a copy of them first
             </button>
