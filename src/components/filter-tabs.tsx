@@ -1,8 +1,8 @@
 import { FILTERS } from "@/lib/memoir/copy";
-import type { EntryKind } from "@/lib/memoir/types";
+import type { EntryBucket } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
-type FilterId = "all" | EntryKind;
+export type FilterId = "all" | EntryBucket;
 
 export function FilterTabs({
   value,
@@ -14,7 +14,7 @@ export function FilterTabs({
   return (
     <div
       role="tablist"
-      aria-label="Filter the shelf"
+      aria-label="Filter the shelf by bucket"
       className="filter-row flex gap-2 overflow-x-auto pb-1"
     >
       {FILTERS.map((tab) => {

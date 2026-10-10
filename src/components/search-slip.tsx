@@ -16,7 +16,7 @@ export function SearchSlip({
     <div className="flex items-center justify-end">
       <label
         className={cn(
-          "relative flex h-11 items-center gap-1 rounded-full border-[3px] border-ink bg-card shadow-paper",
+          "search-slip relative flex h-11 items-center gap-1 rounded-full",
           open ? "search-open px-1" : "w-11",
         )}
       >
