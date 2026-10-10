@@ -58,7 +58,7 @@ export type PeekError = "not-json" | "not-ours" | "too-new" | "broken" | "is-bac
 const MESSAGES: Record<PeekError, string> = {
   "not-json": "that file isn’t a peek. look for one named pocketmemoir-peek-….json.",
   "not-ours": "that file isn’t a peek. look for one named pocketmemoir-peek-….json.",
-  "too-new": "this peek came from a newer pocketmemoir. refresh the page and try again.",
+  "too-new": "this peek came from a newer pocket memoir. refresh the page and try again.",
   broken: "that peek looks damaged, so nothing was opened. try another copy.",
   "is-backup":
     "that’s a full backup, not a peek. use restore from a file under keep them safe if you meant to bring scraps into your album.",

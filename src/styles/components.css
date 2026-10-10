@@ -1253,7 +1253,7 @@
     margin: 0;
     font-size: 0.85rem;
     letter-spacing: 0.06em;
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--color-sage);
   }
 

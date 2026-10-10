@@ -55,11 +55,11 @@ export function A2hsTip() {
           </p>
         ) : mode === "prompt" ? (
           <p className="backup-nudge-text a2hs-tip-body">
-            add pocketmemoir to your home screen — one tap, and it’s right there.
+            add pocket memoir to your home screen — one tap, and it’s right there.
           </p>
         ) : (
           <p className="backup-nudge-text a2hs-tip-body">
-            add pocketmemoir to your home screen from the browser menu — it’ll sit there like a
+            add pocket memoir to your home screen from the browser menu — it’ll sit there like a
             little scrapbook.
           </p>
         )}

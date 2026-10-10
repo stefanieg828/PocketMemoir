@@ -7,7 +7,7 @@ import {
   type ModeId as JacketId,
 } from "./types";
 
-export const APP_NAME = "PocketMemoir";
+export const APP_NAME = "pocket memoir";
 
 export const TAGLINE = "An app to keep life a little more organized.";
 

@@ -58,7 +58,7 @@ export async function sharePeek(): Promise<SharePeekOutcome> {
   }
 
   try {
-    await navigator.share({ files: [file], title: "PocketMemoir peek" });
+    await navigator.share({ files: [file], title: "pocket memoir peek" });
   } catch (err) {
     if (isShareAbort(err)) return { outcome: "canceled" };
     downloadText(text, name);

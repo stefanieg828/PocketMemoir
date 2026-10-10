@@ -137,7 +137,7 @@ export function canSharePreparedFile(file: File) {
 
 const BACKUP_PICKER_TYPES: NonNullable<SaveFilePickerOptions["types"]> = [
   {
-    description: "PocketMemoir backup",
+    description: "pocket memoir backup",
     accept: { "application/json": [".json"] },
   },
 ];
@@ -242,7 +242,7 @@ async function shareBuilt(
   }
 
   try {
-    await nav.share({ files: [file], title: "PocketMemoir backup" });
+    await nav.share({ files: [file], title: "pocket memoir backup" });
   } catch (err) {
     if (isShareAbort(err)) return { outcome: "canceled" };
     downloadText(text, name);

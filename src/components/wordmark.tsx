@@ -17,12 +17,12 @@ export function Wordmark({ className }: { className?: string }) {
       {look === "comic" ? (
         <span className="wm-comic" aria-hidden="true">
           <span className="wm-comic-burst" />
-          <span className="wm-comic-text">Pocket Memoir</span>
+          <span className="wm-comic-text">pocket memoir</span>
         </span>
       ) : look === "riso" ? (
         <span className="wm-riso" aria-hidden="true">
-          <span className="wm-riso-a">Pocket</span>
-          <span className="wm-riso-b">Memoir</span>
+          <span className="wm-riso-a">pocket</span>
+          <span className="wm-riso-b">memoir</span>
           <span className="wm-riso-swash" />
         </span>
       ) : (

@@ -61,7 +61,7 @@ export type BackupError = "not-json" | "not-ours" | "too-new" | "broken";
 const MESSAGES: Record<BackupError, string> = {
   "not-json": "That file isn't a PocketMemoir backup. Look for one named pocketmemoir-backup-….json.",
   "not-ours": "That file isn't a PocketMemoir backup. Look for one named pocketmemoir-backup-….json.",
-  "too-new": "This backup came from a newer PocketMemoir. Refresh the page and try again.",
+  "too-new": "This backup came from a newer pocket memoir. Refresh the page and try again.",
   broken: "That backup looks damaged, so nothing was changed. Try another copy.",
 };
 

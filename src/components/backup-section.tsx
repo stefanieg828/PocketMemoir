@@ -127,7 +127,7 @@ export function BackupSection() {
       return;
     }
     if (file.size > MAX_BACKUP_BYTES) {
-      setError("That file is too big to be a PocketMemoir backup.");
+      setError("That file is too big to be a pocket memoir backup.");
       return;
     }
     try {

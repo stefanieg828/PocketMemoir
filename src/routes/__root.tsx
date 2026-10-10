@@ -27,6 +27,10 @@ export const Route = createRootRoute({
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
+      { name: "application-name", content: APP_NAME },
+      { property: "og:title", content: APP_NAME },
+      { property: "og:site_name", content: APP_NAME },
+      { name: "twitter:title", content: APP_NAME },
       // Pinterest domain claim for pocketmemoir.fun
       { name: "p:domain_verify", content: "91765c9537387bd3f234657bcb55d5e8" },
     ],
