@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
+import { readCheckoutSessionFromUrl, verifyCheckoutSession } from "@/lib/memoir/unlock-token";
 import { A2hsTip } from "@/components/a2hs-tip";
 import { AnalyticsListener } from "@/components/analytics-listener";
 import { BackupNudge } from "@/components/backup-nudge";
@@ -22,6 +23,7 @@ import {
   consumePreviewUnlockFlag,
   readUnlockSuccessFromUrl,
   stripUnlockSuccessParams,
+  stripSessionIdParam,
 } from "@/lib/memoir/unlock";
 import {
   getPlayBillingService,
@@ -47,6 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const boldText = useMemoir((s) => s.boldText);
   const unlocked = useMemoir((s) => s.unlocked);
   const setUnlocked = useMemoir((s) => s.setUnlocked);
+  const setUnlockToken = useMemoir((s) => s.setUnlockToken);
   const openPickerAt = usePickerUi((s) => s.openAt);
 
   useEffect(() => {
@@ -88,13 +91,28 @@ export function AppShell({ children }: { children: ReactNode }) {
     // Allow ?previewUnlock=1 to arm a session testing flag even before opening the sheet.
     consumePreviewUnlockFlag();
     if (!readUnlockSuccessFromUrl()) return;
-    trackEvent(GA_EVENTS.unlockSuccess);
+    // Bare ?unlock=success is no longer trusted: verify the Stripe Checkout Session.
+    const sid = readCheckoutSessionFromUrl();
     stripUnlockSuccessParams();
-    if (!unlocked) {
-      setUnlocked(true);
-      toast.success("you're unlocked");
+    stripSessionIdParam();
+    if (!sid) {
+      if (!unlocked) toast("already paid? open unlock → restore purchase with your checkout email.");
+      return;
     }
-  }, [hasHydrated, unlocked, setUnlocked]);
+    void (async () => {
+      const res = await verifyCheckoutSession(sid);
+      if (res.ok) {
+        const was = useMemoir.getState().unlocked;
+        setUnlockToken(res.token);
+        trackEvent(GA_EVENTS.unlockSuccess);
+        if (!was) toast.success("you're unlocked");
+      } else if (!useMemoir.getState().unlocked) {
+        toast.error("couldn't confirm that payment yet", {
+          description: `${res.error} · you can also use restore purchase in the unlock sheet.`,
+        });
+      }
+    })();
+  }, [hasHydrated, unlocked, setUnlockToken]);
 
   // Play Billing restore (TWA Digital Goods) — same setUnlocked(true) as Stripe.
   useEffect(() => {

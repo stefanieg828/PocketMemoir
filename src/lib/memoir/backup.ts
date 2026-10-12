@@ -24,6 +24,8 @@ export type BackupSettings = {
   riso: RisoPrefs;
   /** Same gate as Comic / Riso. Older backups omit this → left as-is on restore. */
   unlocked?: boolean;
+  /** Signed web unlock token (verified on restore; the bare flag is not trusted). */
+  unlockToken?: string;
   categories?: CategoryConfig;
   /** Decorative page/cork stickers. Older backups omit → left as-is on restore. */
   pageStickers?: PlacedSticker[];
@@ -85,6 +87,7 @@ export function createBackup(
     look: LookId;
     riso: RisoPrefs;
     unlocked?: boolean;
+    unlockToken?: string | null;
     categories?: CategoryConfig;
     pageStickers?: readonly PlacedSticker[];
   },
@@ -103,6 +106,7 @@ export function createBackup(
       look: data.look,
       riso: { ...data.riso },
       unlocked: Boolean(data.unlocked),
+      ...(data.unlockToken ? { unlockToken: data.unlockToken } : {}),
       categories: normalizeCategoryConfig(data.categories),
       ...(pageStickers.length ? { pageStickers } : {}),
     },
@@ -165,6 +169,7 @@ export function parseBackup(text: string, normalizeEntry: EntryNormalizer): Pars
     look: normalizeLook(s.look),
     riso: normalizeRiso(s.riso),
     unlocked: typeof s.unlocked === "boolean" ? s.unlocked : undefined,
+    ...(typeof s.unlockToken === "string" ? { unlockToken: s.unlockToken } : {}),
     categories: s.categories !== undefined ? normalizeCategoryConfig(s.categories) : undefined,
     ...(pageStickers.length ? { pageStickers } : {}),
   };

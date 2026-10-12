@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ import {
   isUnlockDevPreview,
 } from "@/lib/memoir/unlock";
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
+import { restorePurchaseByEmail } from "@/lib/memoir/unlock-token";
 
 const DEBUG_KEY = "pm.debugBilling";
 
@@ -289,12 +290,7 @@ export function UnlockSheet() {
             </Dialog.Close>
           </div>
 
-          {!preferPlay ? (
-            <p className="unlock-sheet-soon-hint">
-              already paid? restore a backup saved after unlocking (make it yours → backup), or email{" "}
-              <a href={UNLOCK_MAILTO}>scraps@pocketmemoir.fun</a> with your receipt.
-            </p>
-          ) : null}
+          {!preferPlay ? <RestorePurchase /> : null}
           <p className="unlock-sheet-soon-hint unlock-sheet-status" role="status" aria-live="polite">
             {preferPlay && probing && !busy && !note ? "checking google play…" : shownNote}
           </p>
@@ -344,3 +340,67 @@ export function UnlockSheet() {
     </Dialog.Root>
   );
 }
+
+/** Web-only: find a past Stripe purchase by checkout email and unlock with a signed token. */
+function RestorePurchase() {
+  const setUnlockToken = useMemoir((s) => s.setUnlockToken);
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setMsg(null);
+    const res = await restorePurchaseByEmail(email.trim());
+    setBusy(false);
+    if (res.ok) {
+      setUnlockToken(res.token);
+      toast.success("purchase restored — you're unlocked");
+      return;
+    }
+    setMsg(res.error);
+  };
+
+  if (!open) {
+    return (
+      <p className="unlock-sheet-soon-hint">
+        already paid?{" "}
+        <button type="button" className="footer-link unlock-restore-open" onClick={() => setOpen(true)}>
+          restore purchase
+        </button>
+      </p>
+    );
+  }
+  return (
+    <form className="unlock-restore" onSubmit={onSubmit}>
+      <label className="unlock-restore-label" htmlFor="unlock-restore-email">
+        the email you used at checkout
+      </label>
+      <div className="unlock-restore-row">
+        <input
+          id="unlock-restore-email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          required
+          className="unlock-restore-input"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+        />
+        <button type="submit" className="kind-chip unlock-restore-go" disabled={busy} aria-busy={busy}>
+          {busy ? "checking…" : "restore"}
+        </button>
+      </div>
+      {msg ? (
+        <p className="unlock-sheet-soon-hint" role="status">
+          {msg} · still stuck? email <a href={UNLOCK_MAILTO}>scraps@pocketmemoir.fun</a>
+        </p>
+      ) : null}
+    </form>
+  );
+}
+

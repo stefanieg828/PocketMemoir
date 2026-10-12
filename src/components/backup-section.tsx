@@ -11,6 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
 } from "@/components/ui/alert-dialog";
+import { verifyUnlockToken } from "@/lib/memoir/unlock-token";
 import { parseBackup, planRestore, type ParsedBackup, type RestoreStrategy } from "@/lib/memoir/backup";
 import {
   MAX_BACKUP_BYTES,
@@ -307,6 +308,16 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
     }
     const plan = planRestore(entries, pending.entries, strategy);
     applyRestore(plan.entries, strategy === "replace" ? pending.settings : undefined);
+    // Any restore (merge or replace) can carry a signed unlock — verify, then keep it.
+    const backupToken = pending.settings.unlockToken;
+    if (backupToken && !useMemoir.getState().unlockToken) {
+      void verifyUnlockToken(backupToken).then((claims) => {
+        if (!claims) return;
+        const wasUnlocked = useMemoir.getState().unlocked;
+        useMemoir.getState().setUnlockToken(backupToken);
+        if (!wasUnlocked) toast.success("purchase restored — you're unlocked");
+      });
+    }
     const stamp = pending.exportedAt?.getTime() ?? 0;
     if (stamp > (lastBackupAt ?? 0)) markBackedUp(stamp);
     onClose();

@@ -179,6 +179,8 @@ type MemoirState = {
    * DEV / previewUnlock testing — never by picking a Look alone.
    */
   unlocked: boolean;
+  /** Ed25519-signed web unlock proof from the verifier (Stripe). */
+  unlockToken: string | null;
   categories: CategoryConfig;
   /** When the last backup file was saved (ms), or null if never. */
   lastBackupAt: number | null;
@@ -229,6 +231,8 @@ type MemoirState = {
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
   setUnlocked: (unlocked: boolean) => void;
+  /** Store a verified token and unlock. Caller must have verified it. */
+  setUnlockToken: (token: string) => void;
   clearStorageFull: () => void;
   addEntry: (draft: MemoirDraft) => MemoirEntry;
   updateEntry: (id: string, draft: MemoirDraft) => void;
@@ -385,6 +389,7 @@ export const useMemoir = create<MemoirState>()(
       textSize: DEFAULT_TEXT_SIZE,
       boldText: false,
       unlocked: false,
+      unlockToken: null,
       categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
       lastBackupAt: null,
       backupNudgeDismissedAt: null,
@@ -465,6 +470,7 @@ export const useMemoir = create<MemoirState>()(
       setTextSize: (size) => set({ textSize: normalizeTextSize(size) }),
       setBoldText: (bold) => set({ boldText: Boolean(bold) }),
       setUnlocked: (unlocked) => set({ unlocked }),
+      setUnlockToken: (token) => set({ unlockToken: token, unlocked: true }),
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -500,8 +506,8 @@ export const useMemoir = create<MemoirState>()(
                 mode: normalizeMode(settings.mode),
                 look: normalizeLook(settings.look),
                 riso: normalizeRiso(settings.riso),
-                // A restore can grant the unlock but never takes a paid unlock away.
-                unlocked: Boolean(settings.unlocked) || get().unlocked,
+                // Restore never changes the unlock; a signed token in the backup is verified separately.
+                unlocked: get().unlocked,
                 categories: settings.categories
                   ? normalizeCategoryConfig(settings.categories)
                   : get().categories,
@@ -582,6 +588,7 @@ export const useMemoir = create<MemoirState>()(
         textSize: state.textSize,
         boldText: state.boldText,
         unlocked: state.unlocked,
+        unlockToken: state.unlockToken,
         categories: state.categories,
         lastBackupAt: state.lastBackupAt,
         backupNudgeDismissedAt: state.backupNudgeDismissedAt,
@@ -614,6 +621,8 @@ export const useMemoir = create<MemoirState>()(
           textSize: normalizeTextSize(incoming.textSize),
           boldText: normalizeBoldText(incoming.boldText),
           unlocked,
+          unlockToken:
+            typeof incoming.unlockToken === "string" ? incoming.unlockToken : current.unlockToken,
           categories: normalizeCategoryConfig(incoming.categories),
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:

@@ -115,3 +115,16 @@ export const PLAN_FREE_NAME = "little scraps";
 export const PLAN_PAID_NAME = "big scraps";
 
 export const UNLOCK_MAILTO = "mailto:scraps@pocketmemoir.fun?subject=pocket%20memoir%20unlock";
+
+/** Remove Stripe's session_id after reading it. */
+export function stripSessionIdParam() {
+  if (typeof window === "undefined") return;
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("session_id")) return;
+    url.searchParams.delete("session_id");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  } catch {
+    /* ignore */
+  }
+}

@@ -92,3 +92,16 @@ Native shell: Bubblewrap `features.playBilling` — see
 [`PLAY_BILLING_MINIMAL.md`](./PLAY_BILLING_MINIMAL.md).
 Fullscreen TWA: Play App Signing SHA in assetlinks —
 [`PLAY_SIGNING_SHA256.md`](./PLAY_SIGNING_SHA256.md).
+
+## Stripe-verified web unlock (Oct 2026)
+
+- Payment Link success URL: `https://pocketmemoir.fun/?unlock=success&session_id={CHECKOUT_SESSION_ID}`.
+- The app sends `session_id` to the verifier (`GET /verify`), which checks the Checkout
+  Session with Stripe (complete + paid / no_payment_required, big scraps link or price)
+  and returns an Ed25519-signed token. The app verifies it offline (`src/lib/memoir/unlock-token.ts`),
+  stores `unlockToken`, and includes it in backups. Bare `?unlock=success` no longer unlocks.
+- Restore purchase (web): unlock sheet → email → `POST /restore` (5/hour per IP and per email).
+- Verifier: personal VPS `/opt/pm-verifier` (Docker, `127.0.0.1:3088`, compose project `pmverifier`).
+  Reached at `https://api.pocketmemoir.fun` once DNS + cert exist, and at
+  `https://grilledcheeseandtomatosoup.fun/pm-api` meanwhile. Signing key: `/opt/pm-verifier/keys`.
+- Already-unlocked installs (old local flag) stay unlocked. Play/TWA path unchanged.

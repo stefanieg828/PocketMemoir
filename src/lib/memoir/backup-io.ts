@@ -80,8 +80,11 @@ function saveFilePicker(): SavePicker | null {
 }
 
 export function buildBackupText(now = new Date()) {
-  const { entries, mode, look, riso, unlocked, categories, pageStickers } = useMemoir.getState();
-  const backup = createBackup({ entries, mode, look, riso, unlocked, categories, pageStickers }, now);
+  const { entries, mode, look, riso, unlocked, unlockToken, categories, pageStickers } = useMemoir.getState();
+  const backup = createBackup(
+    { entries, mode, look, riso, unlocked, unlockToken, categories, pageStickers },
+    now,
+  );
   return { text: serializeBackup(backup), name: backupFileName(now), backup };
 }
 
