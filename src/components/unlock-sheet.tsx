@@ -168,6 +168,11 @@ export function UnlockSheet() {
         void doPurchase(next.service);
         return;
       }
+      // Plain browser that merely exposes the API but can't sell: use the web checkout.
+      if (!inTwa && linked) {
+        onStripe();
+        return;
+      }
       setNote(
         probeStatusMessage(next.status, inTwa) ??
           "google play billing isn't available here. open pocket memoir from google play to unlock.",
@@ -177,6 +182,9 @@ export function UnlockSheet() {
 
   const onStripe = () => {
     setDiag("purchase", "stripe link opened");
+    setNote("opening secure checkout…");
+    // Same-tab navigation: no popup blockers, no lost new tab on phones / installed apps.
+    window.location.href = STRIPE_PAYMENT_LINK;
   };
 
   const onPreview = () => unlockNow();
@@ -252,17 +260,15 @@ export function UnlockSheet() {
                 {busy ? "opening google play…" : ctaLabel}
               </button>
             ) : useStripeCta ? (
-              <a
-                className="sticker-cta unlock-sheet-cta no-underline"
+              <button
+                type="button"
+                className="sticker-cta unlock-sheet-cta"
                 data-billing="stripe"
-                href={STRIPE_PAYMENT_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={onStripe}
               >
                 <Lock className="size-4" strokeWidth={2.4} aria-hidden="true" />
                 {ctaLabel}
-              </a>
+              </button>
             ) : (
               <button
                 type="button"
