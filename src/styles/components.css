@@ -3478,3 +3478,46 @@
     color: var(--color-ink);
   }
 }
+
+@layer components {
+  /* Sticky close X: zero-height row so the title keeps its spot; button stays pinned while the sheet scrolls. */
+  .picker-close-x-row {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    height: 0;
+    overflow: visible;
+  }
+  .picker-close-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.35rem -0.35rem 0 0;
+    border: var(--b2, 2px) solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-card);
+    color: var(--color-ink);
+    box-shadow: 0 2px 6px rgb(60 40 20 / 0.14);
+    cursor: pointer;
+    transition: transform 140ms ease;
+  }
+  .picker-close-x:active { transform: scale(0.94); }
+  .picker-close-x:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+  [data-look="comic"] .picker-close-x {
+    border-width: 3px;
+    border-color: #111;
+    background: #ffd84a;
+    color: #111;
+    box-shadow: 3px 3px 0 #111;
+  }
+  [data-look="riso"] .picker-close-x {
+    border-color: var(--riso-a, var(--color-line));
+    color: var(--riso-a, var(--color-ink));
+    background: #f4ecdf;
+    box-shadow: 2px 2px 0 var(--riso-b, rgb(0 0 0 / 0.2));
+  }
+}

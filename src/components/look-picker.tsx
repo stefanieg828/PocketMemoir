@@ -1,6 +1,6 @@
 import { useEffect, type CSSProperties, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Lock } from "lucide-react";
+import { Lock, X } from "lucide-react";
 import { BackupSection } from "@/components/backup-section";
 import { CategoriesSection } from "@/components/categories-section";
 import { AboutSection } from "@/components/about-section";
@@ -88,6 +88,13 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
       <Dialog.Portal>
         <Dialog.Overlay className="picker-overlay fixed inset-0 z-50" />
         <Dialog.Content className="picker-dialog fixed top-1/2 left-1/2 z-50 max-h-[min(92dvh,46rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
+          <div className="picker-close-x-row">
+            <Dialog.Close asChild>
+              <button type="button" className="picker-close-x" aria-label="close">
+                <X className="size-5" strokeWidth={2.4} aria-hidden="true" />
+              </button>
+            </Dialog.Close>
+          </div>
           <Dialog.Title className="picker-title">make it yours</Dialog.Title>
           <Dialog.Description className="sr-only">
             choose layout, look, reading comfort, and shelf boards.
