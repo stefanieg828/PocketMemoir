@@ -258,6 +258,7 @@ export function FlipAlbum({
           type="button"
           className="flip-nav-btn"
           aria-label="Previous spread"
+          title="flip back a spread"
           disabled={index <= 0 || anim !== "idle"}
           onClick={() => goTo(index - 1)}
         >
@@ -275,6 +276,7 @@ export function FlipAlbum({
           type="button"
           className="flip-nav-btn"
           aria-label="Next spread"
+          title="flip to the next spread"
           disabled={index >= shelfIds.length - 1 || anim !== "idle"}
           onClick={() => goTo(index + 1)}
         >

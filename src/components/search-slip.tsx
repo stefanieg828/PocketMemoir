@@ -23,6 +23,8 @@ export function SearchSlip({
         <button
           type="button"
           aria-label={open ? "Search" : "Open search"}
+          title="search your scraps"
+          data-hint="search your scraps"
           onClick={() => onOpenChange(!open)}
           className={cn(
             "grid place-items-center text-ink",

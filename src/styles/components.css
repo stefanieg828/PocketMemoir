@@ -3276,3 +3276,78 @@
     margin-top: 0.25rem;
   }
 }
+
+/* ——— pre-launch: about, privacy, what's new, hint bubble ——— */
+@layer components {
+  .privacy-note {
+    margin: 0 0 0.7rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+  .privacy-note a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.15em;
+  }
+  .privacy-note-keep {
+    margin: 0.4rem 0 0;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .about-section {
+    margin-top: 1rem;
+  }
+  .about-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .about-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+  }
+  .whats-new {
+    align-items: flex-start;
+    flex-wrap: nowrap;
+  }
+  .whats-new-copy {
+    flex: 1;
+    min-width: 0;
+  }
+  .whats-new-list {
+    margin: 0.2rem 0 0;
+    padding-left: 1.1rem;
+    list-style: "♥  ";
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--color-ink);
+  }
+  .hint-bubble {
+    position: fixed;
+    z-index: 80;
+    max-width: 13rem;
+    padding: 0.4rem 0.65rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 45%, transparent);
+    border-radius: 0.6rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+    font-size: 0.88rem;
+    line-height: 1.35;
+    text-align: center;
+    box-shadow: var(--sh-sm), var(--soft);
+    transform: translate(-50%, -100%);
+    animation: hint-pop 160ms ease-out;
+  }
+  .hint-bubble.is-below {
+    transform: translate(-50%, 0);
+  }
+  @keyframes hint-pop {
+    from {
+      opacity: 0;
+    }
+  }
+}

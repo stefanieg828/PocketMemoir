@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Lock } from "lucide-react";
 import { BackupSection } from "@/components/backup-section";
 import { CategoriesSection } from "@/components/categories-section";
+import { AboutSection } from "@/components/about-section";
 import { GotAnIdeaSection } from "@/components/got-an-idea-section";
 import { ReadingComfortSection } from "@/components/reading-comfort-section";
 import { MODE_META } from "@/lib/memoir/jackets";
@@ -77,6 +78,8 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
         <button
           type="button"
           className="app-nav-link"
+          title="layout, look, text size, categories, and backups"
+          data-hint="layout, look, text size, categories, and backups"
           aria-label={`look, currently ${MODE_META[mode].name} · ${LOOK_SKINS[look].name}`}
         >
           look
@@ -128,6 +131,8 @@ export function LookPicker({ defaultOpen = false }: { defaultOpen?: boolean }) {
           <BackupSection />
 
           {!peeking ? <GotAnIdeaSection /> : null}
+
+          <AboutSection />
 
           {!peeking ? (
             <section className="picker-section tour-replay-section" aria-label="tour">

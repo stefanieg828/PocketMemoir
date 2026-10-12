@@ -4,6 +4,8 @@ import { Toaster, toast } from "sonner";
 import { A2hsTip } from "@/components/a2hs-tip";
 import { AnalyticsListener } from "@/components/analytics-listener";
 import { BackupNudge } from "@/components/backup-nudge";
+import { HintLayer } from "@/components/hint-layer";
+import { WhatsNewCard } from "@/components/whats-new-card";
 import { TourOverlay } from "@/components/tour-overlay";
 import { LookPicker } from "@/components/look-picker";
 import { UnlockSheet } from "@/components/unlock-sheet";
@@ -150,6 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 pt-7">
         {pathname === "/" && !peeking ? (
           <>
+            <WhatsNewCard />
             <A2hsTip />
             <BackupNudge />
           </>
@@ -174,6 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {!peeking ? <TourOverlay /> : null}
       {!peeking ? <UnlockSheet /> : null}
+      <HintLayer />
 
       <Toaster
         position="bottom-center"

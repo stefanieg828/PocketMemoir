@@ -51,6 +51,9 @@ export function StatusMover({
       <button
         type="button"
         aria-haspopup="menu"
+        aria-label={`move this scrap, now ${size === "card" ? STATUS_META[status].chip : statusLabel(status, jacket)}`}
+        title="move this scrap around the page"
+        data-hint="move this scrap around the page"
         aria-expanded={open}
         aria-controls={menuId}
         onClick={(event) => {

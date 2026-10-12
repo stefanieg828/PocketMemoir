@@ -39,6 +39,7 @@ import { LOOK_SKINS } from "@/lib/memoir/looks";
 import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { isStarterShelf, normalizeStoredEntry, useMemoir } from "@/lib/memoir/store";
 import { A2hsSettingsHint } from "@/components/a2hs-tip";
+import { PrivacyNote } from "@/components/privacy-note";
 import { cn } from "@/lib/utils";
 
 type ReadyBackup = Extract<ParsedBackup, { ok: true }>;
@@ -171,6 +172,7 @@ export function BackupSection() {
           ? "Take a copy of the whole wall now and then, and you can pin it all back anywhere."
           : "Tuck a copy of the whole album away now and then, and you can bring it all back anywhere."}
       </p>
+      <PrivacyNote short className="privacy-note-backup" />
       <div className="backup-actions">
         <button
           type="button"

@@ -1,3 +1,4 @@
+import { PrivacyNote } from "@/components/privacy-note";
 import { useRef, useState, type FormEvent, useEffect, useMemo } from "react";
 import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
@@ -306,6 +307,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         )}
         <KeepSeal type="submit" label={MODE_META[look].keepLabel} size="lg" />
       </div>
+      <PrivacyNote short className="privacy-note-keep" />
     </form>
   );
 }
