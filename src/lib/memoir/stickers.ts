@@ -19,13 +19,24 @@ export type StickerMarkId =
   | "postage-stamp"
   | "foil-star"
   | "tiny-ticket"
-  | "pressed-flower";
+  | "pressed-flower"
+  | GulfCoastStickerId;
+
+export const GULF_COAST_IDS = [
+  "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
+  "gulf-umbrella", "gulf-flip-flops", "gulf-sea-oats", "gulf-lighthouse", "gulf-blue-crab",
+  "gulf-sea-turtle", "gulf-dolphin", "gulf-sunset", "gulf-sandcastle", "gulf-beach-chair",
+  "gulf-shrimp-boil", "gulf-pier", "gulf-sailboat", "gulf-seagull", "gulf-sweet-tea-cooler",
+] as const;
+export type GulfCoastStickerId = (typeof GULF_COAST_IDS)[number];
 
 export type StickerMark = {
   id: StickerMarkId;
   name: string;
   /** CSS modifier class suffix, e.g. `heart` → `.deco-sticker-heart` */
   mark: StickerMarkId;
+  /** Painted raster art (public path). When set, rendered as an image instead of SVG. */
+  src?: string;
 };
 
 export type StickerPack = {
@@ -74,18 +85,48 @@ export const FREE_STARTER_PACK: StickerPack = {
   ],
 };
 
-export const STICKER_PACKS: readonly StickerPack[] = [FREE_STARTER_PACK];
+const GULF_NAMES: Record<GulfCoastStickerId, string> = {
+  "gulf-pelican": "pelican", "gulf-sand-dollar": "sand dollar", "gulf-conch": "conch",
+  "gulf-scallop": "scallop", "gulf-starfish": "starfish", "gulf-umbrella": "umbrella",
+  "gulf-flip-flops": "flip-flops", "gulf-sea-oats": "sea oats", "gulf-lighthouse": "lighthouse",
+  "gulf-blue-crab": "blue crab", "gulf-sea-turtle": "sea turtle", "gulf-dolphin": "dolphin",
+  "gulf-sunset": "sunset", "gulf-sandcastle": "sandcastle", "gulf-beach-chair": "beach chair",
+  "gulf-shrimp-boil": "shrimp boil", "gulf-pier": "pier", "gulf-sailboat": "sailboat",
+  "gulf-seagull": "seagull", "gulf-sweet-tea-cooler": "sweet tea",
+};
+
+export const GULF_COAST_PACK: StickerPack = {
+  id: "gulf-coast",
+  name: "gulf coast beach",
+  free: false,
+  dropDate: "2026-10-12",
+  stickers: GULF_COAST_IDS.map((id) => ({
+    id,
+    name: GULF_NAMES[id],
+    mark: id,
+    src: `/stickers/gulf-coast/${id.slice(5)}.webp`,
+  })),
+};
+
+/** Newest drop last; tray shows them as tabs. */
+export const STICKER_PACKS: readonly StickerPack[] = [FREE_STARTER_PACK, GULF_COAST_PACK];
+
+const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
+  STICKER_PACKS.flatMap((pack) => pack.stickers.map((sticker) => [sticker.id, { sticker, pack }] as const)),
+);
+
+export function packForSticker(id: string): StickerPack | undefined {
+  return STICKER_INDEX.get(id)?.pack;
+}
 
 export const PAGE_STICKER_CAP = 24;
 
-const MARK_SET = new Set<string>(FREE_STARTER_PACK.stickers.map((s) => s.id));
-
 export function isStickerMarkId(value: unknown): value is StickerMarkId {
-  return typeof value === "string" && MARK_SET.has(value);
+  return typeof value === "string" && STICKER_INDEX.has(value);
 }
 
 export function stickerById(id: string): StickerMark | undefined {
-  return FREE_STARTER_PACK.stickers.find((s) => s.id === id);
+  return STICKER_INDEX.get(id)?.sticker;
 }
 
 export function clampStickerCoord(n: number, min: number, max: number) {

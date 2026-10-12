@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from "react";
-import type { StickerMarkId } from "@/lib/memoir/stickers";
+import { stickerById, type StickerMarkId } from "@/lib/memoir/stickers";
 import { cn } from "@/lib/utils";
 
 /** Soft scrapbook SVG marks — layered fills, soft highlights, imperfect edges. */
@@ -13,13 +13,18 @@ export function StickerMark({
   title?: string;
 }) {
   const uid = useId().replace(/:/g, "");
+  const src = stickerById(mark)?.src;
   return (
     <span
       className={cn("deco-sticker-mark", `deco-sticker-${mark}`, className)}
       aria-hidden={title ? undefined : true}
       title={title}
     >
-      {renderMark(mark, uid)}
+      {src ? (
+        <img src={src} alt="" draggable={false} loading="lazy" decoding="async" className="deco-sticker-img" />
+      ) : (
+        renderMark(mark, uid)
+      )}
     </span>
   );
 }

@@ -33,6 +33,7 @@ import {
   scatterPlacement,
   type PlacedSticker,
   type StickerMarkId,
+  packForSticker,
 } from "./stickers";
 import {
   resolveA2hsTipDismissed,
@@ -415,6 +416,8 @@ export const useMemoir = create<MemoirState>()(
         set({ a2hsTipDismissed: true });
       },
       placeSticker: (stickerId, at) => {
+        const pack = packForSticker(stickerId);
+        if (!pack || (!pack.free && !get().unlocked)) return;
         const seed = Date.now() ^ (get().pageStickers.length * 9973);
         const spot =
           at && at !== "scatter" && typeof at.x === "number" && typeof at.y === "number"

@@ -70,3 +70,16 @@ idea?” — no in-app social feed.
 
 Placed stickers live in the local memoir store (`pageStickers`) and travel in
 backup / peek files when present (optional field; older files omit them safely).
+
+## Painted packs (raster)
+
+Marks can set `src` (public path) to render a painted image instead of SVG.
+Assets: `public/stickers/<pack>/<name>.webp` (256px, transparent, white die-cut
+border) plus `<name>.png` 512px masters. Sticker ids are prefixed per pack
+(`gulf-pelican`). Lookup/validation (`isStickerMarkId`, `stickerById`) spans
+all `STICKER_PACKS`, so backups / peeks keep every pack's stickers.
+
+Non-free packs show in the tray as a locked preview (tab with 🔒 + unlock CTA);
+`placeSticker` refuses locked marks until `unlocked`.
+
+- `gulf-coast` — gulf coast beach, 20 painted marks, drop 2026-10-12.

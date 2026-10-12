@@ -3351,3 +3351,58 @@
     }
   }
 }
+
+@layer components {
+  .sticker-tray-tabs {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+  }
+  .sticker-tray-tab {
+    flex: none;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 40%, transparent);
+    border-radius: 999px;
+    background: #fffef9;
+    padding: 0.25rem 0.7rem;
+    font: inherit;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    cursor: pointer;
+  }
+  .sticker-tray-tab.is-active {
+    color: var(--color-ink);
+    border-color: color-mix(in srgb, var(--color-ink) 40%, var(--color-line));
+    background: color-mix(in srgb, var(--color-card) 70%, #fff8e8);
+  }
+  .sticker-tray-locked {
+    display: grid;
+    justify-items: start;
+    gap: 0.3rem;
+    margin: 0 0 0.55rem;
+  }
+  .sticker-tray-grid {
+    max-height: 17rem;
+    overflow-y: auto;
+  }
+  .sticker-tray-grid-locked .deco-sticker-mark {
+    opacity: 0.7;
+    filter: saturate(0.85);
+  }
+  .deco-sticker-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .sticker-layer-item .deco-sticker-img {
+    filter: drop-shadow(0 1px 1.5px rgb(60 40 20 / 0.22));
+  }
+}
