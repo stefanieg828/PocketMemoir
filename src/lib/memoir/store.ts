@@ -34,6 +34,8 @@ import {
   type PlacedSticker,
   type StickerMarkId,
   packForSticker,
+  STICKER_SIZE_MAX,
+  STICKER_SIZE_MIN,
 } from "./stickers";
 import {
   resolveA2hsTipDismissed,
@@ -221,6 +223,7 @@ type MemoirState = {
   ) => void;
   movePageSticker: (id: string, x: number, y: number) => void;
   removePageSticker: (id: string) => void;
+  resizePageSticker: (id: string, size: number) => void;
   clearPageStickers: () => void;
   setMode: (mode: ModeId) => void;
   setLook: (look: LookId) => void;
@@ -439,6 +442,14 @@ export const useMemoir = create<MemoirState>()(
                   x: clampStickerCoord(x, 4, 96),
                   y: clampStickerCoord(y, 6, 94),
                 }
+              : s,
+          ),
+        }),
+      resizePageSticker: (id, size) =>
+        set({
+          pageStickers: get().pageStickers.map((s) =>
+            s.id === id
+              ? { ...s, size: clampStickerCoord(size, STICKER_SIZE_MIN, STICKER_SIZE_MAX) }
               : s,
           ),
         }),

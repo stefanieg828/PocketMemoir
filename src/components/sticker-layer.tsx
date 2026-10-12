@@ -1,9 +1,9 @@
-import { useCallback, useRef, type PointerEvent, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
 import { StickerMark } from "@/components/sticker-mark";
 import { useIsPeeking, usePeekSession } from "@/lib/memoir/peek-session";
 import { useStickerUi } from "@/lib/memoir/sticker-ui";
 import { useMemoir } from "@/lib/memoir/store";
-import type { PlacedSticker } from "@/lib/memoir/stickers";
+import { STICKER_SIZE_MAX, STICKER_SIZE_MIN, type PlacedSticker } from "@/lib/memoir/stickers";
 import { cn } from "@/lib/utils";
 
 type StickerLayerProps = {
@@ -20,6 +20,8 @@ export function StickerLayer({ className, interactive = true }: StickerLayerProp
   const placeSticker = useMemoir((s) => s.placeSticker);
   const moveSticker = useMemoir((s) => s.movePageSticker);
   const removeSticker = useMemoir((s) => s.removePageSticker);
+  const resizeSticker = useMemoir((s) => s.resizePageSticker);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const peeking = useIsPeeking();
   const peekStickers = usePeekSession((s) => s.pageStickers);
   const armed = useStickerUi((s) => s.armed);
@@ -28,6 +30,11 @@ export function StickerLayer({ className, interactive = true }: StickerLayerProp
 
   const stickers: PlacedSticker[] = peeking ? peekStickers : ownStickers;
   const canEdit = interactive && !peeking;
+  const selected = canEdit && selectedId ? stickers.find((s) => s.id === selectedId) : undefined;
+
+  useEffect(() => {
+    if (armed) setSelectedId(null);
+  }, [armed]);
 
   const percentFromEvent = useCallback((clientX: number, clientY: number) => {
     const el = layerRef.current;
@@ -41,9 +48,13 @@ export function StickerLayer({ className, interactive = true }: StickerLayerProp
   }, []);
 
   const onLayerPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (!canEdit || !armed) return;
-    // Only place when tapping the empty layer, not a sticker child.
+    if (!canEdit) return;
+    // Only react when tapping the empty layer, not a sticker child.
     if (e.target !== e.currentTarget) return;
+    if (!armed) {
+      if (selectedId) setSelectedId(null);
+      return;
+    }
     e.preventDefault();
     const pct = percentFromEvent(e.clientX, e.clientY);
     if (!pct) return;
@@ -59,6 +70,7 @@ export function StickerLayer({ className, interactive = true }: StickerLayerProp
       className={cn(
         "sticker-layer",
         canEdit && armed && "sticker-layer-armed",
+        selected && "sticker-layer-selecting",
         className,
       )}
       aria-hidden={canEdit ? undefined : true}
@@ -76,9 +88,50 @@ export function StickerLayer({ className, interactive = true }: StickerLayerProp
           canEdit={canEdit}
           layerRef={layerRef}
           onMove={moveSticker}
-          onRemove={removeSticker}
+          selected={selected?.id === s.id}
+          onSelect={(id) => setSelectedId((cur) => (cur === id ? null : id))}
         />
       ))}
+      {selected ? (
+        <div
+          className={cn("sticker-size-pop", selected.y > 55 ? "is-above" : "is-below")}
+          style={{
+            left: `${Math.min(80, Math.max(20, selected.x))}%`,
+            top: `${selected.y}%`,
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <label className="sticker-size-row">
+            <span className="sticker-size-label">size</span>
+            <input
+              type="range"
+              className="sticker-size-slider"
+              min={STICKER_SIZE_MIN * 100}
+              max={STICKER_SIZE_MAX * 100}
+              step={1}
+              value={Math.round((selected.size ?? 1) * 100)}
+              aria-label="Sticker size"
+              onChange={(e) => resizeSticker(selected.id, Number(e.target.value) / 100)}
+            />
+            <span className="sticker-size-value">{Math.round((selected.size ?? 1) * 100)}%</span>
+          </label>
+          <div className="sticker-size-actions">
+            <button
+              type="button"
+              className="sticker-size-action"
+              onClick={() => {
+                removeSticker(selected.id);
+                setSelectedId(null);
+              }}
+            >
+              peel off
+            </button>
+            <button type="button" className="sticker-size-action is-done" onClick={() => setSelectedId(null)}>
+              done
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -88,13 +141,15 @@ function PlacedStickerItem({
   canEdit,
   layerRef,
   onMove,
-  onRemove,
+  selected,
+  onSelect,
 }: {
   sticker: PlacedSticker;
   canEdit: boolean;
   layerRef: RefObject<HTMLDivElement | null>;
   onMove: (id: string, x: number, y: number) => void;
-  onRemove: (id: string) => void;
+  selected: boolean;
+  onSelect: (id: string) => void;
 }) {
   const drag = useRef<{
     pointerId: number;
@@ -145,20 +200,24 @@ function PlacedStickerItem({
       /* already released */
     }
     if (!d.moved && canEdit) {
-      onRemove(s.id);
+      onSelect(s.id);
     }
   };
 
   return (
     <button
       type="button"
-      className={cn("sticker-layer-item", canEdit && "sticker-layer-item-editable")}
+      className={cn(
+        "sticker-layer-item",
+        canEdit && "sticker-layer-item-editable",
+        selected && "sticker-layer-item-selected",
+      )}
       style={{
         left: `${s.x}%`,
         top: `${s.y}%`,
-        transform: `translate(-50%, -50%) rotate(${s.rot}deg) scale(${s.scale ?? 1})`,
+        transform: `translate(-50%, -50%) rotate(${s.rot}deg) scale(${(s.scale ?? 1) * (s.size ?? 1)})`,
       }}
-      aria-label={canEdit ? "Drag to move, tap to remove" : undefined}
+      aria-label={canEdit ? "Drag to move, tap to resize or peel off" : undefined}
       tabIndex={canEdit ? 0 : -1}
       disabled={!canEdit}
       onPointerDown={onPointerDown}

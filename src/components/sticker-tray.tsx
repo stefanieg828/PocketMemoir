@@ -136,7 +136,7 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
             </button>
           ) : null}
           <p className="sticker-tray-hint">
-            drag to move · tap to peel off · {unlocked ? (
+            drag to move · tap to resize or peel · {unlocked ? (
               <>ideas → <a href="mailto:scraps@pocketmemoir.fun">scraps@pocketmemoir.fun</a></>
             ) : (
               "more packs later"

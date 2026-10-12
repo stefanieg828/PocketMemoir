@@ -37,7 +37,7 @@ chips (those are category labels).
 ### Drag + peel
 
 - Drag a placed sticker to move it (pointer + touch; `touch-action: none`).
-- Short tap (no drag) peels it off. Drag does not remove.
+- Short tap (no drag) selects it: a small control with a size slider (50–200%, live) plus "peel off" and "done". Size is saved per sticker as `size` (omitted = 100%) and travels in backup / peek files.
 - Peek mode: stickers from the peek file show read-only; tray / place / drag /
   remove stay off.
 

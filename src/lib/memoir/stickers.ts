@@ -59,7 +59,12 @@ export type PlacedSticker = {
   /** Degrees */
   rot: number;
   scale?: number;
+  /** User size multiplier from the size slider (0.5–2). Omitted = 1. */
+  size?: number;
 };
+
+export const STICKER_SIZE_MIN = 0.5;
+export const STICKER_SIZE_MAX = 2;
 
 export const FREE_STARTER_PACK: StickerPack = {
   id: "free-starter",
@@ -148,7 +153,11 @@ export function normalizePlacedSticker(raw: unknown): PlacedSticker | null {
     typeof row.scale === "number" && Number.isFinite(row.scale)
       ? clampStickerCoord(row.scale, 0.7, 1.4)
       : undefined;
-  return { id: row.id.trim(), stickerId: row.stickerId, x, y, rot, scale };
+  const size =
+    typeof row.size === "number" && Number.isFinite(row.size) && row.size !== 1
+      ? clampStickerCoord(row.size, STICKER_SIZE_MIN, STICKER_SIZE_MAX)
+      : undefined;
+  return { id: row.id.trim(), stickerId: row.stickerId, x, y, rot, scale, ...(size ? { size } : {}) };
 }
 
 /** Normalize a list from backup / peek / storage. */

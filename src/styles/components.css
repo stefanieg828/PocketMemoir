@@ -3406,3 +3406,75 @@
     filter: drop-shadow(0 1px 1.5px rgb(60 40 20 / 0.22));
   }
 }
+
+@layer components {
+  .sticker-layer-selecting {
+    pointer-events: auto;
+  }
+  .sticker-layer-item-selected {
+    z-index: 6;
+    outline: 2px dashed color-mix(in srgb, var(--color-ink) 45%, transparent);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+  .sticker-size-pop {
+    position: absolute;
+    z-index: 8;
+    width: min(15rem, 82%);
+    transform: translate(-50%, 2.4rem);
+    padding: 0.55rem 0.7rem 0.45rem;
+    border: var(--b1) solid color-mix(in srgb, var(--color-line) 50%, transparent);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--color-card) 82%, #fffdf6);
+    box-shadow: 0 6px 18px rgb(60 40 20 / 0.18);
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    text-transform: lowercase;
+    pointer-events: auto;
+  }
+  .sticker-size-pop.is-above {
+    transform: translate(-50%, calc(-100% - 2.4rem));
+  }
+  .sticker-size-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sticker-size-label,
+  .sticker-size-value {
+    font-size: 0.78rem;
+    color: var(--color-muted);
+  }
+  .sticker-size-value {
+    min-width: 2.6rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .sticker-size-slider {
+    flex: 1;
+    min-width: 0;
+    height: 1.6rem;
+    accent-color: var(--color-ink);
+    touch-action: pan-x;
+    cursor: pointer;
+  }
+  .sticker-size-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.2rem;
+  }
+  .sticker-size-action {
+    border: 0;
+    background: none;
+    padding: 0.2rem 0;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .sticker-size-action.is-done {
+    color: var(--color-ink);
+  }
+}
