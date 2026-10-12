@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { APP_NAME, TAGLINE } from "@/lib/memoir/copy";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { APP_NAME } from "@/lib/memoir/copy";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { GA_EVENTS, trackEvent } from "@/lib/memoir/analytics";
 import { useMemoir } from "@/lib/memoir/store";
@@ -8,30 +8,87 @@ type TourStep = {
   kicker: string;
   title: string;
   body: string;
+  /** CSS selectors tried in order; the first visible match gets spotlit. */
+  target?: string[];
 };
+
+const LOOK_BTN = '.app-nav button.app-nav-link';
 
 const STEPS: TourStep[] = [
   {
     kicker: "Welcome",
     title: `Meet ${APP_NAME}`,
-    body: `A tiny memoir for life’s bits... passwords, people, events, little wins. ${TAGLINE}`,
+    body: "A tiny private scrapbook for life's little bits. Everything stays right here on your phone.",
   },
   {
-    kicker: "Two ways to look",
-    title: "Flip the album or peek the wall",
-    body: "Choose either scrapbook or corkboard for your layout. You can switch the layout anytime under Look → Make it yours.",
+    kicker: "Boards",
+    title: "One board for each kind of thing",
+    body: "Thoughts, People, Places, To-Do, Achievements, and Goals each get their own board. Tap a tab to flip to it.",
+    target: [".flip-tabs", ".cork-wall-grid"],
   },
   {
-    kicker: "Your scraps",
-    title: "Stick one in when you’re ready",
-    body: "Tap Stick it in on the scrapbook or Pin it on the corkboard. A few sample scraps are already here to show how it works.",
+    kicker: "Adding a scrap",
+    title: "Stick one in",
+    body: "Tap Stick it in (or Pin it on the corkboard), fill in what you like, and it lands on the page. A few samples are here to show how it works.",
+    target: [".fixed .sticker-cta", ".sticker-cta"],
   },
   {
-    kicker: "You’re in",
-    title: "Peek around, then make it yours",
-    body: "Flip, search, or open Look whenever you want a different scrap. Click a scrap to zoom in and see details.",
+    kicker: "Categories",
+    title: "Little chips keep things sorted",
+    body: "When you add a scrap, pick a chip like Note, Idea, or Person. It shows on the scrap so your board stays tidy.",
+    target: [".flip-scraps .kind-sticker", ".kind-sticker"],
+  },
+  {
+    kicker: "Make it yours",
+    title: "Custom categories",
+    body: "Rename any starter board for free. With big scraps you can make your own boards and add, rename, or hide the chips inside them, all under Look.",
+    target: [LOOK_BTN],
+  },
+  {
+    kicker: "Stickers",
+    title: "Decorate your pages",
+    body: "Open stickers, pick one, then tap anywhere on the page to stick it. Drag to move it, tap to peel it off.",
+    target: [".sticker-tray"],
+  },
+  {
+    kicker: "Look",
+    title: "Scrapbook or corkboard",
+    body: "Flip pages in a scrapbook or pin boards on a cork wall. Look also lets you pick a whole new style.",
+    target: [LOOK_BTN],
+  },
+  {
+    kicker: "Text size",
+    title: "Easy on the eyes",
+    body: "Under Look, Reading comfort lets you pick small, normal, large, or extra large text, plus bold text. It's free for everyone.",
+    target: [LOOK_BTN],
+  },
+  {
+    kicker: "Search and backup",
+    title: "Find it fast, keep it safe",
+    body: "Tap the magnifying glass to find any scrap. Tap Keep a copy at the bottom to save a backup so nothing gets lost.",
+    target: ['[aria-label="Open search"]', '[aria-label="Search"]'],
+  },
+  {
+    kicker: "You're in",
+    title: "Have fun scrapping",
+    body: "Replay this tour anytime from Look. Big scraps adds more boards, your own chips, new sticker packs, and extra looks.",
+    target: [LOOK_BTN],
   },
 ];
+
+function findTarget(selectors?: string[]): HTMLElement | null {
+  if (!selectors) return null;
+  for (const sel of selectors) {
+    for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+      if (el.closest(".tour-layer")) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return el;
+    }
+  }
+  return null;
+}
+
+type Spot = { top: number; left: number; width: number; height: number };
 
 /**
  * Soft first-visit scrapbook slip. Skip and Done both set tourSeen so return
@@ -87,6 +144,43 @@ export function TourOverlay() {
     return () => document.removeEventListener("focusin", onFocus);
   }, [open, step]);
 
+  const [spot, setSpot] = useState<Spot | null>(null);
+  const targetSel = open ? STEPS[step]?.target : undefined;
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    let raf = 0;
+    const measure = () => {
+      const el = findTarget(targetSel);
+      if (!el) {
+        setSpot(null);
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const pad = 6;
+      setSpot({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 });
+    };
+    const el = findTarget(targetSel);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.top < 8 || r.bottom > window.innerHeight - 8) el.scrollIntoView({ block: "center" });
+    }
+    measure();
+    const onMove = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
+    window.addEventListener("resize", onMove);
+    window.addEventListener("scroll", onMove, true);
+    const t = window.setTimeout(measure, 250);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+      window.removeEventListener("resize", onMove);
+      window.removeEventListener("scroll", onMove, true);
+    };
+  }, [open, step, targetSel]);
+
   if (!open) return null;
 
   const last = step >= STEPS.length - 1;
@@ -107,8 +201,23 @@ export function TourOverlay() {
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   return (
-    <div className="tour-layer" role="presentation">
-      <div className="tour-wash" aria-hidden="true" />
+    <div
+      className={
+        spot
+          ? `tour-layer ${spot.top + spot.height / 2 < window.innerHeight / 2 ? "tour-at-bottom" : "tour-at-top"}`
+          : "tour-layer"
+      }
+      role="presentation"
+    >
+      {spot ? (
+        <div
+          className="tour-spot"
+          aria-hidden="true"
+          style={{ top: spot.top, left: spot.left, width: spot.width, height: spot.height }}
+        />
+      ) : (
+        <div className="tour-wash" aria-hidden="true" />
+      )}
       <div
         ref={cardRef}
         className="tour-card"

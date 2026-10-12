@@ -2871,6 +2871,24 @@
     pointer-events: none;
   }
 
+  .tour-layer.tour-at-top {
+    place-items: start center;
+  }
+
+  .tour-layer.tour-at-bottom {
+    place-items: end center;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+
+  .tour-spot {
+    position: fixed;
+    border-radius: 0.9rem;
+    border: 3px solid var(--color-gold);
+    box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-ink) 45%, transparent);
+    pointer-events: none;
+    transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+  }
+
   .tour-card {
     position: relative;
     width: min(100%, 24.5rem);
