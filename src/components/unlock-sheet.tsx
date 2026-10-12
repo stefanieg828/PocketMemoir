@@ -24,6 +24,7 @@ import {
   PLAN_FREE_NAME,
   PLAN_PAID_NAME,
   STRIPE_PAYMENT_LINK,
+  UNLOCK_MAILTO,
   UNLOCK_PRICE_LABEL,
   canPreviewUnlock,
   consumePreviewUnlockFlag,
@@ -288,6 +289,12 @@ export function UnlockSheet() {
             </Dialog.Close>
           </div>
 
+          {!preferPlay ? (
+            <p className="unlock-sheet-soon-hint">
+              already paid? restore a backup saved after unlocking (make it yours → backup), or email{" "}
+              <a href={UNLOCK_MAILTO}>scraps@pocketmemoir.fun</a> with your receipt.
+            </p>
+          ) : null}
           <p className="unlock-sheet-soon-hint unlock-sheet-status" role="status" aria-live="polite">
             {preferPlay && probing && !busy && !note ? "checking google play…" : shownNote}
           </p>

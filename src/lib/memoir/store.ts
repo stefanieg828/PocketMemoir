@@ -500,7 +500,8 @@ export const useMemoir = create<MemoirState>()(
                 mode: normalizeMode(settings.mode),
                 look: normalizeLook(settings.look),
                 riso: normalizeRiso(settings.riso),
-                unlocked: settings.unlocked ?? get().unlocked,
+                // A restore can grant the unlock but never takes a paid unlock away.
+                unlocked: Boolean(settings.unlocked) || get().unlocked,
                 categories: settings.categories
                   ? normalizeCategoryConfig(settings.categories)
                   : get().categories,
