@@ -125,7 +125,6 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
                   onClick={() => (locked ? openUnlock(true) : toggleArm(s.id))}
                 >
                   <StickerMark mark={s.mark} />
-                  <span className="sticker-tray-chip-name">{s.name}</span>
                 </button>
               </li>
             ))}

@@ -3074,9 +3074,9 @@
     gap: 0.2rem;
     width: 100%;
     padding: 0.35rem 0.2rem;
-    border: var(--b1) solid color-mix(in srgb, var(--color-line) 35%, transparent);
-    border-radius: 0.65rem;
-    background: #fffef9;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     cursor: pointer;
     color: inherit;
     font: inherit;
@@ -3092,10 +3092,11 @@
   }
 
   .sticker-tray-chip-armed {
-    border-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-line));
-    background: color-mix(in srgb, var(--color-card) 70%, #fff8e8);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ink) 12%, transparent);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.12);
+  }
+
+  .sticker-tray-chip-armed .deco-sticker-mark {
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--color-ink) 45%, transparent));
   }
 
   .sticker-tray-armed-bar {
@@ -3119,8 +3120,8 @@
   }
 
   .sticker-tray-chip .deco-sticker-mark {
-    width: 1.85rem;
-    height: 1.85rem;
+    width: 2.6rem;
+    height: 2.6rem;
   }
 
   .sticker-tray-chip-name {
