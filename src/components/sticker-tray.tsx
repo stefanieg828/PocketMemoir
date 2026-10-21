@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StickerMark } from "@/components/sticker-mark";
-import { STICKER_PACKS, type StickerMarkId } from "@/lib/memoir/stickers";
+import { releasedStickerPacks, type StickerMarkId } from "@/lib/memoir/stickers";
 import { PLAN_PAID_NAME, UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
 import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
@@ -33,8 +33,9 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
   const disarm = useStickerUi((s) => s.disarm);
   const openUnlock = useUnlockUi((s) => s.setOpen);
   const [open, setOpen] = useState(defaultOpen ?? !compact);
-  const [packId, setPackId] = useState(STICKER_PACKS[0].id);
-  const pack = STICKER_PACKS.find((p) => p.id === packId) ?? STICKER_PACKS[0];
+  const packs = releasedStickerPacks();
+  const [packId, setPackId] = useState(packs[0].id);
+  const pack = packs.find((p) => p.id === packId) ?? packs[0];
   const locked = !pack.free && !unlocked;
 
   if (peeking) return null;
@@ -80,9 +81,9 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
               </button>
             </div>
           ) : null}
-          {STICKER_PACKS.length > 1 ? (
+          {packs.length > 1 ? (
             <div className="sticker-tray-tabs" role="tablist" aria-label="sticker packs">
-              {STICKER_PACKS.map((p) => (
+              {packs.map((p) => (
                 <button
                   key={p.id}
                   type="button"

@@ -21,7 +21,8 @@ export type StickerMarkId =
   | "tiny-ticket"
   | "pressed-flower"
   | GulfCoastStickerId
-  | CozyFallStickerId;
+  | CozyFallStickerId
+  | HalloweenStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -55,6 +56,30 @@ export const COZY_FALL_IDS = [
 ] as const;
 export type CozyFallStickerId = (typeof COZY_FALL_IDS)[number];
 
+export const HALLOWEEN_IDS = [
+  "hw-jack-o-lantern",
+  "hw-spiral-moon-hill",
+  "hw-haunted-house",
+  "hw-black-cat",
+  "hw-candy-corn",
+  "hw-gravestone",
+  "hw-bat",
+  "hw-spooky-tree",
+  "hw-cauldron",
+  "hw-witch-hat",
+  "hw-sheet-ghost",
+  "hw-lamppost",
+  "hw-spider",
+  "hw-potion",
+  "hw-candle",
+  "hw-witch-boots",
+  "hw-crescent-moon",
+  "hw-iron-gate",
+  "hw-crow-on-fence",
+  "hw-skull",
+] as const;
+export type HalloweenStickerId = (typeof HALLOWEEN_IDS)[number];
+
 export type StickerMark = {
   id: StickerMarkId;
   name: string;
@@ -68,7 +93,13 @@ export type StickerPack = {
   id: string;
   name: string;
   free: boolean;
-  /** ISO date when the pack drops (omit for always-on free). */
+  /**
+   * When the pack drops (omit for always-on). Either a date `YYYY-MM-DD`
+   * (= 00:00 UTC that day) or a full ISO instant with zone, e.g.
+   * `2026-10-26T13:00:00Z`. Compared as an absolute instant, so it flips at the
+   * same moment for every timezone. Before it, the pack is hidden from the tray
+   * and can't be placed.
+   */
   dropDate?: string;
   stickers: readonly StickerMark[];
 };
@@ -151,11 +182,48 @@ export const COZY_FALL_PACK: StickerPack = {
   })),
 };
 
+const HW_NAMES: Partial<Record<HalloweenStickerId, string>> = { "hw-jack-o-lantern": "jack-o-lantern" };
+
+export const HALLOWEEN_PACK: StickerPack = {
+  id: "halloween",
+  name: "halloween",
+  free: false,
+  // Mon Oct 26 2026, 8:00 AM America/Chicago (CDT, UTC-5).
+  dropDate: "2026-10-26T13:00:00Z",
+  stickers: HALLOWEEN_IDS.map((id) => ({
+    id,
+    name: HW_NAMES[id] ?? id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/halloween/${id.slice(3)}.webp`,
+  })),
+};
+
+/** Epoch ms when a pack drops, or null if it has no (valid) drop date. */
+export function packDropTime(pack: Pick<StickerPack, "dropDate">): number | null {
+  if (!pack.dropDate) return null;
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(pack.dropDate) ? `${pack.dropDate}T00:00:00Z` : pack.dropDate;
+  // Require an explicit zone so a local-time string can't flip early in some timezone.
+  if (iso.length > 10 && !/(Z|[+-]\d{2}:\d{2})$/.test(iso)) return Number.POSITIVE_INFINITY;
+  const t = Date.parse(iso);
+  return Number.isFinite(t) ? t : Number.POSITIVE_INFINITY;
+}
+
+export function isPackReleased(pack: Pick<StickerPack, "dropDate">, now: number = Date.now()): boolean {
+  const t = packDropTime(pack);
+  return t === null || now >= t;
+}
+
+/** Packs the tray should show right now. */
+export function releasedStickerPacks(now: number = Date.now()): StickerPack[] {
+  return STICKER_PACKS.filter((p) => isPackReleased(p, now));
+}
+
 /** Newest drop last; tray shows them as tabs. */
 export const STICKER_PACKS: readonly StickerPack[] = [
   FREE_STARTER_PACK,
   GULF_COAST_PACK,
   COZY_FALL_PACK,
+  HALLOWEEN_PACK,
 ];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(

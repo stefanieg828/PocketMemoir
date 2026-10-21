@@ -34,6 +34,7 @@ import {
   type PlacedSticker,
   type StickerMarkId,
   packForSticker,
+  isPackReleased,
   STICKER_SIZE_MAX,
   STICKER_SIZE_MIN,
 } from "./stickers";
@@ -429,7 +430,7 @@ export const useMemoir = create<MemoirState>()(
       },
       placeSticker: (stickerId, at) => {
         const pack = packForSticker(stickerId);
-        if (!pack || (!pack.free && !get().unlocked)) return;
+        if (!pack || !isPackReleased(pack) || (!pack.free && !get().unlocked)) return;
         const seed = Date.now() ^ (get().pageStickers.length * 9973);
         const spot =
           at && at !== "scatter" && typeof at.x === "number" && typeof at.y === "number"
