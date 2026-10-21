@@ -20,7 +20,8 @@ export type StickerMarkId =
   | "foil-star"
   | "tiny-ticket"
   | "pressed-flower"
-  | GulfCoastStickerId;
+  | GulfCoastStickerId
+  | CozyFallStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -29,6 +30,30 @@ export const GULF_COAST_IDS = [
   "gulf-shrimp-boil", "gulf-pier", "gulf-sailboat", "gulf-seagull", "gulf-sweet-tea-cooler",
 ] as const;
 export type GulfCoastStickerId = (typeof GULF_COAST_IDS)[number];
+
+export const COZY_FALL_IDS = [
+  "fall-swirling-leaves",
+  "fall-misty-pumpkin-patch",
+  "fall-rainy-window",
+  "fall-harvest-moon",
+  "fall-geese-south",
+  "fall-golden-path",
+  "fall-red-barn",
+  "fall-foggy-cloud",
+  "fall-squirrel",
+  "fall-smoky-cabin",
+  "fall-leaf-pile-and-rake",
+  "fall-scarecrow",
+  "fall-crow-on-fence",
+  "fall-lantern-porch",
+  "fall-owl-at-dusk",
+  "fall-dandelion-field",
+  "fall-cornfield-sunset",
+  "fall-leafy-puddle",
+  "fall-sleepy-fox",
+  "fall-crescent-moon",
+] as const;
+export type CozyFallStickerId = (typeof COZY_FALL_IDS)[number];
 
 export type StickerMark = {
   id: StickerMarkId;
@@ -113,8 +138,25 @@ export const GULF_COAST_PACK: StickerPack = {
   })),
 };
 
+export const COZY_FALL_PACK: StickerPack = {
+  id: "cozy-fall",
+  name: "cozy fall",
+  free: false,
+  dropDate: "2026-10-21",
+  stickers: COZY_FALL_IDS.map((id) => ({
+    id,
+    name: id.slice(5).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/cozy-fall/${id.slice(5)}.webp`,
+  })),
+};
+
 /** Newest drop last; tray shows them as tabs. */
-export const STICKER_PACKS: readonly StickerPack[] = [FREE_STARTER_PACK, GULF_COAST_PACK];
+export const STICKER_PACKS: readonly StickerPack[] = [
+  FREE_STARTER_PACK,
+  GULF_COAST_PACK,
+  COZY_FALL_PACK,
+];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
   STICKER_PACKS.flatMap((pack) => pack.stickers.map((sticker) => [sticker.id, { sticker, pack }] as const)),
