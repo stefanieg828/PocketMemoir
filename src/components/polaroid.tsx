@@ -6,6 +6,7 @@ import type { MemoirEntry } from "@/lib/memoir/types";
 import { cn, hashSeed, tiltFor } from "@/lib/utils";
 import { KindMark } from "@/components/kind-mark";
 import { StatusMover } from "@/components/status-mover";
+import { todoProgress } from "@/components/todo-list";
 
 type PolaroidProps = {
   entry: MemoirEntry;
@@ -106,6 +107,7 @@ export function Polaroid({ entry, className }: PolaroidProps) {
       <p className="scrap-meta mt-2 text-xs font-display text-faint">
         {stickerLabel}
         {when ? ` · ${when}` : ""}
+        {entry.todos?.length ? ` · ${todoProgress(entry.todos)}` : ""}
       </p>
       <div className="mt-3" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
         <StatusMover entryId={entry.id} status={entry.status ?? "fresh"} size="card" />

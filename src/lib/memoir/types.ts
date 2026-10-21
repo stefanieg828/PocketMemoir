@@ -84,6 +84,35 @@ export type RisoPrefs = {
   bodyFont: string;
 };
 
+/** One check-off line on a scrap's to-do list (free for everyone). */
+export type TodoItem = {
+  id: string;
+  text: string;
+  done: boolean;
+};
+
+export const TODO_CAP = 50;
+export const TODO_TEXT_MAX = 120;
+
+/** Validate + coerce a to-do list from storage / a backup / a peek file. */
+export function normalizeTodos(raw: unknown): TodoItem[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: TodoItem[] = [];
+  const seen = new Set<string>();
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as Partial<TodoItem>;
+    const text = typeof r.text === "string" ? r.text.trim().replace(/\s+/g, " ").slice(0, TODO_TEXT_MAX) : "";
+    if (!text) continue;
+    let id = typeof r.id === "string" && r.id.trim() ? r.id.trim() : `todo-${out.length}-${text.length}`;
+    while (seen.has(id)) id = `${id}-x`;
+    seen.add(id);
+    out.push({ id, text, done: r.done === true });
+    if (out.length >= TODO_CAP) break;
+  }
+  return out.length ? out : undefined;
+}
+
 export type MemoirEntry = {
   id: string;
   kind: EntryKind;
@@ -103,6 +132,8 @@ export type MemoirEntry = {
    * for storage/compat and point here for display + chip selection.
    */
   stickerId?: string;
+  /** Optional check-off list. Omitted when empty (older saves never have it). */
+  todos?: TodoItem[];
   createdAt: number;
   updatedAt: number;
 };
@@ -119,6 +150,7 @@ export type MemoirDraft = {
   status?: EntryStatus;
   category?: string;
   stickerId?: string;
+  todos?: TodoItem[];
 };
 
 const KIND_SET = new Set<string>(ENTRY_KINDS);

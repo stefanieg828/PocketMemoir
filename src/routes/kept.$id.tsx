@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { KeepForm } from "@/components/keep-form";
 import { StatusMover } from "@/components/status-mover";
 import { KindMark } from "@/components/kind-mark";
+import { TodoChecklist } from "@/components/todo-list";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +46,7 @@ function KeptPage() {
   const categories = peeking ? peekCategories : ownCategories;
   const updateEntry = useMemoir((s) => s.updateEntry);
   const removeEntry = useMemoir((s) => s.removeEntry);
+  const toggleTodo = useMemoir((s) => s.toggleTodo);
   const [changing, setChanging] = useState(false);
 
   if (!hasHydrated) {
@@ -125,6 +127,13 @@ function KeptPage() {
 
       <div className="cork-sheet min-w-0">
         <LetterLine label="Details" value={entry.how} />
+        {entry.todos?.length ? (
+          <TodoChecklist
+            todos={entry.todos}
+            readOnly={peeking}
+            onToggle={(todoId) => toggleTodo(entry.id, todoId)}
+          />
+        ) : null}
         <LetterLine label="Also" value={entry.facts} />
         <LetterLine label="A scrap of a line" value={entry.note} />
         {when ? <LetterLine label="The day" value={when} /> : null}

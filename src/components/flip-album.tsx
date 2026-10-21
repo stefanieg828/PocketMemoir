@@ -12,6 +12,7 @@ import { StickerLayer } from "@/components/sticker-layer";
 import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
+import { SubFilter, useSubFilter } from "@/components/sub-filter";
 import { groupEntriesByCategory, useShelfCategories } from "@/lib/memoir/use-shelf";
 import { useViewCategories, useViewMode } from "@/lib/memoir/use-view";
 import type { MemoirEntry } from "@/lib/memoir/types";
@@ -123,7 +124,11 @@ export function FlipAlbum({
   }, [entries, shelfIds]);
 
   const bucket = shelfIds[index] ?? shelfIds[0] ?? "scraps";
-  const spreadEntries = byCategory.map[bucket] ?? [];
+  const allSpreadEntries = byCategory.map[bucket] ?? [];
+  const [subPick, setSubPick] = useState("all");
+  useEffect(() => setSubPick("all"), [bucket]);
+  const sub = useSubFilter(bucket, allSpreadEntries, subPick);
+  const spreadEntries = sub.filtered;
   const { left, right } = useMemo(() => splitSpread(spreadEntries), [spreadEntries]);
   const paper: ScrapbookPaper = paperFor(`spread-${bucket}-${spreadEntries.map((e) => e.id).join("+") || "empty"}`);
   const bucketLabel = categoryLabel(config, bucket, mode);
@@ -208,6 +213,14 @@ export function FlipAlbum({
           );
         })}
       </nav>
+
+      <SubFilter
+        chips={sub.chips}
+        active={sub.active}
+        entries={allSpreadEntries}
+        onPick={setSubPick}
+        className="sub-filter-flip"
+      />
 
       <div
         className={cn("flip-stage", `is-${anim}`)}

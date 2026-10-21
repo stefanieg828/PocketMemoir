@@ -1,9 +1,11 @@
 import { PrivacyNote } from "@/components/privacy-note";
 import { useRef, useState, type FormEvent, useEffect, useMemo } from "react";
-import { Camera, X } from "lucide-react";
+import { Camera, Lock, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { KeepSeal } from "@/components/keep-seal";
 import { StickerTray } from "@/components/sticker-tray";
+import { TodoEditor } from "@/components/todo-list";
+import { useUnlockUi } from "@/lib/memoir/unlock-ui";
 import { Button } from "@/components/ui/button";
 import { KIND_META } from "@/lib/memoir/copy";
 import {
@@ -19,9 +21,11 @@ import { compressPhoto } from "@/lib/memoir/photos";
 import { useMemoir } from "@/lib/memoir/store";
 import { useShelfCategories } from "@/lib/memoir/use-shelf";
 import {
+  BUCKET_KINDS,
   bucketForKind,
   type EntryKind,
   type MemoirDraft,
+  type TodoItem,
 } from "@/lib/memoir/types";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +82,23 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const [wouldBuyAgain, setWouldBuyAgain] = useState(Boolean(initial?.wouldBuyAgain));
   const [photo, setPhoto] = useState<string | undefined>(initial?.photo);
   const [busy, setBusy] = useState(false);
+  const [todos, setTodos] = useState<TodoItem[]>(initial?.todos ?? []);
+  const addCustomKind = useMemoir((s) => s.addCustomKind);
+  const openUnlock = useUnlockUi((s) => s.setOpen);
+  const [addingSub, setAddingSub] = useState(false);
+  const [subName, setSubName] = useState("");
+
+  function commitSub() {
+    const label = subName.trim();
+    setAddingSub(false);
+    setSubName("");
+    if (!label) return;
+    const id = addCustomKind(bucket, label);
+    if (!id) return;
+    const k = defaultKindForCategory(bucket);
+    setKind(isStarterId(bucket) ? (BUCKET_KINDS[bucket][0] ?? k) : k);
+    setSelectedChip(id);
+  }
 
   function applyChip(chip: StickerChip) {
     const sel = selectionFromSticker(chip);
@@ -139,10 +160,12 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       wouldBuyAgain: sel.kind === "thing" ? wouldBuyAgain : undefined,
       photo,
       category: bucket,
+      todos: todos.filter((t) => t.text.trim()),
     });
   }
 
-  const showKindRow = isStarterId(bucket) || chips.length > 1;
+  // Always show the row now: it carries the "+ subcategory" chip (locked for free).
+  const showKindRow = true;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -189,6 +212,50 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
                 </button>
               );
             })}
+            {unlocked ? (
+              addingSub ? (
+                <span className="sub-add-inline">
+                  <input
+                    className="cat-rename-input sub-add-input"
+                    value={subName}
+                    maxLength={40}
+                    autoFocus
+                    placeholder="e.g. outside to-dos"
+                    aria-label="New subcategory name"
+                    onChange={(e) => setSubName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        commitSub();
+                      }
+                      if (e.key === "Escape") setAddingSub(false);
+                    }}
+                  />
+                  <button type="button" className="kind-chip" onClick={commitSub}>
+                    add
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="kind-chip kind-chip-soft sub-add-chip"
+                  onClick={() => setAddingSub(true)}
+                >
+                  <Plus className="size-3.5" aria-hidden="true" />
+                  subcategory
+                </button>
+              )
+            ) : (
+              <button
+                type="button"
+                className="kind-chip kind-chip-soft sub-add-chip is-locked"
+                aria-label="Subcategories are part of big scraps. Unlock"
+                onClick={() => openUnlock(true)}
+              >
+                <Lock className="size-3.5" strokeWidth={2.4} aria-hidden="true" />
+                subcategory
+              </button>
+            )}
           </div>
         ) : null}
       </div>
@@ -283,6 +350,8 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
           className="notebook-line"
         />
       </label>
+
+      <TodoEditor todos={todos} onChange={setTodos} />
 
       {kind === "thing" ? (
         <button

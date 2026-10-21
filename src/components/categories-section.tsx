@@ -98,10 +98,15 @@ export function CategoriesSection() {
   const offPresets = PRESET_IDS.filter((id) => !config.order.includes(id));
   const hiddenStarters = STARTER_IDS.filter((id) => !config.order.includes(id));
 
+  // Subcategories / stickers can live on any board on the shelf (starters,
+  // presets, and your own). Builtin chips only exist on the six starters.
   const starterBoards = useMemo(
-    () => STARTER_IDS.map((id) => ({ id, name: categoryLabel(config, id, mode) })),
+    () => config.order.map((id) => ({ id, name: categoryLabel(config, id, mode) })),
     [config, mode],
   );
+  useEffect(() => {
+    if (!config.order.includes(stickerBoard) && config.order[0]) setStickerBoard(config.order[0]);
+  }, [config.order, stickerBoard]);
 
   const boardStickers = useMemo(
     () => kindsForBucket(config, stickerBoard, true),
@@ -200,8 +205,9 @@ export function CategoriesSection() {
         <div className="categories-lock-card">
           <p className="categories-lock-line">
             {PLAN_FREE_NAME}: six starter boards you can rename. {PLAN_PAID_NAME} adds more boards (books, movies, gift
-            ideas, and ones you customize), weekly new sticker packs, hide &amp; reorder, and a little idea inbox for
-            sticker &amp; scrap ideas.
+            ideas, and ones you customize), your own subcategories inside any board (like outside to-dos / inside
+            to-dos), weekly new sticker packs, hide &amp; reorder, and a little idea inbox for sticker &amp; scrap ideas.
+            to-do lists you can check off are free for everyone.
           </p>
           <p className="categories-hint">
             tap a name to customize it. reset brings the default name back.
@@ -378,16 +384,17 @@ export function CategoriesSection() {
               aria-expanded={stickersOpen}
               onClick={() => setStickersOpen((v) => !v)}
             >
-              <span>Stickers on this board</span>
+              <span>subcategories on this board</span>
               {stickersOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             </button>
             {stickersOpen ? (
               <div className="stickers-panel-body">
                 <p className="categories-hint">
-                  Rename or hide the built-in chips, or add your own. Customs save as a Note underneath so older scraps
-                  stay readable.
+                  Add your own subcategories (like outside to-dos and inside to-dos), rename them, or delete them. Open a
+                  board to filter by them. Built-in chips can be renamed or hidden. Deleting a subcategory never deletes
+                  scraps; they just go back to the board&apos;s plain chip.
                 </p>
-                <div className="stickers-board-tabs" role="tablist" aria-label="Starter board">
+                <div className="stickers-board-tabs" role="tablist" aria-label="Board">
                   {starterBoards.map((b) => (
                     <button
                       key={b.id}
@@ -455,7 +462,7 @@ export function CategoriesSection() {
                                   </span>
                                 ) : null}
                               </button>
-                              <span className="cat-row-kind">{chip.custom ? "yours" : "builtin"}</span>
+                              <span className="cat-row-kind">{chip.custom ? "subcategory" : "builtin"}</span>
                             </>
                           )}
                         </div>
@@ -480,7 +487,7 @@ export function CategoriesSection() {
                             >
                               <Trash2 className="size-3.5" />
                             </button>
-                          ) : (
+                          ) : !isStarterId(stickerBoard) ? null : (
                             <button
                               type="button"
                               className="cat-icon-btn"
@@ -516,11 +523,11 @@ export function CategoriesSection() {
                 <div className="categories-custom-form stickers-add-row">
                   <input
                     className="cat-rename-input"
-                    placeholder="New sticker name"
+                    placeholder="e.g. outside to-dos"
                     value={newSticker}
                     maxLength={40}
                     onChange={(e) => setNewSticker(e.target.value)}
-                    aria-label="New sticker name"
+                    aria-label="New subcategory name"
                   />
                   <button
                     type="button"
@@ -532,7 +539,7 @@ export function CategoriesSection() {
                     }}
                   >
                     <Plus className="size-4" aria-hidden="true" />
-                    Add sticker
+                    Add subcategory
                   </button>
                 </div>
               </div>

@@ -145,6 +145,11 @@ export function isCustomId(id: string): boolean {
   return /^custom-[a-z0-9-]+$/i.test(id);
 }
 
+/** Any board id that can carry sticker / subcategory chips. */
+export function isBoardId(id: string): boolean {
+  return isStarterId(id) || isPresetId(id) || isCustomId(id);
+}
+
 /** Custom sticker chip ids (not board customs). */
 export function isCustomKindId(id: string): boolean {
   return /^custom-kind-[a-z0-9-]+$/i.test(id);
@@ -200,9 +205,10 @@ function normalizeKindExtras(raw: unknown): Record<string, KindExtrasBucket> {
   const out: Record<string, KindExtrasBucket> = {};
   if (!raw || typeof raw !== "object") return out;
   for (const [bucket, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (!isStarterId(bucket) || !value || typeof value !== "object") continue;
+    // Starters + presets + custom boards (subcategories on any board, big scraps).
+    if (!isBoardId(bucket) || !value || typeof value !== "object") continue;
     const row = value as KindExtrasBucket;
-    const builtins = new Set<string>(BUCKET_KINDS[bucket] ?? []);
+    const builtins = new Set<string>(isStarterId(bucket) ? BUCKET_KINDS[bucket] : []);
     const renames: Record<string, string> = {};
     if (row.renames && typeof row.renames === "object") {
       for (const [kid, label] of Object.entries(row.renames)) {
@@ -483,11 +489,14 @@ export function removeCustom(config: CategoryConfig, id: string): CategoryConfig
   if (!isCustomId(id)) return hideCategory(config, id);
   const names = { ...config.names };
   delete names[id];
+  const kindExtras = { ...(config.kindExtras ?? {}) };
+  delete kindExtras[id];
   return {
     ...config,
     order: config.order.filter((x) => x !== id),
     names,
     customs: config.customs.filter((c) => c.id !== id),
+    kindExtras,
   };
 }
 
@@ -578,7 +587,19 @@ export function kindsForBucket(
 ): StickerChip[] {
   if (!isStarterId(bucket)) {
     const k = defaultKindForCategory(bucket);
-    return [{ id: k, label: KIND_META[k].label, custom: false, builtinKind: k }];
+    const base: StickerChip = { id: k, label: KIND_META[k].label, custom: false, builtinKind: k };
+    if (!unlocked) return [base];
+    const extras = kindExtrasFor(config, bucket);
+    const renames = extras.renames ?? {};
+    return [
+      base,
+      ...(extras.customs ?? []).map((c) => ({
+        id: c.id,
+        label: renames[c.id] ?? c.label,
+        custom: true,
+        builtinKind: k,
+      })),
+    ];
   }
   const builtins = BUCKET_KINDS[bucket];
   if (!unlocked) {
@@ -627,8 +648,8 @@ export function renameKind(
   kindId: string,
   label: string,
 ): CategoryConfig {
-  if (!isStarterId(bucket)) return config;
-  const builtins = new Set<string>(BUCKET_KINDS[bucket]);
+  if (!isBoardId(bucket)) return config;
+  const builtins = new Set<string>(isStarterId(bucket) ? BUCKET_KINDS[bucket] : []);
   const extras = { ...kindExtrasFor(config, bucket) };
   const isCustom = (extras.customs ?? []).some((c) => c.id === kindId);
   if (!builtins.has(kindId) && !isCustom) return config;
@@ -654,7 +675,7 @@ export function renameKind(
 
 /** Drop a rename so the chip shows KIND_META / custom base label again. */
 export function resetKindName(config: CategoryConfig, bucket: string, kindId: string): CategoryConfig {
-  if (!isStarterId(bucket)) return config;
+  if (!isBoardId(bucket)) return config;
   const extras = { ...kindExtrasFor(config, bucket) };
   if (!extras.renames?.[kindId]) return config;
   const renames = { ...extras.renames };
@@ -689,7 +710,7 @@ export function addCustomKind(
   label: string,
   id?: string,
 ): { config: CategoryConfig; id: string } {
-  if (!isStarterId(bucket)) return { config, id: "" };
+  if (!isBoardId(bucket)) return { config, id: "" };
   const kindId = id && isCustomKindId(id) ? id : makeCustomKindId();
   const extras = { ...kindExtrasFor(config, bucket) };
   const customs = [...(extras.customs ?? []).filter((c) => c.id !== kindId)];
@@ -703,7 +724,7 @@ export function removeCustomKind(
   bucket: string,
   kindId: string,
 ): CategoryConfig {
-  if (!isStarterId(bucket) || !isCustomKindId(kindId)) return config;
+  if (!isBoardId(bucket) || !isCustomKindId(kindId)) return config;
   const extras = { ...kindExtrasFor(config, bucket) };
   extras.customs = (extras.customs ?? []).filter((c) => c.id !== kindId);
   if (!extras.customs.length) extras.customs = undefined;
@@ -745,4 +766,24 @@ export function stickerLabelForEntry(
 export function selectionFromSticker(chip: StickerChip): { kind: EntryKind; stickerId?: string } {
   if (chip.custom) return { kind: chip.builtinKind, stickerId: chip.id };
   return { kind: chip.builtinKind, stickerId: undefined };
+}
+
+/** Board ids that have at least one custom subcategory chip. */
+export function hasSubcategories(config: CategoryConfig, bucket: string): boolean {
+  return Boolean(config.kindExtras?.[bucket]?.customs?.length);
+}
+
+/**
+ * Does a scrap sit under this chip? Custom chips match `stickerId`; builtin
+ * chips match the kind when no custom sticker is set. "all" matches everything.
+ */
+export function entryMatchesChip(
+  entry: { kind: EntryKind; stickerId?: string },
+  chipId: string,
+): boolean {
+  if (!chipId || chipId === "all") return true;
+  const sid = typeof entry.stickerId === "string" ? entry.stickerId.trim() : "";
+  if (isCustomKindId(chipId)) return sid === chipId;
+  if (sid && isCustomKindId(sid)) return false;
+  return entry.kind === chipId;
 }

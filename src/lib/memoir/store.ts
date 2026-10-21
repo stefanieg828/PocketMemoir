@@ -54,7 +54,7 @@ import type {
   ModeId,
   RisoPrefs,
 } from "./types";
-import { bucketForKind, normalizeKind, normalizeLook, normalizeMode, normalizeStatus } from "./types";
+import { bucketForKind, normalizeKind, normalizeTodos, normalizeLook, normalizeMode, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 
@@ -238,6 +238,8 @@ type MemoirState = {
   updateEntry: (id: string, draft: MemoirDraft) => void;
   setEntryStatus: (id: string, status: EntryStatus) => void;
   removeEntry: (id: string) => void;
+  /** Check / uncheck one to-do line right on the scrap (no edit form). */
+  toggleTodo: (entryId: string, todoId: string) => void;
   setTextSize: (size: TextSize) => void;
   setBoldText: (bold: boolean) => void;
   markBackedUp: (at?: number) => void;
@@ -337,6 +339,7 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
       typeof draft.stickerId === "string" && draft.stickerId.trim()
         ? draft.stickerId.trim()
         : undefined,
+    todos: normalizeTodos(draft.todos),
     createdAt: base?.createdAt ?? now,
     updatedAt: now,
   };
@@ -374,6 +377,7 @@ export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     stickerId: typeof entry.stickerId === "string" && entry.stickerId.trim()
       ? entry.stickerId.trim()
       : undefined,
+    todos: normalizeTodos(entry.todos),
     createdAt: typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
     updatedAt: typeof entry.updatedAt === "number" ? entry.updatedAt : Date.now(),
   };
@@ -494,6 +498,18 @@ export const useMemoir = create<MemoirState>()(
           ),
         });
       },
+      toggleTodo: (entryId, todoId) =>
+        set({
+          entries: get().entries.map((entry) =>
+            entry.id === entryId && entry.todos
+              ? {
+                  ...entry,
+                  todos: entry.todos.map((t) => (t.id === todoId ? { ...t, done: !t.done } : t)),
+                  updatedAt: Date.now(),
+                }
+              : entry,
+          ),
+        }),
       removeEntry: (id) =>
         set({ entries: get().entries.filter((entry) => entry.id !== id) }),
       markBackedUp: (at = Date.now()) => set({ lastBackupAt: at, backupNudgeDismissedAt: null }),
@@ -699,6 +715,7 @@ export function matchesQuery(entry: MemoirEntry, query: string) {
     bucketForKind(entry.kind),
     entry.status,
     entry.happenedOn,
+    ...(entry.todos ?? []).map((t) => t.text),
   ]
     .join(" ")
     .toLowerCase();

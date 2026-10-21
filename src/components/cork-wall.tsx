@@ -5,6 +5,7 @@ import { StickerLayer } from "@/components/sticker-layer";
 import { StickerTray } from "@/components/sticker-tray";
 import { statusLabel } from "@/lib/memoir/copy";
 import { categoryForEntry, categoryLabel } from "@/lib/memoir/categories";
+import { SubFilter, useSubFilter } from "@/components/sub-filter";
 import { LOOK_SKINS } from "@/lib/memoir/looks";
 import { useIsPeeking } from "@/lib/memoir/peek-session";
 import { useMemoir } from "@/lib/memoir/store";
@@ -76,7 +77,11 @@ export function CorkWall({
   }, [entries, shelfIds]);
 
   const zoomed = Boolean(activeBucket);
-  const boardEntries = activeBucket ? (byCategory.map[activeBucket] ?? []) : [];
+  const allBoardEntries = activeBucket ? (byCategory.map[activeBucket] ?? []) : [];
+  const [subPick, setSubPick] = useState("all");
+  useEffect(() => setSubPick("all"), [activeBucket]);
+  const sub = useSubFilter(activeBucket ?? "", allBoardEntries, subPick);
+  const boardEntries = sub.filtered;
   const activeLabel = activeBucket ? categoryLabel(config, activeBucket, mode) : "";
 
   function openBoard(bucket: string) {
@@ -195,6 +200,14 @@ export function CorkWall({
                 : "empty board"}
             </span>
           </div>
+
+          <SubFilter
+            chips={sub.chips}
+            active={sub.active}
+            entries={allBoardEntries}
+            onPick={setSubPick}
+            className="sub-filter-cork"
+          />
 
           <div className="cork-zoom-board relative">
             <StickerLayer className="sticker-layer-cork" />

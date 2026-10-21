@@ -3534,3 +3534,116 @@
   .unlock-restore-go { min-height: 2.75rem; }
   .unlock-restore-open { font: inherit; text-decoration: underline; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; }
 }
+
+/* to-do lists (free) + subcategory filter (big scraps) */
+@layer components {
+  .todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .todo-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.15rem 0.35rem;
+    border-bottom: 1.5px dashed color-mix(in srgb, var(--color-line) 30%, transparent);
+  }
+  .todo-box {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: var(--b2) solid var(--color-line);
+    border-radius: 0.4rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+    box-shadow: var(--sh-sm);
+  }
+  .todo-row.is-done .todo-box {
+    background: var(--color-gold);
+  }
+  .todo-row.is-done .todo-text,
+  .todo-row.is-done .todo-text-input {
+    text-decoration: line-through;
+    color: var(--color-muted);
+  }
+  .todo-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .todo-text-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0.25rem 0;
+  }
+  .todo-text-input:focus {
+    outline: 2px solid color-mix(in srgb, var(--color-gold) 70%, transparent);
+    border-radius: 0.3rem;
+  }
+  .todo-row-actions {
+    display: flex;
+    flex: none;
+  }
+  .todo-add-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .todo-add-input {
+    flex: 1;
+    min-width: 0;
+  }
+  .todo-add-btn {
+    gap: 0.25rem;
+    flex: none;
+  }
+  .todo-add-btn:disabled {
+    opacity: 0.5;
+  }
+  .sub-add-chip {
+    gap: 0.3rem;
+    border-style: dashed;
+  }
+  .sub-add-chip.is-locked {
+    opacity: 0.6;
+  }
+  .sub-add-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .sub-add-input {
+    width: 11rem;
+    max-width: 60vw;
+  }
+  .sub-filter {
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.35rem 0.15rem 0.6rem;
+  }
+  .sub-filter::-webkit-scrollbar {
+    display: none;
+  }
+  .sub-filter-chip {
+    flex: none;
+    gap: 0.35rem;
+  }
+  .sub-filter-n {
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+}
