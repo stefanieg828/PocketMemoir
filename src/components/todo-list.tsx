@@ -49,7 +49,7 @@ export function TodoEditor({
 
   return (
     <div className="todo-editor flex flex-col gap-2">
-      <span className="font-display text-sm text-muted">A to-do list, if you want</span>
+      <span className="font-display text-sm text-muted">to-dos</span>
       {todos.length ? (
         <ul className="todo-list" aria-label="To-do items">
           {todos.map((t, i) => (
@@ -112,7 +112,7 @@ export function TodoEditor({
             className="notebook-line todo-add-input"
             value={draft}
             maxLength={TODO_TEXT_MAX}
-            placeholder={todos.length ? "one more thing to do" : "first thing to check off"}
+            placeholder="add a to-do"
             aria-label="New to-do item"
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -146,9 +146,9 @@ export function TodoChecklist({
   return (
     <div className="kept-row py-3">
       <p className="font-display text-sm text-muted">
-        To-do <span className="text-faint">· {todoProgress(todos)}</span>
+        to-dos <span className="text-faint">· {todoProgress(todos)}</span>
       </p>
-      <ul className="todo-list mt-2" aria-label="To-do list">
+      <ul className="todo-list mt-2" aria-label="to-dos">
         {todos.map((t) => (
           <li key={t.id} className={cn("todo-row", t.done && "is-done")}>
             <button

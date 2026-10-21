@@ -54,15 +54,15 @@ describe("subcategories on any board", () => {
   it("custom board + preset can hold custom chips; survive normalize", () => {
     let { config, id: board } = cats.addCustom(cats.DEFAULT_CATEGORY_CONFIG, { name: "house" });
     config = cats.togglePreset(config, "gift-ideas", true);
-    const a = cats.addCustomKind(config, board, "outside to-dos");
-    const b = cats.addCustomKind(a.config, "gift-ideas", "for mom");
-    const c = cats.addCustomKind(b.config, "everyday", "inside to-dos");
+    const a = cats.addCustomKind(config, board, "yard");
+    const b = cats.addCustomKind(a.config, "gift-ideas", "gifts");
+    const c = cats.addCustomKind(b.config, "everyday", "kitchen");
     const n = cats.normalizeCategoryConfig(JSON.parse(JSON.stringify(c.config)));
-    assert.equal(n.kindExtras[board].customs[0].label, "outside to-dos");
-    assert.equal(n.kindExtras["gift-ideas"].customs[0].label, "for mom");
-    assert.equal(n.kindExtras.everyday.customs[0].label, "inside to-dos");
+    assert.equal(n.kindExtras[board].customs[0].label, "yard");
+    assert.equal(n.kindExtras["gift-ideas"].customs[0].label, "gifts");
+    assert.equal(n.kindExtras.everyday.customs[0].label, "kitchen");
     const chips = cats.kindsForBucket(n, board, true);
-    assert.deepEqual(chips.map((x) => x.label), ["Note", "outside to-dos"]);
+    assert.deepEqual(chips.map((x) => x.label), ["Note", "yard"]);
     assert.equal(cats.kindsForBucket(n, board, false).length, 1);
     const renamed = cats.renameKind(n, board, a.id, "yard");
     assert.equal(cats.kindsForBucket(renamed, board, true)[1].label, "yard");

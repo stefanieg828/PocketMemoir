@@ -205,9 +205,8 @@ export function CategoriesSection() {
         <div className="categories-lock-card">
           <p className="categories-lock-line">
             {PLAN_FREE_NAME}: six starter boards you can rename. {PLAN_PAID_NAME} adds more boards (books, movies, gift
-            ideas, and ones you customize), your own subcategories inside any board (like outside to-dos / inside
-            to-dos), weekly new sticker packs, hide &amp; reorder, and a little idea inbox for sticker &amp; scrap ideas.
-            to-do lists you can check off are free for everyone.
+            ideas, and ones you customize), your own subcategories inside any board, weekly new sticker packs, hide &amp; reorder, and a little idea inbox for sticker &amp; scrap ideas.
+            to-dos (make any scrap a checklist) are free for everyone.
           </p>
           <p className="categories-hint">
             tap a name to customize it. reset brings the default name back.
@@ -390,7 +389,7 @@ export function CategoriesSection() {
             {stickersOpen ? (
               <div className="stickers-panel-body">
                 <p className="categories-hint">
-                  Add your own subcategories (like outside to-dos and inside to-dos), rename them, or delete them. Open a
+                  Add your own subcategories, rename them, or delete them. Open a
                   board to filter by them. Built-in chips can be renamed or hidden. Deleting a subcategory never deletes
                   scraps; they just go back to the board&apos;s plain chip.
                 </p>
@@ -523,7 +522,7 @@ export function CategoriesSection() {
                 <div className="categories-custom-form stickers-add-row">
                   <input
                     className="cat-rename-input"
-                    placeholder="e.g. outside to-dos"
+                    placeholder="name it"
                     value={newSticker}
                     maxLength={40}
                     onChange={(e) => setNewSticker(e.target.value)}

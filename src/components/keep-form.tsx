@@ -83,6 +83,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const [photo, setPhoto] = useState<string | undefined>(initial?.photo);
   const [busy, setBusy] = useState(false);
   const [todos, setTodos] = useState<TodoItem[]>(initial?.todos ?? []);
+  const [checklist, setChecklist] = useState(Boolean(initial?.todos?.length));
   const addCustomKind = useMemoir((s) => s.addCustomKind);
   const openUnlock = useUnlockUi((s) => s.setOpen);
   const [addingSub, setAddingSub] = useState(false);
@@ -160,7 +161,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
       wouldBuyAgain: sel.kind === "thing" ? wouldBuyAgain : undefined,
       photo,
       category: bucket,
-      todos: todos.filter((t) => t.text.trim()),
+      todos: checklist ? todos.filter((t) => t.text.trim()) : undefined,
     });
   }
 
@@ -220,7 +221,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
                     value={subName}
                     maxLength={40}
                     autoFocus
-                    placeholder="e.g. outside to-dos"
+                    placeholder="name it"
                     aria-label="New subcategory name"
                     onChange={(e) => setSubName(e.target.value)}
                     onKeyDown={(e) => {
@@ -351,7 +352,15 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
         />
       </label>
 
-      <TodoEditor todos={todos} onChange={setTodos} />
+      <button
+        type="button"
+        aria-pressed={checklist}
+        onClick={() => setChecklist((v) => !v)}
+        className={cn("kind-chip self-start", checklist && "bg-gold")}
+      >
+        make it a checklist
+      </button>
+      {checklist ? <TodoEditor todos={todos} onChange={setTodos} /> : null}
 
       {kind === "thing" ? (
         <button

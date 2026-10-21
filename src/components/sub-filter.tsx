@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * big scraps: subcategory filter row on an open spread / zoomed board
- * ("all · outside to-dos · inside to-dos"). Only shows once a board has at
+ * ("all" + the board's chips). Only shows once a board has at
  * least one custom subcategory. Peeks show the sender's subcategories read-only.
  */
 export function useSubFilter(bucket: string, entries: MemoirEntry[], value: string) {
