@@ -8,6 +8,8 @@ import {
 } from "@/lib/memoir/unlock-token";
 import { A2hsTip } from "@/components/a2hs-tip";
 import { AnalyticsListener } from "@/components/analytics-listener";
+import { CloudWelcome } from "@/components/cloud-backup";
+import { startCloudBackup } from "@/lib/memoir/cloud-backup";
 import { BackupNudge } from "@/components/backup-nudge";
 import { HintLayer } from "@/components/hint-layer";
 import { WhatsNewCard } from "@/components/whats-new-card";
@@ -129,6 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     } catch {
       /* unsupported */
     }
+    startCloudBackup();
   }, [hasHydrated]);
 
   // Quiet auto-restore: unlock missing but we remember the checkout email.
@@ -212,6 +215,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <>
             <WhatsNewCard />
             <A2hsTip />
+            <CloudWelcome />
             <BackupNudge />
           </>
         ) : null}

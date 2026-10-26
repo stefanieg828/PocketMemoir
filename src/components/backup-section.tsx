@@ -41,6 +41,8 @@ import { usePickerUi } from "@/lib/memoir/picker-ui";
 import { isStarterShelf, normalizeStoredEntry, useMemoir } from "@/lib/memoir/store";
 import { A2hsSettingsHint } from "@/components/a2hs-tip";
 import { PrivacyNote } from "@/components/privacy-note";
+import { CloudBackupBlock } from "@/components/cloud-backup";
+import { adoptBackupCode, useCloudBackup } from "@/lib/memoir/cloud-backup";
 import { cn } from "@/lib/utils";
 
 type ReadyBackup = Extract<ParsedBackup, { ok: true }>;
@@ -62,6 +64,7 @@ export function BackupSection() {
   const peekFileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ReadyBackup | null>(null);
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [canSharePeek, setCanSharePeek] = useState(false);
   const setPickerOpen = usePickerUi((s) => s.setOpen);
@@ -266,6 +269,15 @@ export function BackupSection() {
           ? `Last saved ${shortDate(new Date(lastBackupAt))}. ${plural(entries.length, "scrap")} here now.`
           : `No backup yet. It takes a second. ${plural(entries.length, "scrap")} here now.`}
       </p>
+      <CloudBackupBlock
+        onFound={(text, code) => {
+          setError(null);
+          const parsed = parseBackup(text, normalizeStoredEntry);
+          if (!parsed.ok) return setError(parsed.message);
+          setPendingCode(code);
+          setPending(parsed);
+        }}
+      />
       <p className="backup-restore-unlock">
         Already unlocked on another device? Restore a backup.
       </p>
@@ -275,12 +287,30 @@ export function BackupSection() {
           {error}
         </p>
       ) : null}
-      <RestoreConfirm pending={pending} onClose={() => setPending(null)} />
+      <RestoreConfirm
+        pending={pending}
+        onClose={() => {
+          setPending(null);
+          setPendingCode(null);
+        }}
+        onApplied={() => {
+          if (pendingCode && !useCloudBackup.getState().code) adoptBackupCode(pendingCode);
+          useCloudBackup.getState().setRestoreOpen(false);
+        }}
+      />
     </section>
   );
 }
 
-function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onClose: () => void }) {
+function RestoreConfirm({
+  pending,
+  onClose,
+  onApplied,
+}: {
+  pending: ReadyBackup | null;
+  onClose: () => void;
+  onApplied?: () => void;
+}) {
   const entries = useMemoir((s) => s.entries);
   const applyRestore = useMemoir((s) => s.applyRestore);
   const markBackedUp = useMemoir((s) => s.markBackedUp);
@@ -320,6 +350,7 @@ function RestoreConfirm({ pending, onClose }: { pending: ReadyBackup | null; onC
     }
     const stamp = pending.exportedAt?.getTime() ?? 0;
     if (stamp > (lastBackupAt ?? 0)) markBackedUp(stamp);
+    onApplied?.();
     onClose();
     setPickerOpen(false);
     if (useMemoir.getState().storageFull) {

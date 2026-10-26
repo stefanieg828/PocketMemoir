@@ -3669,3 +3669,72 @@
     min-height: 2rem;
   }
 }
+
+@layer components {
+  /* ——— auto backup (sage + cream) ——— */
+  .cloud-backup {
+    --cloud-sage: #8fa58a;
+    --cloud-sage-deep: #5f7a5b;
+    --cloud-cream: #fbf6ea;
+    margin: 0.9rem 0 0;
+    padding: 0.75rem 0.85rem 0.6rem;
+    border-radius: 0.9rem;
+    background: var(--cloud-cream);
+    border: 1.5px dashed var(--cloud-sage);
+    color: var(--color-ink);
+    text-transform: lowercase;
+  }
+  .cloud-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    color: var(--cloud-sage-deep);
+  }
+  .cloud-status {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--cloud-sage-deep);
+  }
+  .cloud-note {
+    display: block;
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+  .cloud-backup .backup-actions { margin-top: 0.55rem; }
+  .cloud-backup .sticker-cta { background: var(--cloud-sage); color: var(--cloud-cream); }
+  .cloud-code-box {
+    margin: 0.55rem 0 0;
+    padding: 0.55rem 0.6rem;
+    border-radius: 0.7rem;
+    background: #fff;
+    border: 1px solid var(--cloud-sage);
+  }
+  .cloud-code {
+    display: block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    word-break: break-all;
+    user-select: all;
+    color: var(--cloud-sage-deep);
+  }
+  .cloud-restore { margin: 0.6rem 0 0; }
+  .cloud-input {
+    width: 100%;
+    margin-top: 0.3rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 0.6rem;
+    border: 1.5px solid var(--cloud-sage);
+    background: #fff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 16px;
+    text-transform: lowercase;
+  }
+  .cloud-welcome { background: #fbf6ea; border-color: #8fa58a; }
+}
