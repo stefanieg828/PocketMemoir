@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { RestoreLink } from "@/components/restore-link";
 import { ChevronDown, ChevronUp, Eye, EyeOff, Lock, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import {
   CATEGORY_VIBES,
@@ -236,6 +237,7 @@ export function CategoriesSection() {
             unlock {PLAN_PAID_NAME} · {UNLOCK_PRICE_LABEL}
           </button>
           <p className="categories-lock-hint">same one-time unlock as comic &amp; riso.</p>
+          <RestoreLink />
         </div>
       ) : (
         <>

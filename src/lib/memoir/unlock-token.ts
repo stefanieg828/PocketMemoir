@@ -53,7 +53,7 @@ export async function verifyUnlockToken(token: unknown): Promise<UnlockClaims | 
 }
 
 export type UnlockApiResult =
-  | { ok: true; token: string }
+  | { ok: true; token: string; email?: string }
   | { ok: false; error: string; status?: number };
 
 async function callApi(path: string, init?: RequestInit): Promise<UnlockApiResult> {
@@ -62,10 +62,14 @@ async function callApi(path: string, init?: RequestInit): Promise<UnlockApiResul
     try {
       const res = await fetch(`${base}${path}`, { ...init, cache: "no-store" });
       const data = (await res.json().catch(() => null)) as
-        | { ok?: boolean; token?: string; error?: string }
+        | { ok?: boolean; token?: string; error?: string; email?: string }
         | null;
       if (res.ok && data?.ok && data.token) {
-        if (await verifyUnlockToken(data.token)) return { ok: true, token: data.token };
+        if (await verifyUnlockToken(data.token)) return {
+            ok: true,
+            token: data.token,
+            ...(typeof data.email === "string" && data.email ? { email: data.email } : {}),
+          };
         return { ok: false, error: "that unlock didn't check out." };
       }
       // A real answer from the verifier — don't try the next host.

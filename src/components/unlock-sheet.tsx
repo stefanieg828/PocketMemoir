@@ -344,8 +344,14 @@ export function UnlockSheet() {
 /** Web-only: find a past Stripe purchase by checkout email and unlock with a signed token. */
 function RestorePurchase() {
   const setUnlockToken = useMemoir((s) => s.setUnlockToken);
-  const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
+  const setUnlockEmail = useMemoir((s) => s.setUnlockEmail);
+  const savedEmail = useMemoir((s) => s.unlockEmail);
+  const startOpen = useUnlockUi((s) => s.restore);
+  const [open, setOpen] = useState(startOpen);
+  const [email, setEmail] = useState(savedEmail ?? "");
+  useEffect(() => {
+    if (startOpen) setOpen(true);
+  }, [startOpen]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -358,6 +364,7 @@ function RestorePurchase() {
     setBusy(false);
     if (res.ok) {
       setUnlockToken(res.token);
+      setUnlockEmail(res.email || email.trim());
       toast.success("purchase restored — you're unlocked");
       return;
     }
@@ -367,9 +374,9 @@ function RestorePurchase() {
   if (!open) {
     return (
       <p className="unlock-sheet-soon-hint">
-        already paid?{" "}
-        <button type="button" className="footer-link unlock-restore-open" onClick={() => setOpen(true)}>
-          restore purchase
+        paid before?{" "}
+        <button type="button" className="restore-link unlock-restore-open" onClick={() => setOpen(true)}>
+          restore with your email
         </button>
       </p>
     );
@@ -377,7 +384,7 @@ function RestorePurchase() {
   return (
     <form className="unlock-restore" onSubmit={onSubmit}>
       <label className="unlock-restore-label" htmlFor="unlock-restore-email">
-        the email you used at checkout
+        the email you used at checkout — paid, gift code, or promo all work
       </label>
       <div className="unlock-restore-row">
         <input

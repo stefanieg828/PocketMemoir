@@ -3648,3 +3648,24 @@
     opacity: 0.6;
   }
 }
+
+@layer components {
+  .restore-link-row {
+    margin: 0.45rem 0 0;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    text-transform: lowercase;
+    text-align: center;
+  }
+  .restore-link {
+    font: inherit;
+    background: none;
+    border: 0;
+    padding: 0.2rem 0.1rem;
+    cursor: pointer;
+    color: var(--color-ink, inherit);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    min-height: 2rem;
+  }
+}

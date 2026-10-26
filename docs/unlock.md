@@ -105,3 +105,16 @@ Fullscreen TWA: Play App Signing SHA in assetlinks —
   Reached at `https://api.pocketmemoir.fun` once DNS + cert exist, and at
   `https://grilledcheeseandtomatosoup.fun/pm-api` meanwhile. Signing key: `/opt/pm-verifier/keys`.
 - Already-unlocked installs (old local flag) stay unlocked. Play/TWA path unchanged.
+
+## Auto-restore (Oct 25 2026)
+
+- After a successful verify or restore, the checkout email is saved on the device
+  (`unlockEmail` in `pocketmemoir.v1` plus `pocketmemoir.restoreEmail`).
+- On load, if the unlock is missing but an email is saved, the app quietly calls
+  `POST /restore` once per tab session (stays under the 5/hour limit).
+- `navigator.storage.persist()` is requested on load.
+- "paid before? restore with your email" sits under the locked shelf and sticker
+  CTAs and in the unlock sheet (hidden in the Play app, which re-checks Play itself).
+- Verifier `/restore` now matches by Payment Link, price, or product, checks the email
+  as typed and lowercased, and expands line items. $0 promo checkouts
+  (`payment_status` paid or no_payment_required, status complete) count.

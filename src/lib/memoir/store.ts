@@ -58,6 +58,28 @@ import type {
 import { bucketForKind, normalizeKind, normalizeTodos, normalizeLook, normalizeMode, normalizeStatus } from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
+/** Separate key so the restore email outlives a damaged / reset main save. */
+const UNLOCK_EMAIL_KEY = "pocketmemoir.restoreEmail";
+
+function readSavedUnlockEmail(): string | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const v = window.localStorage.getItem(UNLOCK_EMAIL_KEY);
+    return v && v.includes("@") ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveUnlockEmail(email: string | null) {
+  try {
+    if (typeof window === "undefined") return;
+    if (email) window.localStorage.setItem(UNLOCK_EMAIL_KEY, email);
+    else window.localStorage.removeItem(UNLOCK_EMAIL_KEY);
+  } catch {
+    /* private mode — store copy still persists */
+  }
+}
 
 export const SEED_IDS = [
   "seed-wifi",
@@ -182,6 +204,8 @@ type MemoirState = {
   unlocked: boolean;
   /** Ed25519-signed web unlock proof from the verifier (Stripe). */
   unlockToken: string | null;
+  /** Checkout email from the last verify / restore — lets us quietly re-restore. */
+  unlockEmail: string | null;
   categories: CategoryConfig;
   /** When the last backup file was saved (ms), or null if never. */
   lastBackupAt: number | null;
@@ -232,6 +256,7 @@ type MemoirState = {
   setLook: (look: LookId) => void;
   setRiso: (patch: Partial<RisoPrefs>) => void;
   setUnlocked: (unlocked: boolean) => void;
+  setUnlockEmail: (email: string | null) => void;
   /** Store a verified token and unlock. Caller must have verified it. */
   setUnlockToken: (token: string) => void;
   clearStorageFull: () => void;
@@ -395,6 +420,7 @@ export const useMemoir = create<MemoirState>()(
       boldText: false,
       unlocked: false,
       unlockToken: null,
+      unlockEmail: readSavedUnlockEmail(),
       categories: { ...DEFAULT_CATEGORY_CONFIG, order: [...DEFAULT_CATEGORY_CONFIG.order], names: {}, customs: [] },
       lastBackupAt: null,
       backupNudgeDismissedAt: null,
@@ -476,6 +502,11 @@ export const useMemoir = create<MemoirState>()(
       setBoldText: (bold) => set({ boldText: Boolean(bold) }),
       setUnlocked: (unlocked) => set({ unlocked }),
       setUnlockToken: (token) => set({ unlockToken: token, unlocked: true }),
+      setUnlockEmail: (email) => {
+        const clean = typeof email === "string" ? email.trim() : "";
+        saveUnlockEmail(clean || null);
+        set({ unlockEmail: clean || null });
+      },
       clearStorageFull: () => set({ storageFull: false }),
       addEntry: (draft) => {
         const entry = fromDraft(draft);
@@ -606,6 +637,7 @@ export const useMemoir = create<MemoirState>()(
         boldText: state.boldText,
         unlocked: state.unlocked,
         unlockToken: state.unlockToken,
+        unlockEmail: state.unlockEmail,
         categories: state.categories,
         lastBackupAt: state.lastBackupAt,
         backupNudgeDismissedAt: state.backupNudgeDismissedAt,
@@ -640,6 +672,10 @@ export const useMemoir = create<MemoirState>()(
           unlocked,
           unlockToken:
             typeof incoming.unlockToken === "string" ? incoming.unlockToken : current.unlockToken,
+          unlockEmail:
+            typeof incoming.unlockEmail === "string" && incoming.unlockEmail
+              ? incoming.unlockEmail
+              : current.unlockEmail,
           categories: normalizeCategoryConfig(incoming.categories),
           lastBackupAt: typeof incoming.lastBackupAt === "number" ? incoming.lastBackupAt : null,
           backupNudgeDismissedAt:

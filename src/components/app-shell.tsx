@@ -1,7 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Toaster, toast } from "sonner";
-import { readCheckoutSessionFromUrl, verifyCheckoutSession } from "@/lib/memoir/unlock-token";
+import {
+  readCheckoutSessionFromUrl,
+  restorePurchaseByEmail,
+  verifyCheckoutSession,
+} from "@/lib/memoir/unlock-token";
 import { A2hsTip } from "@/components/a2hs-tip";
 import { AnalyticsListener } from "@/components/analytics-listener";
 import { BackupNudge } from "@/components/backup-nudge";
@@ -50,6 +54,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const unlocked = useMemoir((s) => s.unlocked);
   const setUnlocked = useMemoir((s) => s.setUnlocked);
   const setUnlockToken = useMemoir((s) => s.setUnlockToken);
+  const setUnlockEmail = useMemoir((s) => s.setUnlockEmail);
+  const unlockEmail = useMemoir((s) => s.unlockEmail);
   const openPickerAt = usePickerUi((s) => s.openAt);
 
   useEffect(() => {
@@ -104,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       if (res.ok) {
         const was = useMemoir.getState().unlocked;
         setUnlockToken(res.token);
+        if (res.email) setUnlockEmail(res.email);
         trackEvent(GA_EVENTS.unlockSuccess);
         if (!was) toast.success("you're unlocked");
       } else if (!useMemoir.getState().unlocked) {
@@ -112,7 +119,40 @@ export function AppShell({ children }: { children: ReactNode }) {
         });
       }
     })();
-  }, [hasHydrated, unlocked, setUnlockToken]);
+  }, [hasHydrated, unlocked, setUnlockToken, setUnlockEmail]);
+
+  // Ask the browser to keep our storage (helps iOS / Chrome not evict the unlock).
+  useEffect(() => {
+    if (!hasHydrated) return;
+    try {
+      void navigator.storage?.persist?.().catch(() => undefined);
+    } catch {
+      /* unsupported */
+    }
+  }, [hasHydrated]);
+
+  // Quiet auto-restore: unlock missing but we remember the checkout email.
+  // Once per tab session so we never burn the verifier's 5/hour email limit.
+  useEffect(() => {
+    if (!hasHydrated || unlocked || !unlockEmail) return;
+    try {
+      if (sessionStorage.getItem("pm.autoRestoreTried") === unlockEmail) return;
+      sessionStorage.setItem("pm.autoRestoreTried", unlockEmail);
+    } catch {
+      /* ignore */
+    }
+    let cancelled = false;
+    void (async () => {
+      const res = await restorePurchaseByEmail(unlockEmail);
+      if (cancelled || !res.ok || useMemoir.getState().unlocked) return;
+      setUnlockToken(res.token);
+      trackEvent(GA_EVENTS.unlockSuccess);
+      toast.success("welcome back — big scraps restored");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasHydrated, unlocked, unlockEmail, setUnlockToken]);
 
   // Play Billing restore (TWA Digital Goods) — same setUnlocked(true) as Stripe.
   useEffect(() => {

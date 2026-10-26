@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RestoreLink } from "@/components/restore-link";
 import { StickerMark } from "@/components/sticker-mark";
 import { releasedStickerPacks, type StickerMarkId } from "@/lib/memoir/stickers";
 import { PLAN_PAID_NAME, UNLOCK_PRICE_LABEL } from "@/lib/memoir/unlock";
@@ -107,6 +108,7 @@ export function StickerTray({ compact = false, defaultOpen, className, onStuck }
                 unlock {PLAN_PAID_NAME} · {UNLOCK_PRICE_LABEL}
               </button>
               <p className="sticker-tray-hint">new packs drop weekly · same one-time unlock as comic &amp; riso.</p>
+              <RestoreLink />
             </div>
           ) : null}
           <ul className={cn("sticker-tray-grid", locked && "sticker-tray-grid-locked")} role="list">
