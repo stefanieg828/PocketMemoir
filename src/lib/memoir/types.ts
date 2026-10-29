@@ -16,6 +16,8 @@ export const ENTRY_KINDS = [
   "money",
   "quote",
   "dream",
+  "year-1",
+  "year-5",
   "ticket",
   "song",
   "win",
@@ -26,13 +28,95 @@ export type EntryKind = (typeof ENTRY_KINDS)[number];
 
 export const CALENDAR_KINDS: readonly EntryKind[] = ["event", "moment", "trip", "health"];
 
-export const LOOKS = ["scrapbook", "corkboard"] as const;
+export const ENTRY_BUCKETS = [
+  "scraps",
+  "people",
+  "out",
+  "everyday",
+  "proud",
+  "dreams",
+] as const;
 
-export type JacketId = (typeof LOOKS)[number];
+export type EntryBucket = (typeof ENTRY_BUCKETS)[number];
+
+export const BUCKET_KINDS: Record<EntryBucket, readonly EntryKind[]> = {
+  scraps: ["note", "idea", "list", "quote", "song"],
+  people: ["person", "pet"],
+  out: ["place", "trip", "ticket", "event", "moment"],
+  everyday: ["thing", "food", "recipe", "work", "money", "health"],
+  proud: ["win", "lesson"],
+  dreams: ["dream", "year-1", "year-5"],
+};
+
+const KIND_TO_BUCKET = Object.fromEntries(
+  (Object.entries(BUCKET_KINDS) as Array<[EntryBucket, readonly EntryKind[]]>).flatMap(
+    ([bucket, kinds]) => kinds.map((kind) => [kind, bucket]),
+  ),
+) as Record<EntryKind, EntryBucket>;
+
+export function bucketForKind(kind: EntryKind): EntryBucket {
+  return KIND_TO_BUCKET[kind] ?? "scraps";
+}
+
+export const ENTRY_STATUSES = ["fresh", "soft", "keepsake", "tucked"] as const;
+
+export type EntryStatus = (typeof ENTRY_STATUSES)[number];
+
+/** Mode = layout engine (flip album vs wall of boards). Historically "jacket". */
+export const MODES = ["scrapbook", "corkboard"] as const;
+
+export type ModeId = (typeof MODES)[number];
+/** @deprecated use ModeId */
+export type JacketId = ModeId;
+
+/** Look = skin applied on top of either mode. */
+export const LOOK_IDS = ["storybook", "comic", "riso"] as const;
+
+export type LookId = (typeof LOOK_IDS)[number];
+
+/** Risograph customization (only used when look === "riso"). */
+export type RisoPrefs = {
+  /** Curated ink pair id, or "custom" to use inkA/inkB. */
+  pair: string;
+  inkA: string;
+  inkB: string;
+  titleFont: string;
+  bodyFont: string;
+};
+
+/** One check-off line on a scrap's to-do list (free for everyone). */
+export type TodoItem = {
+  id: string;
+  text: string;
+  done: boolean;
+};
+
+export const TODO_CAP = 50;
+export const TODO_TEXT_MAX = 120;
+
+/** Validate + coerce a to-do list from storage / a backup / a peek file. */
+export function normalizeTodos(raw: unknown): TodoItem[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: TodoItem[] = [];
+  const seen = new Set<string>();
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as Partial<TodoItem>;
+    const text = typeof r.text === "string" ? r.text.trim().replace(/\s+/g, " ").slice(0, TODO_TEXT_MAX) : "";
+    if (!text) continue;
+    let id = typeof r.id === "string" && r.id.trim() ? r.id.trim() : `todo-${out.length}-${text.length}`;
+    while (seen.has(id)) id = `${id}-x`;
+    seen.add(id);
+    out.push({ id, text, done: r.done === true });
+    if (out.length >= TODO_CAP) break;
+  }
+  return out.length ? out : undefined;
+}
 
 export type MemoirEntry = {
   id: string;
   kind: EntryKind;
+  status: EntryStatus;
   title: string;
   how: string;
   facts: string;
@@ -40,6 +124,16 @@ export type MemoirEntry = {
   wouldBuyAgain?: boolean;
   photo?: string;
   happenedOn?: string;
+  /** Shelf category id (starter / preset / custom). Falls back to kind→bucket. */
+  category?: string;
+  /**
+   * Sticker chip id when it differs from `kind` (custom-kind-*) or when a
+   * renamed builtin chip was selected. Custom stickers keep a builtin `kind`
+   * for storage/compat and point here for display + chip selection.
+   */
+  stickerId?: string;
+  /** Optional check-off list. Omitted when empty (older saves never have it). */
+  todos?: TodoItem[];
   createdAt: number;
   updatedAt: number;
 };
@@ -53,9 +147,14 @@ export type MemoirDraft = {
   wouldBuyAgain?: boolean;
   photo?: string;
   happenedOn?: string;
+  status?: EntryStatus;
+  category?: string;
+  stickerId?: string;
+  todos?: TodoItem[];
 };
 
 const KIND_SET = new Set<string>(ENTRY_KINDS);
+const STATUS_SET = new Set<string>(ENTRY_STATUSES);
 
 export function isEntryKind(value: unknown): value is EntryKind {
   return typeof value === "string" && KIND_SET.has(value);
@@ -65,9 +164,26 @@ export function normalizeKind(value: unknown): EntryKind {
   return isEntryKind(value) ? value : "note";
 }
 
-export function normalizeJacket(value: unknown): JacketId {
+export function isEntryStatus(value: unknown): value is EntryStatus {
+  return typeof value === "string" && STATUS_SET.has(value);
+}
+
+export function normalizeStatus(value: unknown): EntryStatus {
+  return isEntryStatus(value) ? value : "fresh";
+}
+
+export function normalizeMode(value: unknown): ModeId {
   if (value === "corkboard" || value === "ash") return "corkboard";
   return "scrapbook";
+}
+
+/** @deprecated use normalizeMode */
+export const normalizeJacket = normalizeMode;
+
+export function normalizeLook(value: unknown): LookId {
+  return typeof value === "string" && (LOOK_IDS as readonly string[]).includes(value)
+    ? (value as LookId)
+    : "storybook";
 }
 
 export function isCalendarKind(kind: EntryKind): boolean {
