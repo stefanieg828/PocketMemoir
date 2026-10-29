@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  BIRDS_PACK,
   HALLOWEEN_PACK,
   STICKER_PACKS,
   isPackReleased,
@@ -38,12 +39,35 @@ describe("sticker pack drops", () => {
     assert.ok(!releasedStickerPacks(DROP - 60_000).some((p) => p.id === "halloween"));
     const after = releasedStickerPacks(DROP).map((p) => p.id);
     assert.deepEqual(after.slice(-3), ["gulf-coast", "cozy-fall", "halloween"]);
-    assert.equal(STICKER_PACKS.length, after.length);
+    assert.ok(!after.includes("birds"));
   });
 
   it("halloween has 20 paid stickers with assets", () => {
     assert.equal(HALLOWEEN_PACK.free, false);
     assert.equal(HALLOWEEN_PACK.stickers.length, 20);
     for (const s of HALLOWEEN_PACK.stickers) assert.match(s.src ?? "", /^\/stickers\/halloween\/[a-z-]+\.webp$/);
+  });
+
+  const BIRDS_DROP = Date.parse("2026-11-02T14:00:00Z");
+
+  it("birds drops Mon Nov 2 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(BIRDS_PACK), BIRDS_DROP);
+    assert.equal(packDropTime(BIRDS_PACK), Date.parse("2026-11-02T08:00:00-06:00"));
+    assert.equal(isPackReleased(BIRDS_PACK, BIRDS_DROP - 1), false);
+    assert.equal(isPackReleased(BIRDS_PACK, BIRDS_DROP), true);
+  });
+
+  it("tray hides birds before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(BIRDS_DROP - 60_000).some((p) => p.id === "birds"));
+    const after = releasedStickerPacks(BIRDS_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-4), ["gulf-coast", "cozy-fall", "halloween", "birds"]);
+    assert.equal(STICKER_PACKS.length, after.length);
+  });
+
+  it("birds has 20 paid stickers with assets", () => {
+    assert.equal(BIRDS_PACK.free, false);
+    assert.equal(BIRDS_PACK.stickers.length, 20);
+    assert.equal(new Set(BIRDS_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of BIRDS_PACK.stickers) assert.match(s.src ?? "", /^\/stickers\/birds\/[a-z-]+\.webp$/);
   });
 });

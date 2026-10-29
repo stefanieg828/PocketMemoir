@@ -22,7 +22,8 @@ export type StickerMarkId =
   | "pressed-flower"
   | GulfCoastStickerId
   | CozyFallStickerId
-  | HalloweenStickerId;
+  | HalloweenStickerId
+  | BirdsStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -79,6 +80,30 @@ export const HALLOWEEN_IDS = [
   "hw-skull",
 ] as const;
 export type HalloweenStickerId = (typeof HALLOWEEN_IDS)[number];
+
+export const BIRDS_IDS = [
+  "bd-cardinal",
+  "bd-blue-jay",
+  "bd-robin",
+  "bd-bald-eagle",
+  "bd-owl",
+  "bd-hummingbird",
+  "bd-flamingo",
+  "bd-puffin",
+  "bd-penguin",
+  "bd-peacock",
+  "bd-parrot",
+  "bd-toucan",
+  "bd-chickadee",
+  "bd-goldfinch",
+  "bd-mallard",
+  "bd-swan",
+  "bd-woodpecker",
+  "bd-bluebird",
+  "bd-pigeon",
+  "bd-ostrich",
+] as const;
+export type BirdsStickerId = (typeof BIRDS_IDS)[number];
 
 export type StickerMark = {
   id: StickerMarkId;
@@ -198,6 +223,20 @@ export const HALLOWEEN_PACK: StickerPack = {
   })),
 };
 
+export const BIRDS_PACK: StickerPack = {
+  id: "birds",
+  name: "birds",
+  free: false,
+  // Mon Nov 2 2026, 8:00 AM America/Chicago (CST, UTC-6; DST ends Nov 1).
+  dropDate: "2026-11-02T14:00:00Z",
+  stickers: BIRDS_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/birds/${id.slice(3)}.webp`,
+  })),
+};
+
 /** Epoch ms when a pack drops, or null if it has no (valid) drop date. */
 export function packDropTime(pack: Pick<StickerPack, "dropDate">): number | null {
   if (!pack.dropDate) return null;
@@ -224,6 +263,7 @@ export const STICKER_PACKS: readonly StickerPack[] = [
   GULF_COAST_PACK,
   COZY_FALL_PACK,
   HALLOWEEN_PACK,
+  BIRDS_PACK,
 ];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
