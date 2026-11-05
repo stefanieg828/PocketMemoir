@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   BIRDS_PACK,
   HALLOWEEN_PACK,
+  LATE_AUTUMN_PACK,
   STICKER_PACKS,
   isPackReleased,
   packDropTime,
@@ -61,7 +62,7 @@ describe("sticker pack drops", () => {
     assert.ok(!releasedStickerPacks(BIRDS_DROP - 60_000).some((p) => p.id === "birds"));
     const after = releasedStickerPacks(BIRDS_DROP).map((p) => p.id);
     assert.deepEqual(after.slice(-4), ["gulf-coast", "cozy-fall", "halloween", "birds"]);
-    assert.equal(STICKER_PACKS.length, after.length);
+    assert.ok(!after.includes("late-autumn"));
   });
 
   it("birds has 20 paid stickers with assets", () => {
@@ -69,5 +70,28 @@ describe("sticker pack drops", () => {
     assert.equal(BIRDS_PACK.stickers.length, 20);
     assert.equal(new Set(BIRDS_PACK.stickers.map((s) => s.id)).size, 20);
     for (const s of BIRDS_PACK.stickers) assert.match(s.src ?? "", /^\/stickers\/birds\/[a-z-]+\.webp$/);
+  });
+
+  const LATE_AUTUMN_DROP = Date.parse("2026-11-09T14:00:00Z");
+
+  it("late autumn drops Mon Nov 9 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(LATE_AUTUMN_PACK), LATE_AUTUMN_DROP);
+    assert.equal(packDropTime(LATE_AUTUMN_PACK), Date.parse("2026-11-09T08:00:00-06:00"));
+    assert.equal(isPackReleased(LATE_AUTUMN_PACK, LATE_AUTUMN_DROP - 1), false);
+    assert.equal(isPackReleased(LATE_AUTUMN_PACK, LATE_AUTUMN_DROP), true);
+  });
+
+  it("tray hides late autumn before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(LATE_AUTUMN_DROP - 60_000).some((p) => p.id === "late-autumn"));
+    const after = releasedStickerPacks(LATE_AUTUMN_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-5), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn"]);
+    assert.equal(STICKER_PACKS.length, after.length);
+  });
+
+  it("late autumn has 20 paid stickers with assets", () => {
+    assert.equal(LATE_AUTUMN_PACK.free, false);
+    assert.equal(LATE_AUTUMN_PACK.stickers.length, 20);
+    assert.equal(new Set(LATE_AUTUMN_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of LATE_AUTUMN_PACK.stickers) assert.match(s.src ?? "", /^\/stickers\/late-autumn\/[a-z-]+\.webp$/);
   });
 });

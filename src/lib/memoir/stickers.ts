@@ -23,7 +23,8 @@ export type StickerMarkId =
   | GulfCoastStickerId
   | CozyFallStickerId
   | HalloweenStickerId
-  | BirdsStickerId;
+  | BirdsStickerId
+  | LateAutumnStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -104,6 +105,30 @@ export const BIRDS_IDS = [
   "bd-ostrich",
 ] as const;
 export type BirdsStickerId = (typeof BIRDS_IDS)[number];
+
+export const LATE_AUTUMN_IDS = [
+  "la-maple-leaf",
+  "la-oak-leaf",
+  "la-leaf-swirl",
+  "la-acorn",
+  "la-pinecone",
+  "la-pumpkin",
+  "la-squash",
+  "la-cocoa",
+  "la-mittens",
+  "la-scarf",
+  "la-cottage",
+  "la-forest-path",
+  "la-sleepy-fox",
+  "la-mushrooms",
+  "la-harvest-moon",
+  "la-bare-tree",
+  "la-ivy-fence",
+  "la-lantern",
+  "la-teapot",
+  "la-squirrel",
+] as const;
+export type LateAutumnStickerId = (typeof LATE_AUTUMN_IDS)[number];
 
 export type StickerMark = {
   id: StickerMarkId;
@@ -237,6 +262,20 @@ export const BIRDS_PACK: StickerPack = {
   })),
 };
 
+export const LATE_AUTUMN_PACK: StickerPack = {
+  id: "late-autumn",
+  name: "late autumn",
+  free: false,
+  // Mon Nov 9 2026, 8:00 AM America/Chicago (CST, UTC-6).
+  dropDate: "2026-11-09T14:00:00Z",
+  stickers: LATE_AUTUMN_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/late-autumn/${id.slice(3)}.webp`,
+  })),
+};
+
 /** Epoch ms when a pack drops, or null if it has no (valid) drop date. */
 export function packDropTime(pack: Pick<StickerPack, "dropDate">): number | null {
   if (!pack.dropDate) return null;
@@ -264,6 +303,7 @@ export const STICKER_PACKS: readonly StickerPack[] = [
   COZY_FALL_PACK,
   HALLOWEEN_PACK,
   BIRDS_PACK,
+  LATE_AUTUMN_PACK,
 ];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
