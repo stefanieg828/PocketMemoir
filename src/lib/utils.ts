@@ -16,5 +16,6 @@ export function hashSeed(input: string): number {
 
 export function tiltFor(id: string): number {
   const n = hashSeed(id);
-  return ((n % 51) - 25) / 10;
+  // Roughly -8° .. 8° — handmade scrapbook scatter (A chaos + B snug).
+  return ((n % 161) - 80) / 10;
 }

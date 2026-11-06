@@ -1,0 +1,278 @@
+/*
+ * Reading comfort (free, accessibility) — set on <html> by THEME_BOOT and
+ * applyReadingToDocument():
+ *   data-text-size = small | normal | large | xlarge  → root font scale 0.9 / 1 / 1.15 / 1.3
+ *   data-bold="1"                                    → heavier body copy + stronger muted ink
+ * Every size in the app is rem-based, so scaling the root scales the whole app.
+ * Percentages (not px) keep the user's own browser / Android font setting.
+ */
+
+html[data-text-size="small"] {
+  font-size: 90%;
+}
+
+html[data-text-size="large"] {
+  font-size: 115%;
+}
+
+html[data-text-size="xlarge"] {
+  font-size: 130%;
+}
+
+/*
+ * Bold text. Patrick Hand (storybook + riso "handwritten") ships one thin
+ * weight, so allow synthesized bold instead of silently staying at 400.
+ * Muted / faint ink gets closer to the key ink for contrast in every look.
+ * [data-look] bumps specificity past html[data-look="…"] token blocks.
+ */
+html[data-bold="1"][data-look] {
+  --body-weight: 700;
+  --display-weight: 700;
+  --synthesis: weight;
+  --color-muted: color-mix(in srgb, var(--color-ink) 86%, var(--color-paper));
+  --color-faint: color-mix(in srgb, var(--color-ink) 70%, var(--color-paper));
+}
+
+/* Comic body (Comic Neue) is already 700; Bangers headers stay single-weight so
+   they don't blob. Bold there = the stronger ink above + heavier small labels. */
+html[data-bold="1"][data-look="comic"] {
+  --display-weight: 400;
+  --synthesis: none;
+}
+
+/* Hard-coded 600 body labels → 700; tiny Nunito labels 700 → 800. */
+html[data-bold="1"] :is(.wm-story-text, .restore-title) {
+  font-weight: 700;
+}
+
+html[data-bold="1"] :is(.ink-name, .font-chip-name, .unlock-badge) {
+  font-weight: 800;
+}
+
+/*
+ * Bigger sizes on the wall of boards: board names get a readable floor instead
+ * of shrinking with the (now narrower in rem) board — they wrap, never truncate.
+ * Scrap peeks wrap to two lines instead of a one-line ellipsis.
+ */
+html:is([data-text-size="large"], [data-text-size="xlarge"])[data-look] .cork-mini-label {
+  font-size: max(0.92rem, min(1.12rem, 11cqi));
+  hyphens: auto;
+}
+
+html:is([data-text-size="large"], [data-text-size="xlarge"]) .cork-peek-title {
+  display: -webkit-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/*
+ * Look sheet at large / extra large on phones: three look cards side by side get
+ * too narrow (names overflow, swatch titles clip), so stack them as rows —
+ * swatch left, name + line right. Wide screens keep the 3-up grid.
+ */
+@media (max-width: 520px) {
+  html:is([data-text-size="large"], [data-text-size="xlarge"]) .picker-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html:is([data-text-size="large"], [data-text-size="xlarge"]) .picker-card-look {
+    display: grid;
+    grid-template-columns: 5.6rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: 0.75rem;
+    row-gap: 0.2rem;
+  }
+
+  html:is([data-text-size="large"], [data-text-size="xlarge"]) .picker-card-look .look-swatch {
+    grid-row: 1 / span 2;
+  }
+
+  html:is([data-text-size="large"], [data-text-size="xlarge"]) .picker-card-look .picker-card-name {
+    align-self: end;
+    padding-inline-end: 3.5rem; /* clear the corner badge */
+  }
+
+  html:is([data-text-size="large"], [data-text-size="xlarge"]) .picker-card-look .picker-card-line {
+    display: block;
+    align-self: start;
+  }
+}
+
+/* ——— Look sheet: reading comfort section ——— */
+@layer components {
+  .reading-section {
+    scroll-margin-top: 0.75rem;
+  }
+
+  .reading-sizes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  .reading-size {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.2rem;
+    min-width: 0;
+    min-height: 4.1rem;
+    padding: 0.4rem 0.3rem 0.45rem;
+    border: var(--b2) solid color-mix(in srgb, var(--color-line) 70%, transparent);
+    border-radius: 0.7rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+    text-align: center;
+    box-shadow: var(--sh-sm), var(--soft);
+  }
+
+  .reading-size.is-selected {
+    outline: 3px solid var(--color-seal);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--color-gold) 50%, var(--color-card));
+  }
+
+  .reading-size:focus-visible,
+  .reading-bold:focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  .reading-aa {
+    font-family: var(--font-title);
+    text-transform: none;
+    line-height: 1;
+    color: var(--headline-color);
+  }
+
+  .reading-size-name {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    line-height: 1.1;
+    color: var(--color-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .reading-size.is-selected .reading-size-name {
+    color: var(--color-ink);
+  }
+
+  .reading-bold {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    margin-top: 0.7rem;
+    padding: 0.55rem 0.7rem;
+    border: var(--b2) solid color-mix(in srgb, var(--color-line) 70%, transparent);
+    border-radius: 0.7rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+    text-align: left;
+    box-shadow: var(--sh-sm), var(--soft);
+  }
+
+  .reading-bold.is-on {
+    background: color-mix(in srgb, var(--color-gold) 45%, var(--color-card));
+  }
+
+  .reading-bold-aa {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    border: var(--b2) solid var(--color-line);
+    border-radius: 0.5rem;
+    background: var(--color-paper);
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: none;
+    color: var(--headline-color);
+  }
+
+  .reading-bold-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .reading-bold-name {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1.15;
+  }
+
+  .reading-bold-hint {
+    font-size: 0.82rem;
+    line-height: 1.2;
+    color: var(--color-muted);
+  }
+
+  .reading-switch {
+    position: relative;
+    flex: none;
+    width: 2.9rem;
+    height: 1.65rem;
+    border: var(--b2) solid var(--color-line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-line) 14%, var(--color-paper));
+    transition: background-color 160ms ease;
+  }
+
+  .reading-switch-knob {
+    position: absolute;
+    top: 50%;
+    left: 0.15rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    translate: 0 -50%;
+    border: var(--b1) solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-card);
+    box-shadow: var(--soft);
+    transition: left 160ms ease;
+  }
+
+  .reading-bold.is-on .reading-switch {
+    background: var(--color-seal);
+  }
+
+  .reading-bold.is-on .reading-switch-knob {
+    left: calc(100% - 1.3rem);
+  }
+}
+
+/* Comic keeps body copy lowercase + heavy; riso step dots use key ink. */
+html[data-look="comic"] :is(.reading-size-name, .reading-bold-hint) {
+  text-transform: lowercase;
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+html[data-look="comic"] .reading-bold-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html[data-look] :is(.reading-aa, .reading-bold-aa) {
+  text-transform: none;
+}
+
+/* Comic headline yellow is unreadable on white chips — use key ink. */
+html[data-look="comic"] :is(.reading-aa, .reading-bold-aa) {
+  color: var(--color-ink);
+}
+
+html[data-look="comic"] .reading-size.is-selected,
+html[data-look="riso"] .reading-size.is-selected {
+  outline-color: var(--color-ink);
+}

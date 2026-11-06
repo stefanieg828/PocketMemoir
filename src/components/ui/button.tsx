@@ -9,11 +9,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         tape:
-          "rounded-full border-[3px] border-ink bg-gold font-display font-semibold text-ink shadow-paper hover:-translate-y-px",
-        ink: "rounded-full border-[3px] border-ink bg-card font-display font-semibold text-ink shadow-paper",
+          "ink-edge rounded-full bg-gold font-display font-semibold text-ink hover:-translate-y-px",
+        ink: "ink-edge rounded-full bg-card font-display font-semibold text-ink",
         ghost: "rounded-full font-display text-muted hover:text-ink",
         danger:
-          "rounded-full border-[3px] border-ink bg-card font-display font-semibold text-seal hover:bg-paper-deep",
+          "ink-edge rounded-full bg-card font-display font-semibold text-seal hover:bg-paper-deep",
       },
       size: {
         sm: "h-10 min-h-10 px-3 text-sm",
