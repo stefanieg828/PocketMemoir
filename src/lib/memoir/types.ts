@@ -94,6 +94,18 @@ export type TodoItem = {
 export const TODO_CAP = 50;
 export const TODO_TEXT_MAX = 120;
 
+/** Scrap form caps. Title and the “one more thing” note stay short. */
+export const TITLE_MAX = 80;
+/** Main Details field (`how`). */
+export const HOW_MAX = 500;
+/** “A scrap of a line” / one more thing. */
+export const NOTE_MAX = 140;
+
+/** Keep a details string inside HOW_MAX. Does not trim — callers trim on save. */
+export function clipHow(value: string): string {
+  return value.length <= HOW_MAX ? value : value.slice(0, HOW_MAX);
+}
+
 /** Validate + coerce a to-do list from storage / a backup / a peek file. */
 export function normalizeTodos(raw: unknown): TodoItem[] | undefined {
   if (!Array.isArray(raw)) return undefined;

@@ -23,6 +23,9 @@ import { useShelfCategories } from "@/lib/memoir/use-shelf";
 import {
   BUCKET_KINDS,
   bucketForKind,
+  HOW_MAX,
+  NOTE_MAX,
+  TITLE_MAX,
   type EntryKind,
   type MemoirDraft,
   type TodoItem,
@@ -76,7 +79,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
   const meta = KIND_META[activeChip.builtinKind];
 
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [how, setHow] = useState(initial?.how ?? "");
+  const [how, setHow] = useState(() => (initial?.how ?? "").slice(0, HOW_MAX));
   const [note, setNote] = useState(initial?.note ?? "");
   const [happenedOn, setHappenedOn] = useState(initial?.happenedOn ?? "");
   const [wouldBuyAgain, setWouldBuyAgain] = useState(Boolean(initial?.wouldBuyAgain));
@@ -306,22 +309,29 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
           onChange={(e) => setTitle(e.target.value)}
           placeholder={meta.titleHint}
           required
-          maxLength={80}
+          maxLength={TITLE_MAX}
           autoComplete="off"
           className="notebook-line"
         />
       </label>
       <label htmlFor="how" className="flex flex-col gap-1">
-        <span className="font-display text-sm text-muted">Details</span>
-        <input
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="font-display text-sm text-muted">Details</span>
+          <span id="how-count" className="font-display text-xs text-faint tabular-nums">
+            {how.length} / {HOW_MAX}
+          </span>
+        </span>
+        <textarea
           id="how"
           name="how"
           value={how}
-          onChange={(e) => setHow(e.target.value)}
+          onChange={(e) => setHow(e.target.value.slice(0, HOW_MAX))}
           placeholder={meta.detailHint}
-          maxLength={200}
+          maxLength={HOW_MAX}
+          rows={4}
+          aria-describedby="how-count"
           autoComplete="off"
-          className="notebook-line"
+          className="notebook-line notebook-details"
         />
       </label>
       <label htmlFor="note" className="flex flex-col gap-1">
@@ -332,7 +342,7 @@ export function KeepForm({ initial, onKeep, onCancel }: KeepFormProps) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="one more thing, if you want"
-          maxLength={140}
+          maxLength={NOTE_MAX}
           autoComplete="off"
           className="notebook-line"
         />

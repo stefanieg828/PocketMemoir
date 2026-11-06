@@ -25,7 +25,17 @@ before(async () => {
   });
   const backup = await server.ssrLoadModule("/src/lib/memoir/backup.ts");
   const store = await server.ssrLoadModule("/src/lib/memoir/store.ts");
-  m = { ...backup, normalizeStoredEntry: store.normalizeStoredEntry, SEED_IDS: store.SEED_IDS };
+  const types = await server.ssrLoadModule("/src/lib/memoir/types.ts");
+  m = {
+    ...backup,
+    normalizeStoredEntry: store.normalizeStoredEntry,
+    SEED_IDS: store.SEED_IDS,
+    useMemoir: store.useMemoir,
+    HOW_MAX: types.HOW_MAX,
+    TITLE_MAX: types.TITLE_MAX,
+    NOTE_MAX: types.NOTE_MAX,
+    clipHow: types.clipHow,
+  };
 });
 
 after(async () => {
@@ -154,6 +164,56 @@ describe("backup nudge", () => {
     assert.equal(m.shouldNudgeBackup(list, t0 + 100), false);
     assert.equal(m.shouldNudgeBackup(list, null, t0 + 100), false);
     assert.equal(m.shouldNudgeBackup([...list, ...many(10, t0 + 200, "n")], t0 + 100), true);
+  });
+});
+
+describe("details field length", () => {
+  it("caps details at 500 and leaves title (80) and the note (140) alone", () => {
+    assert.equal(m.HOW_MAX, 500);
+    assert.equal(m.TITLE_MAX, 80);
+    assert.equal(m.NOTE_MAX, 140);
+    const how = "d".repeat(500);
+    assert.equal(m.clipHow(how), how);
+    assert.equal(m.clipHow(how + "extra"), how);
+
+    const title = "T".repeat(80);
+    const note = "n".repeat(140);
+    const saved = m.useMemoir.getState().addEntry({
+      kind: "note",
+      title,
+      how: how + "too-long",
+      facts: "",
+      note,
+    });
+    assert.equal(saved.how, how);
+    assert.equal(saved.title, title);
+    assert.equal(saved.note, note);
+
+    const reloaded = m.normalizeStoredEntry({ ...saved, how: how + "from-disk" });
+    assert.equal(reloaded.how, how);
+    assert.equal(reloaded.title, title);
+    assert.equal(reloaded.note, note);
+
+    const file = m.createBackup({ entries: [saved], ...settings });
+    const parsed = m.parseBackup(m.serializeBackup(file), m.normalizeStoredEntry);
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.entries[0].how, how);
+    assert.equal(parsed.entries[0].how.length, 500);
+    assert.equal(parsed.entries[0].title, title);
+    assert.equal(parsed.entries[0].note, note);
+
+    const over = m.parseBackup(
+      JSON.stringify({
+        format: "pocketmemoir-backup",
+        version: 1,
+        entries: [entry("over", { how: "x".repeat(800), title, note })],
+      }),
+      m.normalizeStoredEntry,
+    );
+    assert.equal(over.ok, true);
+    assert.equal(over.entries[0].how, "x".repeat(500));
+    assert.equal(over.entries[0].title, title);
+    assert.equal(over.entries[0].note, note);
   });
 });
 

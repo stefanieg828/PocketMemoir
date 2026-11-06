@@ -55,7 +55,15 @@ import type {
   ModeId,
   RisoPrefs,
 } from "./types";
-import { bucketForKind, normalizeKind, normalizeTodos, normalizeLook, normalizeMode, normalizeStatus } from "./types";
+import {
+  bucketForKind,
+  clipHow,
+  normalizeKind,
+  normalizeTodos,
+  normalizeLook,
+  normalizeMode,
+  normalizeStatus,
+} from "./types";
 
 const STORAGE_KEY = "pocketmemoir.v1";
 /** Separate key so the restore email outlives a damaged / reset main save. */
@@ -354,7 +362,7 @@ function fromDraft(draft: MemoirDraft, base?: MemoirEntry): MemoirEntry {
         ? normalizeStatus(base.status)
         : "fresh",
     title: draft.title.trim(),
-    how: draft.how.trim(),
+    how: clipHow(draft.how.trim()),
     facts: draft.facts.trim(),
     note: draft.note.trim(),
     wouldBuyAgain: kind === "thing" ? Boolean(draft.wouldBuyAgain) : undefined,
@@ -391,7 +399,7 @@ export function normalizeStoredEntry(raw: unknown): MemoirEntry | null {
     kind,
     status,
     title: entry.title,
-    how: typeof entry.how === "string" ? entry.how : "",
+    how: typeof entry.how === "string" ? clipHow(entry.how) : "",
     facts: typeof entry.facts === "string" ? entry.facts : "",
     note: typeof entry.note === "string" ? entry.note : "",
     wouldBuyAgain: kind === "thing" ? Boolean(entry.wouldBuyAgain) : undefined,

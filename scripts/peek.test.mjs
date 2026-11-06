@@ -128,6 +128,36 @@ describe("peek file", () => {
     assert.match(asBackup.message, /backup/i);
   });
 
+  it("keeps a 500-character details field and clips only that field", () => {
+    const how = "d".repeat(500);
+    const title = "T".repeat(80);
+    const note = "n".repeat(140);
+    const peek = m.createPeek({
+      entries: [entry("long", { how, title, note })],
+      ...settings,
+    });
+    const parsed = m.parsePeek(m.serializePeek(peek), m.normalizeStoredEntry);
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.entries[0].how, how);
+    assert.equal(parsed.entries[0].title, title);
+    assert.equal(parsed.entries[0].note, note);
+
+    const over = m.parsePeek(
+      JSON.stringify({
+        kind: "pocketmemoir-peek",
+        version: 1,
+        entries: [entry("over", { how: how + "extra", title, note })],
+        mode: "scrapbook",
+        look: "storybook",
+      }),
+      m.normalizeStoredEntry,
+    );
+    assert.equal(over.ok, true);
+    assert.equal(over.entries[0].how, how);
+    assert.equal(over.entries[0].title, title);
+    assert.equal(over.entries[0].note, note);
+  });
+
   it("skips unreadable rows and duplicate ids", () => {
     const text = JSON.stringify({
       kind: "pocketmemoir-peek",

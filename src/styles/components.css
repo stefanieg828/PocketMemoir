@@ -127,6 +127,8 @@
   .scrap-card {
     position: relative;
     isolation: isolate;
+    min-width: 0;
+    max-width: 100%;
     border: var(--b3) solid var(--color-line);
     background: var(--color-card);
     box-shadow: var(--sh-md), var(--soft);
@@ -160,6 +162,15 @@
   .scrap-title {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Long details stay inside the scrap — they wrap, they don't widen the board. */
+  .scrap-caption {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
   }
 
   .scrap-meta {
@@ -421,6 +432,14 @@
     outline-offset: 2px;
   }
 
+  textarea.notebook-details {
+    display: block;
+    min-height: 7.25rem;
+    resize: vertical;
+    overflow-wrap: anywhere;
+    field-sizing: content;
+  }
+
   .sticker-cta {
     display: inline-flex;
     align-items: center;
@@ -505,6 +524,9 @@
   }
 
   .kept-row {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     border-bottom: 1.5px dashed color-mix(in srgb, var(--color-line) 30%, transparent);
   }
 
@@ -609,11 +631,18 @@
 
   .shelf-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.35rem;
     list-style: none;
     padding: 0;
     margin: 1.2rem 0 0;
+  }
+
+  .shelf-grid > li,
+  .cork-zoom-grid > li,
+  .flip-scrap {
+    min-width: 0;
+    max-width: 100%;
   }
 
   @media (min-width: 640px) {
@@ -1559,7 +1588,7 @@
 
   .cork-zoom-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
     list-style: none;
     margin: 0.8rem 0 0;
