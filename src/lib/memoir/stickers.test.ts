@@ -92,6 +92,8 @@ describe("sticker pack drops", () => {
     assert.equal(LATE_AUTUMN_PACK.free, false);
     assert.equal(LATE_AUTUMN_PACK.stickers.length, 20);
     assert.equal(new Set(LATE_AUTUMN_PACK.stickers.map((s) => s.id)).size, 20);
-    for (const s of LATE_AUTUMN_PACK.stickers) assert.match(s.src ?? "", /^\/stickers\/late-autumn\/[a-z-]+\.webp$/);
+    for (const s of LATE_AUTUMN_PACK.stickers) {
+      assert.match(s.src ?? "", /^\/stickers\/late-autumn\/[a-z-]+\.webp\?v=2$/);
+    }
   });
 });

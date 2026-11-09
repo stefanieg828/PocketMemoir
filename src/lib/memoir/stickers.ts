@@ -262,6 +262,9 @@ export const BIRDS_PACK: StickerPack = {
   })),
 };
 
+/** Bump when the painted files at these stable paths are replaced, so phones skip a cached webp. */
+const LATE_AUTUMN_ASSET_REV = "2";
+
 export const LATE_AUTUMN_PACK: StickerPack = {
   id: "late-autumn",
   name: "late autumn",
@@ -272,7 +275,7 @@ export const LATE_AUTUMN_PACK: StickerPack = {
     id,
     name: id.slice(3).replace(/-/g, " "),
     mark: id,
-    src: `/stickers/late-autumn/${id.slice(3)}.webp`,
+    src: `/stickers/late-autumn/${id.slice(3)}.webp?v=${LATE_AUTUMN_ASSET_REV}`,
   })),
 };
 
