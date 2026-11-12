@@ -24,7 +24,8 @@ export type StickerMarkId =
   | CozyFallStickerId
   | HalloweenStickerId
   | BirdsStickerId
-  | LateAutumnStickerId;
+  | LateAutumnStickerId
+  | ThanksgivingStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -129,6 +130,30 @@ export const LATE_AUTUMN_IDS = [
   "la-squirrel",
 ] as const;
 export type LateAutumnStickerId = (typeof LATE_AUTUMN_IDS)[number];
+
+export const THANKSGIVING_IDS = [
+  "tg-cute-turkey",
+  "tg-pecan-pie",
+  "tg-mashed-potatoes",
+  "tg-cranberry-wobble",
+  "tg-cornucopia",
+  "tg-gravy-boat",
+  "tg-pie-slice",
+  "tg-corn-on-the-cob",
+  "tg-green-bean-casserole",
+  "tg-sweet-potato-casserole",
+  "tg-candle-centerpiece",
+  "tg-mug-blanket",
+  "tg-leaf-pile",
+  "tg-parade-balloon",
+  "tg-yard-football",
+  "tg-table-dog",
+  "tg-handprint-turkey",
+  "tg-leaf-crown",
+  "tg-cozy-kitchen",
+  "tg-wishbone",
+] as const;
+export type ThanksgivingStickerId = (typeof THANKSGIVING_IDS)[number];
 
 export type StickerMark = {
   id: StickerMarkId;
@@ -279,6 +304,20 @@ export const LATE_AUTUMN_PACK: StickerPack = {
   })),
 };
 
+export const THANKSGIVING_PACK: StickerPack = {
+  id: "thanksgiving",
+  name: "thanksgiving",
+  free: false,
+  // Mon Nov 16 2026, 8:00 AM America/Chicago (CST, UTC-6).
+  dropDate: "2026-11-16T14:00:00Z",
+  stickers: THANKSGIVING_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/thanksgiving/${id.slice(3)}.webp`,
+  })),
+};
+
 /** Epoch ms when a pack drops, or null if it has no (valid) drop date. */
 export function packDropTime(pack: Pick<StickerPack, "dropDate">): number | null {
   if (!pack.dropDate) return null;
@@ -307,6 +346,7 @@ export const STICKER_PACKS: readonly StickerPack[] = [
   HALLOWEEN_PACK,
   BIRDS_PACK,
   LATE_AUTUMN_PACK,
+  THANKSGIVING_PACK,
 ];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
