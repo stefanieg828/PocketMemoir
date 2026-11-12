@@ -10,17 +10,36 @@
 
 export const GA_MEASUREMENT_ENV = "VITE_GA_MEASUREMENT_ID";
 
-/** Custom event names (engagement → Events in GA4). */
+/**
+ * Custom event names (engagement → Events in GA4).
+ * Play launch names are sent only from `play-app-analytics.ts`. The original
+ * four stay on their existing call sites with the same params.
+ */
 export const GA_EVENTS = {
   unlockSuccess: "unlock_success",
   tourComplete: "tour_complete",
   tourSkip: "tour_skip",
   a2hsDismiss: "a2hs_dismiss",
+  playAppFirstOpen: "play_app_first_open",
+  playAppOpen: "play_app_open",
 } as const;
 
 export type GaEventName = (typeof GA_EVENTS)[keyof typeof GA_EVENTS];
 
-type GaEnv = { [GA_MEASUREMENT_ENV]?: string | undefined };
+/**
+ * User property and event param that splits Play/TWA sessions from the website.
+ * Same string for both so GA4 custom dimensions can share a name.
+ */
+export const GA_APP_SOURCE_KEY = "app_source";
+
+export const GA_APP_SOURCE = {
+  playTwa: "play_twa",
+  web: "web",
+} as const;
+
+export type GaAppSource = (typeof GA_APP_SOURCE)[keyof typeof GA_APP_SOURCE];
+
+export type GaEnv = { [GA_MEASUREMENT_ENV]?: string | undefined };
 
 declare global {
   interface Window {
@@ -53,12 +72,17 @@ export function analyticsPath(pathname: string): string {
 /**
  * Load gtag.js once when a Measurement ID is present. No-op when unset,
  * on the server, or after the first successful request.
+ *
+ * Optional `userProperties` are applied before `config` (and again via `set`
+ * if gtag was already booted) so the next hits, including the first page_view,
+ * carry them. Omitted properties leave the config payload unchanged.
  */
-export function initAnalytics(env: GaEnv = viteEnv()): boolean {
+export function initAnalytics(
+  env: GaEnv = viteEnv(),
+  userProperties?: Record<string, string>,
+): boolean {
   const id = readGaMeasurementId(env);
   if (!id || typeof window === "undefined") return false;
-  if (scriptRequested) return true;
-  scriptRequested = true;
 
   window.dataLayer = window.dataLayer ?? [];
   if (typeof window.gtag !== "function") {
@@ -70,9 +94,22 @@ export function initAnalytics(env: GaEnv = viteEnv()): boolean {
     } as (...args: unknown[]) => void;
   }
 
+  const props = userProperties && Object.keys(userProperties).length > 0 ? userProperties : null;
+
+  if (scriptRequested) {
+    if (props) window.gtag("set", "user_properties", props);
+    return true;
+  }
+  scriptRequested = true;
+
   // SPA: send page_view ourselves on route changes (see AnalyticsListener).
   window.gtag("js", new Date());
-  window.gtag("config", id, { send_page_view: false, anonymize_ip: true });
+  if (props) window.gtag("set", "user_properties", props);
+  window.gtag("config", id, {
+    send_page_view: false,
+    anonymize_ip: true,
+    ...(props ? { user_properties: props } : {}),
+  });
 
   const src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
   if (!document.querySelector(`script[src="${src}"]`)) {
@@ -96,10 +133,7 @@ export function trackEvent(
 }
 
 /** Manual page_view for SPA navigations. */
-export function trackPageView(
-  pathname: string,
-  env: GaEnv = viteEnv(),
-): void {
+export function trackPageView(pathname: string, env: GaEnv = viteEnv()): void {
   if (!isAnalyticsEnabled(env) || typeof window === "undefined") return;
   initAnalytics(env);
   const page_path = analyticsPath(pathname);
