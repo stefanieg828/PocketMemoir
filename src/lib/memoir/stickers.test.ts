@@ -5,6 +5,7 @@ import {
   HALLOWEEN_PACK,
   LATE_AUTUMN_PACK,
   STICKER_PACKS,
+  THANKSGIVING_2_PACK,
   THANKSGIVING_PACK,
   isPackReleased,
   packDropTime,
@@ -111,7 +112,7 @@ describe("sticker pack drops", () => {
     assert.ok(!releasedStickerPacks(THANKSGIVING_DROP - 60_000).some((p) => p.id === "thanksgiving"));
     const after = releasedStickerPacks(THANKSGIVING_DROP).map((p) => p.id);
     assert.deepEqual(after.slice(-6), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving"]);
-    assert.equal(STICKER_PACKS.length, after.length);
+    assert.ok(!after.includes("thanksgiving-2"));
   });
 
   it("thanksgiving has 20 paid wordless stickers with assets", () => {
@@ -121,6 +122,33 @@ describe("sticker pack drops", () => {
     assert.equal(new Set(THANKSGIVING_PACK.stickers.map((s) => s.id)).size, 20);
     for (const s of THANKSGIVING_PACK.stickers) {
       assert.match(s.src ?? "", /^\/stickers\/thanksgiving\/[a-z-]+\.webp$/);
+      assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
+    }
+  });
+
+  const THANKSGIVING_2_DROP = Date.parse("2026-11-23T14:00:00Z");
+
+  it("game day feast drops Mon Nov 23 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(THANKSGIVING_2_PACK), THANKSGIVING_2_DROP);
+    assert.equal(packDropTime(THANKSGIVING_2_PACK), Date.parse("2026-11-23T08:00:00-06:00"));
+    assert.equal(isPackReleased(THANKSGIVING_2_PACK, THANKSGIVING_2_DROP - 1), false);
+    assert.equal(isPackReleased(THANKSGIVING_2_PACK, THANKSGIVING_2_DROP), true);
+  });
+
+  it("tray hides game day feast before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(THANKSGIVING_2_DROP - 60_000).some((p) => p.id === "thanksgiving-2"));
+    const after = releasedStickerPacks(THANKSGIVING_2_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-7), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving", "thanksgiving-2"]);
+    assert.equal(STICKER_PACKS.length, after.length);
+  });
+
+  it("game day feast has 20 paid wordless stickers with assets", () => {
+    assert.equal(THANKSGIVING_2_PACK.name, "game day feast");
+    assert.equal(THANKSGIVING_2_PACK.free, false);
+    assert.equal(THANKSGIVING_2_PACK.stickers.length, 20);
+    assert.equal(new Set(THANKSGIVING_2_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of THANKSGIVING_2_PACK.stickers) {
+      assert.match(s.src ?? "", /^\/stickers\/thanksgiving-2\/[a-z-]+\.webp$/);
       assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
     }
   });
