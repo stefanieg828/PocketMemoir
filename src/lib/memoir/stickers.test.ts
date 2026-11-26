@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   BIRDS_PACK,
+  FIRESIDE_NEST_PACK,
+  FIRST_FROST_PACK,
   HALLOWEEN_PACK,
   LATE_AUTUMN_PACK,
+  SNOW_DAY_PACK,
   STICKER_PACKS,
   THANKSGIVING_2_PACK,
   THANKSGIVING_PACK,
@@ -139,7 +142,7 @@ describe("sticker pack drops", () => {
     assert.ok(!releasedStickerPacks(THANKSGIVING_2_DROP - 60_000).some((p) => p.id === "thanksgiving-2"));
     const after = releasedStickerPacks(THANKSGIVING_2_DROP).map((p) => p.id);
     assert.deepEqual(after.slice(-7), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving", "thanksgiving-2"]);
-    assert.equal(STICKER_PACKS.length, after.length);
+    assert.ok(!after.includes("first-frost"));
   });
 
   it("game day feast has 20 paid wordless stickers with assets", () => {
@@ -149,6 +152,87 @@ describe("sticker pack drops", () => {
     assert.equal(new Set(THANKSGIVING_2_PACK.stickers.map((s) => s.id)).size, 20);
     for (const s of THANKSGIVING_2_PACK.stickers) {
       assert.match(s.src ?? "", /^\/stickers\/thanksgiving-2\/[a-z-]+\.webp$/);
+      assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
+    }
+  });
+
+  const FIRST_FROST_DROP = Date.parse("2026-11-30T14:00:00Z");
+
+  it("first frost drops Mon Nov 30 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(FIRST_FROST_PACK), FIRST_FROST_DROP);
+    assert.equal(packDropTime(FIRST_FROST_PACK), Date.parse("2026-11-30T08:00:00-06:00"));
+    assert.equal(isPackReleased(FIRST_FROST_PACK, FIRST_FROST_DROP - 1), false);
+    assert.equal(isPackReleased(FIRST_FROST_PACK, FIRST_FROST_DROP), true);
+  });
+
+  it("tray hides first frost before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(FIRST_FROST_DROP - 60_000).some((p) => p.id === "first-frost"));
+    const after = releasedStickerPacks(FIRST_FROST_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-8), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving", "thanksgiving-2", "first-frost"]);
+    assert.ok(!after.includes("fireside-nest"));
+  });
+
+  it("first frost has 20 paid wordless stickers with assets", () => {
+    assert.equal(FIRST_FROST_PACK.name, "first frost");
+    assert.equal(FIRST_FROST_PACK.free, false);
+    assert.equal(FIRST_FROST_PACK.stickers.length, 20);
+    assert.equal(new Set(FIRST_FROST_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of FIRST_FROST_PACK.stickers) {
+      assert.match(s.src ?? "", /^\/stickers\/first-frost\/[a-z-]+\.webp$/);
+      assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
+    }
+  });
+
+  const FIRESIDE_NEST_DROP = Date.parse("2026-12-07T14:00:00Z");
+
+  it("fireside nest drops Mon Dec 7 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(FIRESIDE_NEST_PACK), FIRESIDE_NEST_DROP);
+    assert.equal(packDropTime(FIRESIDE_NEST_PACK), Date.parse("2026-12-07T08:00:00-06:00"));
+    assert.equal(isPackReleased(FIRESIDE_NEST_PACK, FIRESIDE_NEST_DROP - 1), false);
+    assert.equal(isPackReleased(FIRESIDE_NEST_PACK, FIRESIDE_NEST_DROP), true);
+  });
+
+  it("tray hides fireside nest before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(FIRESIDE_NEST_DROP - 60_000).some((p) => p.id === "fireside-nest"));
+    const after = releasedStickerPacks(FIRESIDE_NEST_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-9), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving", "thanksgiving-2", "first-frost", "fireside-nest"]);
+    assert.ok(!after.includes("snow-day"));
+  });
+
+  it("fireside nest has 20 paid wordless stickers with assets", () => {
+    assert.equal(FIRESIDE_NEST_PACK.name, "fireside nest");
+    assert.equal(FIRESIDE_NEST_PACK.free, false);
+    assert.equal(FIRESIDE_NEST_PACK.stickers.length, 20);
+    assert.equal(new Set(FIRESIDE_NEST_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of FIRESIDE_NEST_PACK.stickers) {
+      assert.match(s.src ?? "", /^\/stickers\/fireside-nest\/[a-z-]+\.webp$/);
+      assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
+    }
+  });
+
+  const SNOW_DAY_DROP = Date.parse("2026-12-14T14:00:00Z");
+
+  it("snow day drops Mon Dec 14 2026 8:00 AM Chicago (CST, 14:00 UTC)", () => {
+    assert.equal(packDropTime(SNOW_DAY_PACK), SNOW_DAY_DROP);
+    assert.equal(packDropTime(SNOW_DAY_PACK), Date.parse("2026-12-14T08:00:00-06:00"));
+    assert.equal(isPackReleased(SNOW_DAY_PACK, SNOW_DAY_DROP - 1), false);
+    assert.equal(isPackReleased(SNOW_DAY_PACK, SNOW_DAY_DROP), true);
+  });
+
+  it("tray hides snow day before its drop and lists it last after", () => {
+    assert.ok(!releasedStickerPacks(SNOW_DAY_DROP - 60_000).some((p) => p.id === "snow-day"));
+    const after = releasedStickerPacks(SNOW_DAY_DROP).map((p) => p.id);
+    assert.deepEqual(after.slice(-10), ["gulf-coast", "cozy-fall", "halloween", "birds", "late-autumn", "thanksgiving", "thanksgiving-2", "first-frost", "fireside-nest", "snow-day"]);
+    assert.equal(STICKER_PACKS.length, after.length);
+  });
+
+  it("snow day has 20 paid wordless stickers with assets", () => {
+    assert.equal(SNOW_DAY_PACK.name, "snow day");
+    assert.equal(SNOW_DAY_PACK.free, false);
+    assert.equal(SNOW_DAY_PACK.stickers.length, 20);
+    assert.equal(new Set(SNOW_DAY_PACK.stickers.map((s) => s.id)).size, 20);
+    for (const s of SNOW_DAY_PACK.stickers) {
+      assert.match(s.src ?? "", /^\/stickers\/snow-day\/[a-z-]+\.webp$/);
       assert.equal(s.name, s.id.slice(3).replace(/-/g, " "));
     }
   });

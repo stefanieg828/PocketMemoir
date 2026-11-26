@@ -26,7 +26,10 @@ export type StickerMarkId =
   | BirdsStickerId
   | LateAutumnStickerId
   | ThanksgivingStickerId
-  | Thanksgiving2StickerId;
+  | Thanksgiving2StickerId
+  | FirstFrostStickerId
+  | FiresideNestStickerId
+  | SnowDayStickerId;
 
 export const GULF_COAST_IDS = [
   "gulf-pelican", "gulf-sand-dollar", "gulf-conch", "gulf-scallop", "gulf-starfish",
@@ -179,6 +182,78 @@ export const THANKSGIVING_2_IDS = [
   "t2-wine-glasses",
 ] as const;
 export type Thanksgiving2StickerId = (typeof THANKSGIVING_2_IDS)[number];
+
+export const FIRST_FROST_IDS = [
+  "ff-window",
+  "ff-puddle",
+  "ff-winterberries",
+  "ff-hare",
+  "ff-web",
+  "ff-sunrise",
+  "ff-hoarfrost-grass",
+  "ff-first-snow-lane",
+  "ff-snow-capped-pine",
+  "ff-iced-creek",
+  "ff-frost-fence",
+  "ff-short-icicles",
+  "ff-deer-at-woods",
+  "ff-frosted-pinecone",
+  "ff-snow-cap-nest",
+  "ff-pale-winter-moon",
+  "ff-frosted-stone-wall",
+  "ff-skim-ice-lake",
+  "ff-iced-rose-hips",
+  "ff-snowy-clothesline",
+] as const;
+export type FirstFrostStickerId = (typeof FIRST_FROST_IDS)[number];
+
+export const FIRESIDE_NEST_IDS = [
+  "fn-fireplace",
+  "fn-window-seat",
+  "fn-tabby",
+  "fn-soup-pot",
+  "fn-yarn",
+  "fn-wood-stove",
+  "fn-armchair-throw",
+  "fn-reading-lamp",
+  "fn-split-firewood",
+  "fn-hearth-socks",
+  "fn-house-slippers",
+  "fn-patchwork-quilt",
+  "fn-winter-windowsill",
+  "fn-table-lamp-glow",
+  "fn-journal-and-pen",
+  "fn-cooling-loaf",
+  "fn-dried-herbs",
+  "fn-mantel-pine",
+  "fn-stew-bowl",
+  "fn-cat-in-window",
+] as const;
+export type FiresideNestStickerId = (typeof FIRESIDE_NEST_IDS)[number];
+
+export const SNOW_DAY_IDS = [
+  "sd-snowman",
+  "sd-sled",
+  "sd-footprints",
+  "sd-streetlamp",
+  "sd-dog",
+  "sd-skates",
+  "sd-snow-mailbox",
+  "sd-snow-angel",
+  "sd-frozen-pond-bench",
+  "sd-snowy-bird-feeder",
+  "sd-snowy-boots",
+  "sd-pom-beanie",
+  "sd-shovel-in-drift",
+  "sd-snowy-pickup",
+  "sd-snow-cap-swing",
+  "sd-toboggan-hill",
+  "sd-thermos-in-snow",
+  "sd-snowy-bungalow",
+  "sd-frozen-birdbath",
+  "sd-snow-fort",
+] as const;
+export type SnowDayStickerId = (typeof SNOW_DAY_IDS)[number];
 
 
 export type StickerMark = {
@@ -358,6 +433,48 @@ export const THANKSGIVING_2_PACK: StickerPack = {
   })),
 };
 
+export const FIRST_FROST_PACK: StickerPack = {
+  id: "first-frost",
+  name: "first frost",
+  free: false,
+  // Mon Nov 30 2026, 8:00 AM America/Chicago (CST, UTC-6).
+  dropDate: "2026-11-30T14:00:00Z",
+  stickers: FIRST_FROST_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/first-frost/${id.slice(3)}.webp`,
+  })),
+};
+
+export const FIRESIDE_NEST_PACK: StickerPack = {
+  id: "fireside-nest",
+  name: "fireside nest",
+  free: false,
+  // Mon Dec 7 2026, 8:00 AM America/Chicago (CST, UTC-6).
+  dropDate: "2026-12-07T14:00:00Z",
+  stickers: FIRESIDE_NEST_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/fireside-nest/${id.slice(3)}.webp`,
+  })),
+};
+
+export const SNOW_DAY_PACK: StickerPack = {
+  id: "snow-day",
+  name: "snow day",
+  free: false,
+  // Mon Dec 14 2026, 8:00 AM America/Chicago (CST, UTC-6).
+  dropDate: "2026-12-14T14:00:00Z",
+  stickers: SNOW_DAY_IDS.map((id) => ({
+    id,
+    name: id.slice(3).replace(/-/g, " "),
+    mark: id,
+    src: `/stickers/snow-day/${id.slice(3)}.webp`,
+  })),
+};
+
 
 /** Epoch ms when a pack drops, or null if it has no (valid) drop date. */
 export function packDropTime(pack: Pick<StickerPack, "dropDate">): number | null {
@@ -389,6 +506,9 @@ export const STICKER_PACKS: readonly StickerPack[] = [
   LATE_AUTUMN_PACK,
   THANKSGIVING_PACK,
   THANKSGIVING_2_PACK,
+  FIRST_FROST_PACK,
+  FIRESIDE_NEST_PACK,
+  SNOW_DAY_PACK,
 ];
 
 const STICKER_INDEX = new Map<string, { sticker: StickerMark; pack: StickerPack }>(
