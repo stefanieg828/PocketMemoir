@@ -83,3 +83,6 @@ Non-free packs show in the tray as a locked preview (tab with 🔒 + unlock CTA)
 `placeSticker` refuses locked marks until `unlocked`.
 
 - `gulf-coast` — gulf coast beach, 20 painted marks, drop 2026-10-12.
+- `first-frost` — first frost, 20 painted marks, drop 2026-11-30T14:00:00Z (Mon 8 AM CT).
+- `fireside-nest` — fireside nest, 20 painted marks, drop 2026-12-07T14:00:00Z (Mon 8 AM CT).
+- `snow-day` — snow day, 20 painted marks, drop 2026-12-14T14:00:00Z (Mon 8 AM CT).
