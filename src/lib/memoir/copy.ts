@@ -1,8 +1,15 @@
-import { ENTRY_KINDS, type EntryKind } from "./types";
+import {
+  ENTRY_BUCKETS,
+  ENTRY_STATUSES,
+  type EntryBucket,
+  type EntryKind,
+  type EntryStatus,
+  type ModeId as JacketId,
+} from "./types";
 
-export const APP_NAME = "PocketMemoir";
+export const APP_NAME = "pocket memoir";
 
-export const TAGLINE = "A cartoon scrapbook for the random stuff life drops on you.";
+export const TAGLINE = "An app to keep life a little more organized.";
 
 export type KindMeta = {
   label: string;
@@ -126,10 +133,24 @@ export const KIND_META: Record<EntryKind, KindMeta> = {
     dateRequired: false,
   },
   dream: {
-    label: "Dream",
+    label: "Dreams",
     plural: "Dreams",
     titleHint: "the house with the round window",
     detailHint: "I was late and the train waited",
+    dateRequired: false,
+  },
+  "year-1": {
+    label: "1-year",
+    plural: "1-year",
+    titleHint: "where I want to be in a year",
+    detailHint: "one clear hope, not a to-do list",
+    dateRequired: false,
+  },
+  "year-5": {
+    label: "5-year",
+    plural: "5-year",
+    titleHint: "the longer arc",
+    detailHint: "still soft — a direction, not a deadline",
     dateRequired: false,
   },
   ticket: {
@@ -162,7 +183,105 @@ export const KIND_META: Record<EntryKind, KindMeta> = {
   },
 };
 
-export const FILTERS: Array<{ id: "all" | EntryKind; label: string }> = [
+export type BucketMeta = {
+  id: EntryBucket;
+  /** Shared chip label on Shelf */
+  label: string;
+  scrapbook: string;
+  corkboard: string;
+};
+
+export const BUCKET_META: Record<EntryBucket, BucketMeta> = {
+  scraps: {
+    id: "scraps",
+    label: "Thoughts",
+    scrapbook: "Thoughts",
+    corkboard: "Thoughts",
+  },
+  people: {
+    id: "people",
+    label: "People",
+    scrapbook: "People",
+    corkboard: "People",
+  },
+  out: {
+    id: "out",
+    label: "Places",
+    scrapbook: "Places",
+    corkboard: "Places",
+  },
+  everyday: {
+    id: "everyday",
+    label: "To-Do",
+    scrapbook: "To-Do",
+    corkboard: "To-Do",
+  },
+  proud: {
+    id: "proud",
+    label: "Achievements",
+    scrapbook: "Achievements",
+    corkboard: "Achievements",
+  },
+  dreams: {
+    id: "dreams",
+    label: "Goals",
+    scrapbook: "Goals",
+    corkboard: "Goals",
+  },
+};
+
+/** Shelf browse chips: All + 6 buckets (not 21 kinds). */
+export const FILTERS: Array<{ id: "all" | EntryBucket; label: string }> = [
   { id: "all", label: "All" },
-  ...ENTRY_KINDS.map((id) => ({ id, label: KIND_META[id].plural })),
+  ...ENTRY_BUCKETS.map((id) => ({ id, label: BUCKET_META[id].label })),
 ];
+
+export type StatusMeta = {
+  id: EntryStatus;
+  scrapbook: string;
+  corkboard: string;
+  /** Short chip label for move menu */
+  chip: string;
+};
+
+export const STATUS_META: Record<EntryStatus, StatusMeta> = {
+  fresh: {
+    id: "fresh",
+    scrapbook: "On the page",
+    corkboard: "Up on the board",
+    chip: "Fresh",
+  },
+  soft: {
+    id: "soft",
+    scrapbook: "Soft pile",
+    corkboard: "Quiet corner",
+    chip: "Soft",
+  },
+  keepsake: {
+    id: "keepsake",
+    scrapbook: "Keepsakes ♡",
+    corkboard: "Proud pins ♡",
+    chip: "Keepsake",
+  },
+  tucked: {
+    id: "tucked",
+    scrapbook: "Tucked away",
+    corkboard: "Boxed up",
+    chip: "Tucked",
+  },
+};
+
+/** Visible status zones on Shelf (tucked stays behind a fold). */
+export const SHELF_VISIBLE_STATUSES: readonly EntryStatus[] = ["fresh", "soft", "keepsake"];
+
+export function statusLabel(status: EntryStatus, jacket: JacketId): string {
+  const meta = STATUS_META[status];
+  return jacket === "corkboard" ? meta.corkboard : meta.scrapbook;
+}
+
+export function bucketLabel(bucket: EntryBucket, jacket: JacketId): string {
+  const meta = BUCKET_META[bucket];
+  return jacket === "corkboard" ? meta.corkboard : meta.scrapbook;
+}
+
+export { ENTRY_STATUSES };
